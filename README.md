@@ -1,8 +1,8 @@
-# DuitQu 💰
+# DuitQu
 
 Aplikasi manajemen keuangan pribadi berbasis web (PWA) dengan AI assistant yang cerdas. Kelola dompet, transaksi, budget, dan lihat insight keuangan Anda secara real-time, dimana saja dan kapan saja.
 
-## 📋 Daftar Isi
+## Daftar Isi
 - [Tentang Project](#tentang-project)
 - [Fitur Utama](#fitur-utama)
 - [Tech Stack](#tech-stack)
@@ -17,59 +17,59 @@ Aplikasi manajemen keuangan pribadi berbasis web (PWA) dengan AI assistant yang 
 - [Kontribusi](#kontribusi)
 - [License](#license)
 
-## 🎯 Tentang Project
+## Tentang Project
 
 **DuitQu** adalah aplikasi web modern untuk manajemen keuangan pribadi yang dirancang dengan user experience terbaik. Aplikasi ini dilengkapi dengan:
 
-- 💾 Progressive Web App (PWA) - bisa digunakan offline
-- 🤖 AI Assistant yang memahami perintah natural language
-- 📊 Dashboard analytics dengan visualisasi interaktif
-- 🏦 Multi-wallet management untuk berbagai akun/dompet
-- 💳 Budget tracking per kategori pengeluaran
-- 📱 Responsive design - bekerja sempurna di desktop, tablet, dan mobile
+- Progressive Web App (PWA) - bisa digunakan offline
+- AI Assistant yang memahami perintah natural language
+- Dashboard analytics dengan visualisasi interaktif
+- Multi-wallet management untuk berbagai akun/dompet
+- Budget tracking per kategori pengeluaran
+- Responsive design - bekerja sempurna di desktop, tablet, dan mobile
 
 Sempurna untuk individu yang ingin mengontrol keuangan pribadi mereka dengan lebih baik dan membuat keputusan finansial yang lebih informed.
 
-## ✨ Fitur Utama
+## Fitur Utama
 
-### 1. **Dashboard Keuangan Real-time** 📊
+### 1. **Dashboard Keuangan Real-time**
 - Melihat ringkasan keuangan keseluruhan
 - Grafik pengeluaran vs pemasukan
 - Statistik per kategori transaksi
 - Widget informasi cepat (total balance, pengeluaran bulan ini, dsb)
 
-### 2. **Multi-Wallet Management** 🏦
+### 2. **Multi-Wallet Management**
 - Kelola multiple wallets/akun
 - Track balance setiap wallet secara terpisah
 - Transfer antar wallet
 - Tentukan wallet default untuk transaksi
 
-### 3. **AI Assistant Cerdas** 🤖
+### 3. **AI Assistant Cerdas**
 - Input transaksi menggunakan natural language
 - Contoh: "beli kopi di kafe 50 ribu", "transfer ke tabungan 500rb"
 - AI memahami konteks dan kategori otomatis
 - Chat interface yang user-friendly
 
-### 4. **Manajemen Transaksi** 💸
+### 4. **Manajemen Transaksi**
 - Catat transaksi dengan detail lengkap
 - Kategori transaksi yang fleksibel (makanan, transportasi, hiburan, dll)
 - Filter dan search transaksi
 - Edit/hapus transaksi yang sudah tercatat
 - Lampirkan catatan atau note pada transaksi
 
-### 5. **Budget Tracking** 📈
+### 5. **Budget Tracking**
 - Set budget limit per kategori
 - Monitor pengeluaran vs budget
 - Alert ketika mendekati atau melampaui budget
 - Progress visualization per kategori
 
-### 6. **Progressive Web App (PWA)** 📱
+### 6. **Progressive Web App (PWA)**
 - Install aplikasi langsung di smartphone/tablet
 - Bekerja offline (cached data)
 - Push notifications untuk reminders
 - Icon di home screen seperti native app
 
-## 🛠 Tech Stack
+## Tech Stack
 
 | Aspek | Teknologi | Versi |
 |-------|-----------|-------|
@@ -89,7 +89,7 @@ Sempurna untuk individu yang ingin mengontrol keuangan pribadi mereka dengan leb
 | **Type Checking** | TypeScript | 5 |
 | **Linting** | ESLint | 9 |
 
-## 📦 Persyaratan Sistem
+## Persyaratan Sistem
 
 - **Node.js** >= 18.x
 - **npm** >= 9.x atau **yarn** >= 3.x
@@ -99,7 +99,7 @@ Sempurna untuk individu yang ingin mengontrol keuangan pribadi mereka dengan leb
   - Safari 15.1+
   - Edge 17+
 
-## 🚀 Instalasi
+## Instalasi
 
 ### 1. Clone Repository
 ```bash
@@ -114,7 +114,7 @@ npm install
 yarn install
 ```
 
-## 🔧 Setup Environment
+## Setup Environment
 
 ### 1. Setup Supabase
 
@@ -169,7 +169,7 @@ npm run dev
 
 Buka http://localhost:3000 di browser. Jika berhasil, Anda akan melihat halaman login.
 
-## 📁 Struktur Project
+## Struktur Project
 
 ```
 duitqu/
@@ -233,7 +233,7 @@ duitqu/
 └── README.md                     # This file
 ```
 
-## 💻 Penggunaan
+## Penggunaan
 
 ### 1. **Akses Aplikasi**
 ```bash
@@ -263,7 +263,7 @@ Buka http://localhost:3000
 - Chart menunjukkan trend spending
 - Breakdown per kategori
 
-## 🔨 Development
+## Development
 
 ### Scripts Tersedia
 
@@ -304,7 +304,7 @@ npm run lint
    npm run lint
    ```
 
-## 🏗 Build & Deploy
+## Build & Deploy
 
 ### Build untuk Production
 ```bash
@@ -337,7 +337,7 @@ EXPOSE 3000
 CMD ["npm", "start"]
 ```
 
-## 🆘 Troubleshooting
+## Troubleshooting
 
 ### Error: "Cannot find module '@supabase/supabase-js'"
 ```bash
@@ -365,7 +365,7 @@ npm run dev
 - Verifikasi Supabase URL dan anon key
 - Check status Supabase service di status page
 
-## 🤝 Kontribusi
+## Kontribusi
 
 Kami welcome contributions! Berikut cara berkontribusi:
 
@@ -381,11 +381,11 @@ Kami welcome contributions! Berikut cara berkontribusi:
 - Write meaningful commit messages
 - Test fitur sebelum submit PR
 
-## 📄 License
+## License
 
 Project ini berada di bawah license [MIT](LICENSE).
 
-## 📞 Support & Contact
+## Support & Contact
 
 Untuk pertanyaan atau issues:
 - Buka GitHub Issues di repository ini
@@ -393,4 +393,4 @@ Untuk pertanyaan atau issues:
 
 ---
 
-**Made with ❤️ for better personal finance management**
+**Made with for better personal finance management**
