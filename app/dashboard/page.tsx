@@ -9,6 +9,7 @@ import dynamic from "next/dynamic";
 import { ArrowUpRight, ArrowDownRight, Plus, Bot, Hand } from "lucide-react";
 
 const ExpenseChart = dynamic(() => import("@/components/ExpenseChart"), { ssr: false });
+const CategoryPieChart = dynamic(() => import("@/components/CategoryPieChart"), { ssr: false });
 import { WalletIcon, CategoryIcon } from "@/lib/icons";
 import { useMemo, useState } from "react";
 import { LazyAddTransactionModal } from "@/components/transactions/LazyAddTransactionModal";
@@ -215,6 +216,8 @@ export default function DashboardPage() {
           </div>
 
           <ExpenseChart data={chartData} />
+
+          <CategoryPieChart transactions={thisMonthTx} />
 
           {/* Wallets */}
           <p style={{ fontSize: "13px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#666666", marginBottom: "12px" }}>

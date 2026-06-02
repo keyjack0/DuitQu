@@ -154,6 +154,9 @@ export default function TransactionsPage() {
                           {tx.description}
                         </p>
                         <p style={{ fontSize: "11px", color: "#666666" }}>{tx.category}</p>
+                        <p style={{ fontSize: "10px", color: "#555555", marginTop: "2px" }}>
+                          {new Date(tx.created_at || tx.date).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                        </p>
                       </div>
                       <p style={{ fontSize: "14px", fontWeight: 600, color: tx.type === "IN" ? "#22c55e" : "#f5f5f5", flexShrink: 0 }}>
                         {tx.type === "IN" ? "+" : "-"}{formatCurrency(tx.amount)}

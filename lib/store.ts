@@ -43,8 +43,9 @@ export const useAppStore = create<AppState>()(
       setLoading: (isLoading) => set({ isLoading }),
 
       addTransaction: (transaction) => {
+        const txWithTimestamp = { ...transaction, created_at: transaction.created_at || new Date().toISOString() };
         set((state) => ({
-          transactions: [transaction, ...state.transactions],
+          transactions: [txWithTimestamp, ...state.transactions],
         }));
         toast.success("Transaksi berhasil ditambahkan");
         getSupabaseClient()

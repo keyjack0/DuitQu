@@ -159,20 +159,21 @@ DATA KEUANGAN USER (bulan ini):
 
       const assistantText = data.text || "Maaf, ada kendala teknis.";
 
-      // Extract transaction JSON — handle code blocks, multi-line, nested objects
       let parsedTx: ParsedTransaction | null = null;
       let displayText = assistantText.replace(/```json\s*|```/g, "");
 
-      const jsonStart = displayText.indexOf('{"parsed_transaction"');
-      if (jsonStart !== -1) {
+      const txRegex = /\{["']?parsed_transaction["']?\s*:/;
+      const jsonMatch = displayText.match(txRegex);
+      if (jsonMatch) {
         let depth = 0;
-        let jsonEnd = jsonStart;
-        for (let i = jsonStart; i < displayText.length; i++) {
+        let jsonEnd = jsonMatch.index!;
+        for (let i = jsonMatch.index!; i < displayText.length; i++) {
           if (displayText[i] === "{") depth++;
           if (displayText[i] === "}") depth--;
           if (depth === 0) { jsonEnd = i + 1; break; }
         }
-        const jsonStr = displayText.slice(jsonStart, jsonEnd);
+        let jsonStr = displayText.slice(jsonMatch.index!, jsonEnd);
+        jsonStr = jsonStr.replace(/(\{)\s*['"]?(parsed_transaction)['"]?\s*:/, '{"parsed_transaction":');
         try {
           const parsed = JSON.parse(jsonStr);
           parsedTx = parsed.parsed_transaction;

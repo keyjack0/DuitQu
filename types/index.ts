@@ -27,6 +27,7 @@ export interface Transaction {
   description: string;
   date: string;
   wallet?: Wallet;
+  created_at?: string;
   to_wallet_id: string | null;
 }
 
