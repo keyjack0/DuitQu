@@ -38,6 +38,38 @@ const QUICK_PROMPTS = [
   "Apakah keuanganku aman?",
 ];
 
+function stripTransactionJson(text: string): { text: string; parsed: ParsedTransaction | null } {
+  let displayText = text.replace(/```json\s*|```/g, "");
+  let parsed: ParsedTransaction | null = null;
+
+  const txRegex = /\{["']?parsed_transaction["']?\s*:/;
+  const jsonMatch = displayText.match(txRegex);
+  if (jsonMatch) {
+    const jsonStart = jsonMatch.index!;
+    let depth = 0;
+    let jsonEnd = jsonStart;
+    for (let i = jsonStart; i < displayText.length; i++) {
+      if (displayText[i] === "{") depth++;
+      if (displayText[i] === "}") depth--;
+      if (depth === 0) { jsonEnd = i + 1; break; }
+    }
+    const rawJson = displayText.slice(jsonStart, jsonEnd);
+    const normalized = rawJson.replace(
+      /(\{)\s*['"]?(parsed_transaction)['"]?\s*:/,
+      '{"parsed_transaction":'
+    );
+    try {
+      const parsedJson = JSON.parse(normalized);
+      parsed = parsedJson.parsed_transaction;
+    } catch {
+      // JSON tak valid — tetap sembunyikan bloknya
+    }
+    displayText = (displayText.slice(0, jsonStart) + displayText.slice(jsonEnd)).trim();
+  }
+
+  return { text: displayText, parsed };
+}
+
 export default function AIAssistantPage() {
   const { user, wallets, transactions, budgets } = useAppStore();
   const [messages, setMessages] = useState<Message[]>([
@@ -95,11 +127,21 @@ DATA KEUANGAN USER (bulan ini):
         .order("created_at", { ascending: true });
       if (data && data.length > 0) {
         type ChatRow = { role: string; content: string; parsed_transaction: unknown };
-        setMessages((data as ChatRow[]).map((m) => ({
-          role: m.role as "user" | "assistant",
-          content: m.content,
-          parsedTransaction: m.parsed_transaction as ParsedTransaction | undefined,
-        })));
+        setMessages((data as ChatRow[]).map((m) => {
+          if (m.role === "assistant") {
+            const cleaned = stripTransactionJson(m.content);
+            return {
+              role: "assistant" as const,
+              content: cleaned.text,
+              parsedTransaction: cleaned.parsed ?? (m.parsed_transaction as ParsedTransaction | undefined),
+            };
+          }
+          return {
+            role: "user" as const,
+            content: m.content,
+            parsedTransaction: undefined,
+          };
+        }));
       }
     })();
   }, [user]);
@@ -159,27 +201,7 @@ DATA KEUANGAN USER (bulan ini):
 
       const assistantText = data.text || "Maaf, ada kendala teknis.";
 
-      let parsedTx: ParsedTransaction | null = null;
-      let displayText = assistantText.replace(/```json\s*|```/g, "");
-
-      const txRegex = /\{["']?parsed_transaction["']?\s*:/;
-      const jsonMatch = displayText.match(txRegex);
-      if (jsonMatch) {
-        let depth = 0;
-        let jsonEnd = jsonMatch.index!;
-        for (let i = jsonMatch.index!; i < displayText.length; i++) {
-          if (displayText[i] === "{") depth++;
-          if (displayText[i] === "}") depth--;
-          if (depth === 0) { jsonEnd = i + 1; break; }
-        }
-        let jsonStr = displayText.slice(jsonMatch.index!, jsonEnd);
-        jsonStr = jsonStr.replace(/(\{)\s*['"]?(parsed_transaction)['"]?\s*:/, '{"parsed_transaction":');
-        try {
-          const parsed = JSON.parse(jsonStr);
-          parsedTx = parsed.parsed_transaction;
-          displayText = displayText.replace(jsonStr, "").trim();
-        } catch {}
-      }
+      const { text: displayText, parsed: parsedTx } = stripTransactionJson(assistantText);
 
       const assistantMsg = { role: "assistant" as const, content: displayText, parsedTransaction: parsedTx || undefined };
       setMessages((prev) => [...prev, assistantMsg]);
