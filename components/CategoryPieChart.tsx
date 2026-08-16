@@ -24,10 +24,10 @@ const CATEGORY_COLORS: Record<string, string> = {
   "Tabungan": "#E7E9ED",
   "Gaji & Penghasilan": "#36A2EB",
   "Hadiah": "#FF6384",
-  "Lainnya": "#666666",
+  "Lainnya": "var(--text-muted)",
 };
 
-const DEFAULT_COLOR = "#666666";
+const DEFAULT_COLOR = "var(--text-muted)";
 
 function CustomTooltip({ active, payload }: any) {
   if (active && payload && payload.length) {
@@ -35,20 +35,20 @@ function CustomTooltip({ active, payload }: any) {
     return (
       <div
         style={{
-          background: "#161616",
-          border: "1px solid #2a2a2a",
+          background: "var(--bg-card)",
+          border: "1px solid var(--border)",
           borderRadius: "8px",
           padding: "8px 12px",
           fontSize: "12px",
         }}
       >
-        <p style={{ color: "#f5f5f5", fontWeight: 600, marginBottom: "4px" }}>
+        <p style={{ color: "var(--text-primary)", fontWeight: 600, marginBottom: "4px" }}>
           {data.name}
         </p>
-        <p style={{ color: "#22c55e", fontWeight: 600 }}>
+        <p style={{ color: "var(--green)", fontWeight: 600 }}>
           {formatCurrency(data.value)}
         </p>
-        <p style={{ color: "#666666", marginTop: "2px" }}>
+        <p style={{ color: "var(--text-muted)", marginTop: "2px" }}>
           {data.percentage}%
         </p>
       </div>
@@ -85,8 +85,8 @@ export default function CategoryPieChart({
   return (
     <div
       style={{
-        background: "#161616",
-        border: "1px solid #2a2a2a",
+        background: "var(--bg-card)",
+        border: "1px solid var(--border)",
         borderRadius: "12px",
         padding: "18px",
         marginBottom: "20px",
@@ -100,12 +100,12 @@ export default function CategoryPieChart({
           marginBottom: "16px",
         }}
       >
-        <PieChartIcon size={14} color="#22c55e" />
+        <PieChartIcon size={14} color="var(--green)" />
         <p
           style={{
             fontSize: "13px",
             fontWeight: 600,
-            color: "#a0a0a0",
+            color: "var(--text-secondary)",
             letterSpacing: "0.05em",
             textTransform: "uppercase",
           }}
@@ -115,7 +115,7 @@ export default function CategoryPieChart({
       </div>
 
       {data.length === 0 ? (
-        <p style={{ textAlign: "center", color: "#555555", fontSize: "13px", padding: "20px 0" }}>
+        <p style={{ textAlign: "center", color: "var(--text-faint)", fontSize: "13px", padding: "20px 0" }}>
           Belum ada pengeluaran bulan ini
         </p>
       ) : (
@@ -166,7 +166,7 @@ export default function CategoryPieChart({
                   style={{
                     flex: 1,
                     fontSize: "11px",
-                    color: "#a0a0a0",
+                    color: "var(--text-secondary)",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                     whiteSpace: "nowrap",
@@ -174,10 +174,10 @@ export default function CategoryPieChart({
                 >
                   {item.name}
                 </p>
-                <p style={{ fontSize: "11px", color: "#555555", width: "36px", textAlign: "right" }}>
+                <p style={{ fontSize: "11px", color: "var(--text-faint)", width: "36px", textAlign: "right" }}>
                   {item.percentage}%
                 </p>
-                <p style={{ fontSize: "11px", color: "#f5f5f5", fontWeight: 600, width: "80px", textAlign: "right" }}>
+                <p style={{ fontSize: "11px", color: "var(--text-primary)", fontWeight: 600, width: "80px", textAlign: "right" }}>
                   {formatCurrency(item.value)}
                 </p>
               </div>

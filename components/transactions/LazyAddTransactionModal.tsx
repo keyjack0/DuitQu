@@ -19,9 +19,9 @@ function AddTransactionModalFallback() {
       <div
         style={{
           width: "100%",
-          background: "#111111",
+          background: "var(--bg-secondary)",
           borderRadius: "20px 20px 0 0",
-          border: "1px solid #2a2a2a",
+          border: "1px solid var(--border)",
           borderBottom: "none",
           padding: "24px 20px 40px",
         }}
@@ -31,7 +31,7 @@ function AddTransactionModalFallback() {
             width: "42%",
             height: "18px",
             borderRadius: "6px",
-            background: "#1e1e1e",
+            background: "var(--bg-hover)",
             marginBottom: "24px",
           }}
         />
@@ -41,8 +41,8 @@ function AddTransactionModalFallback() {
             style={{
               height,
               borderRadius: "8px",
-              background: "#161616",
-              border: "1px solid #2a2a2a",
+              background: "var(--bg-card)",
+              border: "1px solid var(--border)",
               marginBottom: "14px",
             }}
           />

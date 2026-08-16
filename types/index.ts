@@ -12,6 +12,7 @@ export interface Wallet {
   user_id: string;
   name: string;
   balance: number;
+  initial_balance?: number;
   icon: string | null;
   color: string | null;
   created_at: string;

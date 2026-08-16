@@ -1,8 +1,8 @@
 "use client";
 
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   ResponsiveContainer,
@@ -11,19 +11,25 @@ import {
 import { formatCurrency } from "@/lib/utils";
 import { TrendingUp } from "lucide-react";
 
-function CustomTooltip({ active, payload }: any) {
+function CustomTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: Array<{ value?: number }>;
+}) {
   if (active && payload && payload.length) {
     return (
       <div
         style={{
-          background: "#161616",
-          border: "1px solid #2a2a2a",
+          background: "var(--bg-card)",
+          border: "1px solid var(--border)",
           borderRadius: "8px",
           padding: "8px 12px",
           fontSize: "12px",
         }}
       >
-        <p style={{ color: "#22c55e", fontWeight: 600 }}>
+        <p style={{ color: "var(--green)", fontWeight: 600 }}>
           {formatCurrency(payload[0]?.value || 0)}
         </p>
       </div>
@@ -40,8 +46,8 @@ export default function ExpenseChart({
   return (
     <div
       style={{
-        background: "#161616",
-        border: "1px solid #2a2a2a",
+        background: "var(--bg-card)",
+        border: "1px solid var(--border)",
         borderRadius: "12px",
         padding: "18px",
         marginBottom: "20px",
@@ -55,12 +61,12 @@ export default function ExpenseChart({
           marginBottom: "16px",
         }}
       >
-        <TrendingUp size={14} color="#22c55e" />
+        <TrendingUp size={14} color="var(--green)" />
         <p
           style={{
             fontSize: "13px",
             fontWeight: 600,
-            color: "#a0a0a0",
+            color: "var(--text-secondary)",
             letterSpacing: "0.05em",
             textTransform: "uppercase",
           }}
@@ -68,20 +74,29 @@ export default function ExpenseChart({
           Pengeluaran 7 Hari Terakhir
         </p>
       </div>
+      <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
+        <defs>
+          <linearGradient id="expenseArea" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--green)" stopOpacity={0.35} />
+            <stop offset="100%" stopColor="var(--green)" stopOpacity={0} />
+          </linearGradient>
+        </defs>
+      </svg>
       <ResponsiveContainer width="100%" height={120}>
-        <LineChart data={data}>
+        <AreaChart data={data}>
           <XAxis dataKey="day" axisLine={false} tickLine={false} />
           <YAxis hide />
           <Tooltip content={<CustomTooltip />} />
-          <Line
+          <Area
             type="monotone"
             dataKey="amount"
-            stroke="#22c55e"
+            stroke="var(--green)"
             strokeWidth={2}
-            dot={{ fill: "#22c55e", r: 3, strokeWidth: 0 }}
-            activeDot={{ r: 5, fill: "#22c55e", strokeWidth: 0 }}
+            fill="url(#expenseArea)"
+            dot={{ fill: "var(--green)", r: 3, strokeWidth: 0 }}
+            activeDot={{ r: 5, fill: "var(--green)", strokeWidth: 0 }}
           />
-        </LineChart>
+        </AreaChart>
       </ResponsiveContainer>
     </div>
   );

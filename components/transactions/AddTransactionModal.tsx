@@ -75,9 +75,9 @@ export function AddTransactionModal({ onClose, prefill }: AddTransactionModalPro
       <div
         style={{
           width: "100%",
-          background: "#111111",
+          background: "var(--bg-secondary)",
           borderRadius: "20px 20px 0 0",
-          border: "1px solid #2a2a2a",
+          border: "1px solid var(--border)",
           borderBottom: "none",
           padding: "24px 20px 40px",
           animation: "slideUp 0.3s ease",
@@ -85,7 +85,7 @@ export function AddTransactionModal({ onClose, prefill }: AddTransactionModalPro
       >
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-          <h2 style={{ fontSize: "17px", fontWeight: 700, color: "#f5f5f5" }}>
+          <h2 style={{ fontSize: "17px", fontWeight: 700, color: "var(--text-primary)" }}>
             Tambah Transaksi
           </h2>
           <button
@@ -94,13 +94,13 @@ export function AddTransactionModal({ onClose, prefill }: AddTransactionModalPro
               width: "32px",
               height: "32px",
               borderRadius: "50%",
-              background: "#1e1e1e",
-              border: "1px solid #2a2a2a",
+              background: "var(--bg-hover)",
+              border: "1px solid var(--border)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               cursor: "pointer",
-              color: "#a0a0a0",
+              color: "var(--text-secondary)",
             }}
           >
             <X size={15} />
@@ -111,11 +111,11 @@ export function AddTransactionModal({ onClose, prefill }: AddTransactionModalPro
         <div
           style={{
             display: "flex",
-            background: "#161616",
+            background: "var(--bg-card)",
             borderRadius: "10px",
             padding: "4px",
             marginBottom: "20px",
-            border: "1px solid #2a2a2a",
+            border: "1px solid var(--border)",
           }}
         >
           {(["OUT", "IN"] as const).map((t) => (
@@ -130,13 +130,13 @@ export function AddTransactionModal({ onClose, prefill }: AddTransactionModalPro
                 background:
                   type === t
                     ? t === "IN"
-                      ? "#22c55e"
-                      : "#f5f5f5"
+                      ? "var(--green)"
+                      : "var(--text-primary)"
                     : "transparent",
                 color:
                   type === t
-                    ? "#000"
-                    : "#666666",
+                    ? "var(--on-accent)"
+                    : "var(--text-muted)",
                 fontWeight: 600,
                 fontSize: "13px",
                 cursor: "pointer",
@@ -160,9 +160,9 @@ export function AddTransactionModal({ onClose, prefill }: AddTransactionModalPro
 
         {/* Amount */}
         <div style={{ marginBottom: "14px" }}>
-          <label style={{ display: "block", fontSize: "12px", color: "#666666", marginBottom: "6px" }}>Nominal</label>
+          <label style={{ display: "block", fontSize: "12px", color: "var(--text-muted)", marginBottom: "6px" }}>Nominal</label>
           <div style={{ position: "relative" }}>
-            <span style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "#666666", fontSize: "14px" }}>Rp</span>
+            <span style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", fontSize: "14px" }}>Rp</span>
             <input
               type="text"
               inputMode="numeric"
@@ -171,11 +171,11 @@ export function AddTransactionModal({ onClose, prefill }: AddTransactionModalPro
               onChange={(e) => setAmount(formatAmount(e.target.value))}
               style={{
                 width: "100%",
-                background: "#161616",
-                border: "1px solid #2a2a2a",
+                background: "var(--bg-card)",
+                border: "1px solid var(--border)",
                 borderRadius: "8px",
                 padding: "12px 14px 12px 40px",
-                color: "#f5f5f5",
+                color: "var(--text-primary)",
                 fontSize: "18px",
                 fontWeight: 700,
                 outline: "none",
@@ -186,7 +186,7 @@ export function AddTransactionModal({ onClose, prefill }: AddTransactionModalPro
 
         {/* Description */}
         <div style={{ marginBottom: "14px" }}>
-          <label style={{ display: "block", fontSize: "12px", color: "#666666", marginBottom: "6px" }}>Deskripsi</label>
+          <label style={{ display: "block", fontSize: "12px", color: "var(--text-muted)", marginBottom: "6px" }}>Deskripsi</label>
           <input
             type="text"
             placeholder="Contoh: Makan siang, Gaji, dll."
@@ -194,11 +194,11 @@ export function AddTransactionModal({ onClose, prefill }: AddTransactionModalPro
             onChange={(e) => setDescription(e.target.value)}
             style={{
               width: "100%",
-              background: "#161616",
-              border: "1px solid #2a2a2a",
+              background: "var(--bg-card)",
+              border: "1px solid var(--border)",
               borderRadius: "8px",
               padding: "10px 14px",
-              color: "#f5f5f5",
+              color: "var(--text-primary)",
               fontSize: "14px",
               outline: "none",
             }}
@@ -207,23 +207,23 @@ export function AddTransactionModal({ onClose, prefill }: AddTransactionModalPro
 
         {/* Category */}
         <div style={{ marginBottom: "14px" }}>
-          <label style={{ display: "block", fontSize: "12px", color: "#666666", marginBottom: "6px" }}>Kategori</label>
+          <label style={{ display: "block", fontSize: "12px", color: "var(--text-muted)", marginBottom: "6px" }}>Kategori</label>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             style={{
               width: "100%",
-              background: "#161616",
-              border: "1px solid #2a2a2a",
+              background: "var(--bg-card)",
+              border: "1px solid var(--border)",
               borderRadius: "8px",
               padding: "10px 14px",
-              color: "#f5f5f5",
+              color: "var(--text-primary)",
               fontSize: "14px",
               outline: "none",
             }}
           >
             {CATEGORIES.map((cat) => (
-              <option key={cat} value={cat} style={{ background: "#161616" }}>
+              <option key={cat} value={cat} style={{ background: "var(--bg-card)" }}>
                 {cat}
               </option>
             ))}
@@ -232,23 +232,23 @@ export function AddTransactionModal({ onClose, prefill }: AddTransactionModalPro
 
         {/* Wallet */}
         <div style={{ marginBottom: "14px" }}>
-          <label style={{ display: "block", fontSize: "12px", color: "#666666", marginBottom: "6px" }}>Dari Dompet</label>
+          <label style={{ display: "block", fontSize: "12px", color: "var(--text-muted)", marginBottom: "6px" }}>Dari Dompet</label>
           <select
             value={walletId}
             onChange={(e) => setWalletId(e.target.value)}
             style={{
               width: "100%",
-              background: "#161616",
-              border: "1px solid #2a2a2a",
+              background: "var(--bg-card)",
+              border: "1px solid var(--border)",
               borderRadius: "8px",
               padding: "10px 14px",
-              color: "#f5f5f5",
+              color: "var(--text-primary)",
               fontSize: "14px",
               outline: "none",
             }}
           >
             {wallets.map((w) => (
-              <option key={w.id} value={w.id} style={{ background: "#161616" }}>
+              <option key={w.id} value={w.id} style={{ background: "var(--bg-card)" }}>
                 {w.name}
               </option>
             ))}
@@ -257,21 +257,20 @@ export function AddTransactionModal({ onClose, prefill }: AddTransactionModalPro
 
         {/* Date */}
         <div style={{ marginBottom: "24px" }}>
-          <label style={{ display: "block", fontSize: "12px", color: "#666666", marginBottom: "6px" }}>Tanggal</label>
+          <label style={{ display: "block", fontSize: "12px", color: "var(--text-muted)", marginBottom: "6px" }}>Tanggal</label>
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
             style={{
               width: "100%",
-              background: "#161616",
-              border: "1px solid #2a2a2a",
+              background: "var(--bg-card)",
+              border: "1px solid var(--border)",
               borderRadius: "8px",
               padding: "10px 14px",
-              color: "#f5f5f5",
+              color: "var(--text-primary)",
               fontSize: "14px",
               outline: "none",
-              colorScheme: "dark",
             }}
           />
         </div>
@@ -283,8 +282,8 @@ export function AddTransactionModal({ onClose, prefill }: AddTransactionModalPro
           style={{
             width: "100%",
             padding: "14px",
-            background: amount && walletId && !submitting ? "#22c55e" : "#2a2a2a",
-            color: amount && walletId && !submitting ? "#000" : "#666666",
+            background: amount && walletId && !submitting ? "var(--green)" : "var(--border)",
+            color: amount && walletId && !submitting ? "var(--on-accent)" : "var(--text-muted)",
             border: "none",
             borderRadius: "10px",
             fontWeight: 700,

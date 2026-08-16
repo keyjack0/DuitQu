@@ -6,8 +6,11 @@ import { getSupabaseClient } from "@/lib/supabase";
 import type { UserRow, WalletRow, TransactionRow, BudgetRow } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 
+const SYNC_TTL_MS = 60_000;
+const TRANSACTIONS_PAGE_SIZE = 300;
+
 export function DataInitializer() {
-  const { setUser, setWallets, setTransactions, setBudgets, setLoading } = useAppStore();
+  const { syncMeta, setUser, setWallets, setTransactions, setBudgets, setLoading, setSyncMeta } = useAppStore();
   const router = useRouter();
 
   useEffect(() => {
@@ -21,17 +24,20 @@ export function DataInitializer() {
         return;
       }
 
-      setLoading(true);
-
-      // Set user from auth session immediately
-      setUser({
+      const sessionFallback = {
         id: session.user.id,
         email: session.user.email ?? "",
         name: session.user.user_metadata?.name ?? session.user.email?.split("@")[0] ?? "User",
         created_at: session.user.created_at,
-      });
+      };
 
-      // Try loading user profile (may fail if table doesn't exist)
+      // Jangan timpa user tersimpan (nama terbaru) dengan metadata sesi yang mungkin basi
+      const currentUser = useAppStore.getState().user;
+      if (!currentUser || currentUser.id !== session.user.id) {
+        setUser(sessionFallback);
+      }
+
+      // Profil (nama/email) SELALU diambil — sumber nama yang otoritatif
       try {
         const userResult = await getSupabaseClient()
           .from("users")
@@ -51,6 +57,15 @@ export function DataInitializer() {
         // Table may not exist yet — use auth fallback
       }
 
+      const shouldSync =
+        !syncMeta ||
+        syncMeta.userId !== session.user.id ||
+        Date.now() - syncMeta.at > SYNC_TTL_MS;
+
+      if (!shouldSync) return;
+
+      setLoading(true);
+
       // Load wallets
       try {
         const walletsResult = await getSupabaseClient()
@@ -63,13 +78,14 @@ export function DataInitializer() {
         // Table may not exist
       }
 
-      // Load transactions
+      // Load transactions (recent page only)
       try {
         const txResult = await getSupabaseClient()
           .from("transactions")
           .select("*")
           .eq("user_id", session.user.id)
-          .order("date", { ascending: false });
+          .order("date", { ascending: false })
+          .limit(TRANSACTIONS_PAGE_SIZE);
         const transactions = txResult.data as TransactionRow[] | null;
         if (transactions) setTransactions(transactions);
       } catch {
@@ -88,6 +104,7 @@ export function DataInitializer() {
         // Table may not exist
       }
 
+      setSyncMeta({ userId: session.user.id, at: Date.now() });
       setLoading(false);
     };
 
@@ -101,6 +118,7 @@ export function DataInitializer() {
         setWallets([]);
         setTransactions([]);
         setBudgets([]);
+        setSyncMeta(null);
         router.push("/login");
       }
     });
@@ -108,7 +126,16 @@ export function DataInitializer() {
     return () => {
       subscription?.unsubscribe();
     };
-  }, []);
+  }, [
+    router,
+    syncMeta,
+    setUser,
+    setWallets,
+    setTransactions,
+    setBudgets,
+    setLoading,
+    setSyncMeta,
+  ]);
 
   return null;
 }

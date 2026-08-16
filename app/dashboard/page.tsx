@@ -6,17 +6,19 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { Transaction } from "@/types";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { ArrowUpRight, ArrowDownRight, Plus, Bot, Hand } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, Plus, Bot, Hand, Settings, Eye, EyeOff } from "lucide-react";
 
 const ExpenseChart = dynamic(() => import("@/components/ExpenseChart"), { ssr: false });
 const CategoryPieChart = dynamic(() => import("@/components/CategoryPieChart"), { ssr: false });
 import { WalletIcon, CategoryIcon } from "@/lib/icons";
 import { useMemo, useState } from "react";
 import { LazyAddTransactionModal } from "@/components/transactions/LazyAddTransactionModal";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function DashboardPage() {
   const { user, wallets, transactions, budgets } = useAppStore();
   const [showAddModal, setShowAddModal] = useState(false);
+  const [balanceVisible, setBalanceVisible] = useState(false);
 
   const totalBalance = useMemo(
     () => wallets.reduce((sum, w) => sum + w.balance, 0),
@@ -66,42 +68,47 @@ export default function DashboardPage() {
         <div
           style={{
             padding: "56px 20px 24px",
-            background: "linear-gradient(180deg, #111111 0%, #0a0a0a 100%)",
+            background: "linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%)",
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "24px" }}>
             <div>
-              <p style={{ color: "#666666", fontSize: "13px", marginBottom: "4px" }}>
+              <p style={{ color: "var(--text-muted)", fontSize: "13px", marginBottom: "4px" }}>
                 Halo, {user?.name?.split(" ")[0] || "Pengguna"} <Hand size={14} style={{ display: "inline" }} />
               </p>
-              <p style={{ color: "#a0a0a0", fontSize: "12px" }}>
+              <p style={{ color: "var(--text-secondary)", fontSize: "12px" }}>
                 {new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long" })}
               </p>
             </div>
-            <div
-              style={{
-                width: "40px",
-                height: "40px",
-                borderRadius: "50%",
-                background: "rgba(34, 197, 94, 0.15)",
-                border: "1px solid rgba(34, 197, 94, 0.3)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#22c55e",
-                fontWeight: 700,
-                fontSize: "15px",
-              }}
-            >
-              {user?.name?.charAt(0) || "U"}
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <ThemeToggle />
+              <Link
+                href="/settings"
+                aria-label="Pengaturan"
+                title="Pengaturan"
+                style={{
+                  width: "40px",
+                  height: "40px",
+                  borderRadius: "50%",
+                  background: "var(--green-dim)",
+                  border: "1px solid var(--green-border)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "var(--green)",
+                  cursor: "pointer",
+                }}
+              >
+                <Settings size={18} />
+              </Link>
             </div>
           </div>
 
           {/* Balance Card */}
           <div
             style={{
-              background: "linear-gradient(135deg, #161616 0%, #1a1a1a 100%)",
-              border: "1px solid #2a2a2a",
+              background: "linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-2) 100%)",
+              border: "1px solid var(--border)",
               borderRadius: "16px",
               padding: "24px",
               boxShadow: "0 4px 30px rgba(34, 197, 94, 0.08)",
@@ -121,11 +128,34 @@ export default function DashboardPage() {
                 background: "rgba(34, 197, 94, 0.04)",
               }}
             />
-            <p style={{ color: "#666666", fontSize: "12px", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "8px" }}>
-              Total Saldo
-            </p>
-            <p style={{ fontSize: "32px", fontWeight: 700, color: "#f5f5f5", marginBottom: "20px", letterSpacing: "-0.02em" }}>
-              {formatCurrency(totalBalance)}
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+              <p style={{ color: "var(--text-muted)", fontSize: "12px", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                Total Saldo
+              </p>
+              <button
+                type="button"
+                onClick={() => setBalanceVisible((v) => !v)}
+                aria-label={balanceVisible ? "Sembunyikan saldo" : "Tampilkan saldo"}
+                title={balanceVisible ? "Sembunyikan saldo" : "Tampilkan saldo"}
+                style={{
+                  width: "24px",
+                  height: "24px",
+                  borderRadius: "50%",
+                  border: "none",
+                  background: "transparent",
+                  color: "var(--text-muted)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  padding: 0,
+                }}
+              >
+                {balanceVisible ? <EyeOff size={14} /> : <Eye size={14} />}
+              </button>
+            </div>
+            <p style={{ fontSize: "32px", fontWeight: 700, color: "var(--text-primary)", marginBottom: "20px", letterSpacing: "-0.02em" }}>
+              {balanceVisible ? formatCurrency(totalBalance) : "Rp ••••••••"}
             </p>
             <div style={{ display: "flex", gap: "20px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -140,11 +170,11 @@ export default function DashboardPage() {
                     justifyContent: "center",
                   }}
                 >
-                  <ArrowUpRight size={14} color="#22c55e" />
+                  <ArrowUpRight size={14} color="var(--green)" />
                 </div>
                 <div>
-                  <p style={{ fontSize: "10px", color: "#666666" }}>Pemasukan</p>
-                  <p style={{ fontSize: "13px", fontWeight: 600, color: "#22c55e" }}>{formatCurrency(totalIncome)}</p>
+                  <p style={{ fontSize: "10px", color: "var(--text-muted)" }}>Pemasukan</p>
+                  <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--green)" }}>{formatCurrency(totalIncome)}</p>
                 </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -153,17 +183,17 @@ export default function DashboardPage() {
                     width: "28px",
                     height: "28px",
                     borderRadius: "50%",
-                    background: "rgba(255,255,255,0.06)",
+                    background: "var(--overlay)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
-                  <ArrowDownRight size={14} color="#a0a0a0" />
+                  <ArrowDownRight size={14} color="var(--text-secondary)" />
                 </div>
                 <div>
-                  <p style={{ fontSize: "10px", color: "#666666" }}>Pengeluaran</p>
-                  <p style={{ fontSize: "13px", fontWeight: 600, color: "#f5f5f5" }}>{formatCurrency(totalExpense)}</p>
+                  <p style={{ fontSize: "10px", color: "var(--text-muted)" }}>Pengeluaran</p>
+                  <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)" }}>{formatCurrency(totalExpense)}</p>
                 </div>
               </div>
             </div>
@@ -177,8 +207,8 @@ export default function DashboardPage() {
               onClick={() => setShowAddModal(true)}
               style={{
                 flex: 1,
-                background: "#22c55e",
-                color: "#000",
+                background: "var(--green)",
+                color: "var(--on-accent)",
                 border: "none",
                 borderRadius: "10px",
                 padding: "12px",
@@ -198,19 +228,19 @@ export default function DashboardPage() {
               href="/ai-assistant"
               style={{
                 padding: "12px 16px",
-                background: "#161616",
-                border: "1px solid #2a2a2a",
+                background: "var(--bg-card)",
+                border: "1px solid var(--border)",
                 borderRadius: "10px",
                 display: "flex",
                 alignItems: "center",
                 gap: "8px",
-                color: "#a0a0a0",
+                color: "var(--text-secondary)",
                 textDecoration: "none",
                 fontSize: "14px",
                 fontWeight: 500,
               }}
             >
-              <Bot size={16} color="#22c55e" />
+              <Bot size={16} color="var(--green)" />
               Tanya AI
             </Link>
           </div>
@@ -220,7 +250,7 @@ export default function DashboardPage() {
           <CategoryPieChart transactions={thisMonthTx} />
 
           {/* Wallets */}
-          <p style={{ fontSize: "13px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#666666", marginBottom: "12px" }}>
+          <p style={{ fontSize: "13px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: "12px" }}>
             Dompet Saya
           </p>
           <div style={{ display: "flex", gap: "10px", marginBottom: "24px", overflowX: "auto", paddingBottom: "4px" }}>
@@ -230,8 +260,8 @@ export default function DashboardPage() {
                 href="/wallets"
                 style={{
                   minWidth: "140px",
-                  background: "#161616",
-                  border: "1px solid #2a2a2a",
+                  background: "var(--bg-card)",
+                  border: "1px solid var(--border)",
                   borderRadius: "12px",
                   padding: "14px",
                   textDecoration: "none",
@@ -240,18 +270,18 @@ export default function DashboardPage() {
                 <p style={{ marginBottom: "8px" }}>
                   <WalletIcon icon={wallet.icon} size={22} />
                 </p>
-                <p style={{ fontSize: "11px", color: "#666666", marginBottom: "4px" }}>{wallet.name}</p>
-                <p style={{ fontSize: "14px", fontWeight: 700, color: "#f5f5f5" }}>{formatCurrency(wallet.balance)}</p>
+                <p style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: "4px" }}>{wallet.name}</p>
+                <p style={{ fontSize: "14px", fontWeight: 700, color: "var(--text-primary)" }}>{formatCurrency(wallet.balance)}</p>
               </Link>
             ))}
           </div>
 
           {/* Recent Transactions */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-            <p style={{ fontSize: "13px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#666666" }}>
+            <p style={{ fontSize: "13px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>
               Transaksi Terbaru
             </p>
-            <Link href="/transactions" style={{ fontSize: "12px", color: "#22c55e", textDecoration: "none" }}>
+            <Link href="/transactions" style={{ fontSize: "12px", color: "var(--green)", textDecoration: "none" }}>
               Lihat semua
             </Link>
           </div>
@@ -266,7 +296,8 @@ export default function DashboardPage() {
       {showAddModal && (
         <LazyAddTransactionModal onClose={() => setShowAddModal(false)} />
       )}
-    </AppLayout>
+
+      </AppLayout>
   );
 }
 
@@ -279,8 +310,8 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
         display: "flex",
         alignItems: "center",
         gap: "12px",
-        background: "#161616",
-        border: "1px solid #2a2a2a",
+        background: "var(--bg-card)",
+        border: "1px solid var(--border)",
         borderRadius: "10px",
         padding: "12px 14px",
       }}
@@ -290,7 +321,7 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
           width: "36px",
           height: "36px",
           borderRadius: "10px",
-          background: isIncome ? "rgba(34, 197, 94, 0.12)" : "rgba(255,255,255,0.04)",
+          background: isIncome ? "rgba(34, 197, 94, 0.12)" : "var(--overlay-soft)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -300,14 +331,14 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
         <CategoryIcon category={transaction.category} size={16} />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: "13px", fontWeight: 500, color: "#f5f5f5", marginBottom: "2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <p style={{ fontSize: "13px", fontWeight: 500, color: "var(--text-primary)", marginBottom: "2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {transaction.description}
         </p>
-        <p style={{ fontSize: "11px", color: "#666666" }}>
+        <p style={{ fontSize: "11px", color: "var(--text-muted)" }}>
           {transaction.category} · {new Date(transaction.date).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}
         </p>
       </div>
-      <p style={{ fontSize: "14px", fontWeight: 600, color: isIncome ? "#22c55e" : "#f5f5f5", flexShrink: 0 }}>
+      <p style={{ fontSize: "14px", fontWeight: 600, color: isIncome ? "var(--green)" : "var(--text-primary)", flexShrink: 0 }}>
         {isIncome ? "+" : "-"}{formatCurrency(transaction.amount)}
       </p>
     </div>

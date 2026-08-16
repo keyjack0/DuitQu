@@ -10,12 +10,14 @@ interface AppState {
   transactions: Transaction[];
   budgets: Budget[];
   isLoading: boolean;
+  syncMeta: { userId: string; at: number } | null;
 
   setUser: (user: User | null) => void;
   setWallets: (wallets: Wallet[]) => void;
   setTransactions: (transactions: Transaction[]) => void;
   setBudgets: (budgets: Budget[]) => void;
   setLoading: (loading: boolean) => void;
+  setSyncMeta: (meta: { userId: string; at: number } | null) => void;
 
   addTransaction: (transaction: Transaction) => void;
   addWallet: (wallet: Wallet) => void;
@@ -25,22 +27,35 @@ interface AppState {
   updateBudget: (id: string, updates: Partial<Budget>) => void;
   deleteBudget: (id: string) => void;
   deleteTransaction: (id: string) => void;
+  fetchMoreTransactions: (userId: string, offset: number, limit: number) => Promise<number>;
+  signOut: () => Promise<void>;
 }
 
 export const useAppStore = create<AppState>()(
   persist<AppState>(
-    (set) => ({
+    (set) => {
+      const refreshWallets = async (userId: string) => {
+        const { data } = await getSupabaseClient()
+          .from("wallets")
+          .select("*")
+          .eq("user_id", userId);
+        if (data) set({ wallets: data as Wallet[] });
+      };
+
+      return {
       user: null,
       wallets: [],
       transactions: [],
       budgets: [],
       isLoading: false,
+      syncMeta: null,
 
       setUser: (user) => set({ user }),
       setWallets: (wallets) => set({ wallets }),
       setTransactions: (transactions) => set({ transactions }),
       setBudgets: (budgets) => set({ budgets }),
       setLoading: (isLoading) => set({ isLoading }),
+      setSyncMeta: (syncMeta) => set({ syncMeta }),
 
       addTransaction: (transaction) => {
         const txWithTimestamp = { ...transaction, created_at: transaction.created_at || new Date().toISOString() };
@@ -67,6 +82,8 @@ export const useAppStore = create<AppState>()(
                 transactions: state.transactions.filter((t) => t.id !== transaction.id),
               }));
               toast.error("Gagal menambah transaksi");
+            } else {
+              refreshWallets(transaction.user_id);
             }
           });
       },
@@ -83,6 +100,7 @@ export const useAppStore = create<AppState>()(
             user_id: wallet.user_id,
             name: wallet.name,
             balance: wallet.balance,
+            initial_balance: wallet.initial_balance ?? wallet.balance,
             icon: wallet.icon ?? null,
             color: wallet.color ?? null,
           })
@@ -97,6 +115,7 @@ export const useAppStore = create<AppState>()(
       },
 
       updateWallet: (id, updates) => {
+        const userId = useAppStore.getState().user?.id;
         set((state) => ({
           wallets: state.wallets.map((w) => (w.id === id ? { ...w, ...updates } : w)),
         }));
@@ -105,7 +124,7 @@ export const useAppStore = create<AppState>()(
           .from("wallets")
           .update({
             name: updates.name,
-            balance: updates.balance,
+            initial_balance: typeof updates.balance === "number" ? updates.balance : undefined,
             icon: updates.icon ?? null,
             color: updates.color ?? null,
           })
@@ -125,6 +144,8 @@ export const useAppStore = create<AppState>()(
                     }));
                   }
                 });
+            } else if (userId) {
+              refreshWallets(userId);
             }
           });
       },
@@ -215,6 +236,7 @@ export const useAppStore = create<AppState>()(
 
       deleteTransaction: (id) => {
         const prev = useAppStore.getState().transactions;
+        const userId = useAppStore.getState().user?.id;
         set((state) => ({
           transactions: state.transactions.filter((t) => t.id !== id),
         }));
@@ -227,12 +249,38 @@ export const useAppStore = create<AppState>()(
             if (error) {
               set({ transactions: prev });
               toast.error("Gagal menghapus transaksi");
+            } else if (userId) {
+              refreshWallets(userId);
             }
           });
       },
-    }),
-    {
-      name: "duitqu-storage",
-    }
+
+      fetchMoreTransactions: async (userId, offset, limit) => {
+        const { data, error } = await getSupabaseClient()
+          .from("transactions")
+          .select("*")
+          .eq("user_id", userId)
+          .order("date", { ascending: false })
+          .range(offset, offset + limit - 1);
+        if (error || !data) return 0;
+        const rows = data as Transaction[];
+        if (rows.length === 0) return 0;
+        const existing = new Set(useAppStore.getState().transactions.map((t) => t.id));
+        const newRows = rows.filter((t) => !existing.has(t.id));
+        if (newRows.length > 0) {
+          set((state) => ({
+            transactions: [...state.transactions, ...newRows],
+          }));
+        }
+        return rows.length;
+      },
+
+      signOut: async () => {
+        await getSupabaseClient().auth.signOut();
+        useAppStore.persist.clearStorage();
+      },
+      };
+    },
+    { name: "duitqu-storage" }
   )
 );

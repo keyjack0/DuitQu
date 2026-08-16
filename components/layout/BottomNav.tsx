@@ -28,9 +28,9 @@ export function BottomNav() {
         bottom: 0,
         left: 0,
         right: 0,
-        background: "rgba(10,10,10,0.95)",
+        background: "var(--nav-bg)",
         backdropFilter: "blur(20px)",
-        borderTop: "1px solid #2a2a2a",
+        borderTop: "1px solid var(--border)",
         display: "flex",
         justifyContent: "space-around",
         alignItems: "center",
@@ -50,13 +50,13 @@ export function BottomNav() {
               alignItems: "center",
               gap: "4px",
               padding: "8px 16px",
-              color: isActive ? "#22c55e" : "#666666",
+              color: isActive ? "var(--green)" : "var(--text-muted)",
               borderRadius: "10px",
               transition: "all 0.2s ease",
               textDecoration: "none",
               fontSize: "11px",
               fontWeight: isActive ? 600 : 400,
-              background: isActive ? "rgba(34, 197, 94, 0.08)" : "transparent",
+              background: isActive ? "var(--green-dim)" : "transparent",
             }}
           >
             <Icon size={20} strokeWidth={isActive ? 2.5 : 1.5} />

@@ -10,12 +10,14 @@ import { CategoryIcon } from "@/lib/icons";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 export default function TransactionsPage() {
-  const { transactions, deleteTransaction } = useAppStore();
+  const { user, transactions, deleteTransaction, fetchMoreTransactions } = useAppStore();
   const [showAddModal, setShowAddModal] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterType, setFilterType] = useState("all");
+  const [visibleCount, setVisibleCount] = useState(300);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const filtered = useMemo(() => {
     const result = transactions.filter((t) => {
@@ -30,29 +32,48 @@ export default function TransactionsPage() {
     return result.sort((a, b) => b.date.localeCompare(a.date));
   }, [transactions, search, filterCategory, filterType]);
 
+  const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
+
   const grouped = useMemo(() => {
-    const groups: Record<string, typeof filtered> = {};
-    filtered.forEach((t) => {
+    const groups: Record<string, typeof visible> = {};
+    visible.forEach((t) => {
       if (!groups[t.date]) groups[t.date] = [];
       groups[t.date].push(t);
     });
     return Object.entries(groups).sort(([a], [b]) => b.localeCompare(a));
-  }, [filtered]);
+  }, [visible]);
+
+  const handleLoadMore = async () => {
+    if (visibleCount < filtered.length) {
+      setVisibleCount((v) => v + 100);
+      return;
+    }
+    if (!user || loadingMore) return;
+    setLoadingMore(true);
+    const loaded = await fetchMoreTransactions(user.id, transactions.length, 300);
+    setLoadingMore(false);
+    if (loaded > 0) {
+      setVisibleCount((v) => v + loaded);
+    }
+  };
+
+  const canLoadMore =
+    visibleCount < filtered.length || transactions.length >= 300;
 
   return (
     <AppLayout>
       <div style={{ padding: "0 0 24px" }}>
         {/* Header */}
-        <div style={{ padding: "56px 20px 16px", background: "#111111" }}>
+        <div style={{ padding: "56px 20px 16px", background: "var(--bg-secondary)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-            <h1 style={{ fontSize: "22px", fontWeight: 700, color: "#f5f5f5" }}>Transaksi</h1>
+            <h1 style={{ fontSize: "22px", fontWeight: 700, color: "var(--text-primary)" }}>Transaksi</h1>
             <button
               onClick={() => setShowAddModal(true)}
               style={{
                 width: "36px",
                 height: "36px",
                 borderRadius: "10px",
-                background: "#22c55e",
+                background: "var(--green)",
                 border: "none",
                 display: "flex",
                 alignItems: "center",
@@ -60,24 +81,24 @@ export default function TransactionsPage() {
                 cursor: "pointer",
               }}
             >
-              <Plus size={18} color="#000" strokeWidth={2.5} />
+              <Plus size={18} color="var(--on-accent)" strokeWidth={2.5} />
             </button>
           </div>
 
           {/* Search */}
           <div style={{ position: "relative", marginBottom: "12px" }}>
-            <Search size={14} color="#666666" style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)" }} />
+            <Search size={14} color="var(--text-muted)" style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)" }} />
             <input
               placeholder="Cari transaksi..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               style={{
                 width: "100%",
-                background: "#161616",
-                border: "1px solid #2a2a2a",
+                background: "var(--bg-card)",
+                border: "1px solid var(--border)",
                 borderRadius: "8px",
                 padding: "10px 14px 10px 36px",
-                color: "#f5f5f5",
+                color: "var(--text-primary)",
                 fontSize: "14px",
                 outline: "none",
               }}
@@ -94,9 +115,9 @@ export default function TransactionsPage() {
                   padding: "5px 12px",
                   borderRadius: "20px",
                   border: "1px solid",
-                  borderColor: filterType === t ? "#22c55e" : "#2a2a2a",
+                  borderColor: filterType === t ? "var(--green)" : "var(--border)",
                   background: filterType === t ? "rgba(34,197,94,0.12)" : "transparent",
-                  color: filterType === t ? "#22c55e" : "#666666",
+                  color: filterType === t ? "var(--green)" : "var(--text-muted)",
                   fontSize: "12px",
                   fontWeight: 500,
                   cursor: "pointer",
@@ -111,14 +132,14 @@ export default function TransactionsPage() {
 
         <div style={{ padding: "0 20px" }}>
           {grouped.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "60px 0", color: "#666666" }}>
-              <p style={{ marginBottom: "12px" }}><Inbox size={32} color="#666666" /></p>
+            <div style={{ textAlign: "center", padding: "60px 0", color: "var(--text-muted)" }}>
+              <p style={{ marginBottom: "12px" }}><Inbox size={32} color="var(--text-muted)" /></p>
               <p>Belum ada transaksi</p>
             </div>
           ) : (
             grouped.map(([date, txs]) => (
               <div key={date} style={{ marginBottom: "20px" }}>
-                <p style={{ fontSize: "12px", color: "#666666", fontWeight: 600, marginBottom: "8px", letterSpacing: "0.06em" }}>
+                <p style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 600, marginBottom: "8px", letterSpacing: "0.06em" }}>
                   {new Date(date).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long" })}
                 </p>
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
@@ -129,8 +150,8 @@ export default function TransactionsPage() {
                         display: "flex",
                         alignItems: "center",
                         gap: "12px",
-                        background: "#161616",
-                        border: "1px solid #2a2a2a",
+                        background: "var(--bg-card)",
+                        border: "1px solid var(--border)",
                         borderRadius: "10px",
                         padding: "12px 14px",
                       }}
@@ -140,7 +161,7 @@ export default function TransactionsPage() {
                           width: "36px",
                           height: "36px",
                           borderRadius: "10px",
-                          background: tx.type === "IN" ? "rgba(34,197,94,0.12)" : "rgba(255,255,255,0.04)",
+                          background: tx.type === "IN" ? "rgba(34,197,94,0.12)" : "var(--overlay-soft)",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -150,15 +171,15 @@ export default function TransactionsPage() {
                         <CategoryIcon category={tx.category} size={16} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: "13px", fontWeight: 500, color: "#f5f5f5", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <p style={{ fontSize: "13px", fontWeight: 500, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {tx.description}
                         </p>
-                        <p style={{ fontSize: "11px", color: "#666666" }}>{tx.category}</p>
-                        <p style={{ fontSize: "10px", color: "#555555", marginTop: "2px" }}>
+                        <p style={{ fontSize: "11px", color: "var(--text-muted)" }}>{tx.category}</p>
+                        <p style={{ fontSize: "10px", color: "var(--text-faint)", marginTop: "2px" }}>
                           {new Date(tx.created_at || tx.date).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                         </p>
                       </div>
-                      <p style={{ fontSize: "14px", fontWeight: 600, color: tx.type === "IN" ? "#22c55e" : "#f5f5f5", flexShrink: 0 }}>
+                      <p style={{ fontSize: "14px", fontWeight: 600, color: tx.type === "IN" ? "var(--green)" : "var(--text-primary)", flexShrink: 0 }}>
                         {tx.type === "IN" ? "+" : "-"}{formatCurrency(tx.amount)}
                       </p>
                       <button
@@ -173,7 +194,7 @@ export default function TransactionsPage() {
                           alignItems: "center",
                           justifyContent: "center",
                           cursor: "pointer",
-                          color: "#444444",
+                          color: "var(--text-faint)",
                           flexShrink: 0,
                         }}
                       >
@@ -184,6 +205,27 @@ export default function TransactionsPage() {
                 </div>
               </div>
             ))
+          )}
+
+          {grouped.length > 0 && canLoadMore && (
+            <button
+              onClick={handleLoadMore}
+              disabled={loadingMore}
+              style={{
+                width: "100%",
+                padding: "12px",
+                background: "var(--bg-card)",
+                border: "1px solid var(--border)",
+                borderRadius: "10px",
+                color: "var(--green)",
+                fontWeight: 600,
+                fontSize: "14px",
+                cursor: loadingMore ? "not-allowed" : "pointer",
+                marginBottom: "12px",
+              }}
+            >
+              {loadingMore ? "Memuat..." : "Muat lebih banyak"}
+            </button>
           )}
         </div>
       </div>

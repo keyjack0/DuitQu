@@ -207,7 +207,7 @@ DATA KEUANGAN USER (bulan ini):
     <AppLayout>
       <div style={{ display: "flex", flexDirection: "column", height: "100vh", paddingBottom: "80px" }}>
         {/* Header */}
-        <div style={{ padding: "56px 20px 16px", background: "#111111", borderBottom: "1px solid #2a2a2a", flexShrink: 0 }}>
+        <div style={{ padding: "56px 20px 16px", background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)", flexShrink: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <div
               style={{
@@ -221,11 +221,11 @@ DATA KEUANGAN USER (bulan ini):
                 justifyContent: "center",
               }}
             >
-              <Bot size={20} color="#22c55e" />
+              <Bot size={20} color="var(--green)" />
             </div>
             <div>
-              <h1 style={{ fontSize: "17px", fontWeight: 700, color: "#f5f5f5" }}>DuitQu AI</h1>
-              <p style={{ fontSize: "11px", color: "#22c55e" }}>● Online</p>
+              <h1 style={{ fontSize: "17px", fontWeight: 700, color: "var(--text-primary)" }}>DuitQu AI</h1>
+              <p style={{ fontSize: "11px", color: "var(--green)" }}>● Online</p>
             </div>
             <button
               onClick={() => setShowClearConfirm(true)}
@@ -235,12 +235,12 @@ DATA KEUANGAN USER (bulan ini):
                 height: "32px",
                 borderRadius: "8px",
                 background: "transparent",
-                border: "1px solid #2a2a2a",
+                border: "1px solid var(--border)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 cursor: "pointer",
-                color: "#444444",
+                color: "var(--text-faint)",
               }}
             >
               <Trash2 size={13} />
@@ -262,15 +262,15 @@ DATA KEUANGAN USER (bulan ini):
             >
               {msg.role === "assistant" && (
                 <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: "rgba(34, 197, 94, 0.12)", border: "1px solid rgba(34, 197, 94, 0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: "4px" }}>
-                  <Bot size={14} color="#22c55e" />
+                  <Bot size={14} color="var(--green)" />
                 </div>
               )}
               <div style={{ maxWidth: "80%", display: "flex", flexDirection: "column", gap: "6px", alignItems: msg.role === "user" ? "flex-end" : "flex-start" }}>
                 <div
                   style={{
-                    background: msg.role === "user" ? "#22c55e" : "#161616",
-                    color: msg.role === "user" ? "#000" : "#f5f5f5",
-                    border: msg.role === "assistant" ? "1px solid #2a2a2a" : "none",
+                    background: msg.role === "user" ? "var(--green)" : "var(--bg-card)",
+                    color: msg.role === "user" ? "var(--on-accent)" : "var(--text-primary)",
+                    border: msg.role === "assistant" ? "1px solid var(--border)" : "none",
                     borderRadius: msg.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
                     padding: "10px 14px",
                     fontSize: "14px",
@@ -291,12 +291,12 @@ DATA KEUANGAN USER (bulan ini):
                       fontSize: "12px",
                     }}
                   >
-                    <p style={{ color: "#22c55e", fontWeight: 600, marginBottom: "4px" }}>💡 Transaksi terdeteksi:</p>
-                    <p style={{ color: "#a0a0a0" }}>{msg.parsedTransaction.tipe === "pemasukan" ? "+" : "-"}{formatCurrency(msg.parsedTransaction.nominal)} · {msg.parsedTransaction.kategori}</p>
-                    <p style={{ color: "#666666", marginBottom: "8px" }}>{msg.parsedTransaction.deskripsi}</p>
+                    <p style={{ color: "var(--green)", fontWeight: 600, marginBottom: "4px" }}>💡 Transaksi terdeteksi:</p>
+                    <p style={{ color: "var(--text-secondary)" }}>{msg.parsedTransaction.tipe === "pemasukan" ? "+" : "-"}{formatCurrency(msg.parsedTransaction.nominal)} · {msg.parsedTransaction.kategori}</p>
+                    <p style={{ color: "var(--text-muted)", marginBottom: "8px" }}>{msg.parsedTransaction.deskripsi}</p>
                     {/* <button
                       onClick={() => setPendingTransaction(msg.parsedTransaction!)}
-                      style={{ background: "#22c55e", color: "#000", border: "none", borderRadius: "6px", padding: "6px 12px", fontSize: "11px", fontWeight: 700, cursor: "pointer" }}
+                      style={{ background: "var(--green)", color: "var(--on-accent)", border: "none", borderRadius: "6px", padding: "6px 12px", fontSize: "11px", fontWeight: 700, cursor: "pointer" }}
                     >
                       + Tambah ke Dompet
                     </button> */}
@@ -304,8 +304,8 @@ DATA KEUANGAN USER (bulan ini):
                 )}
               </div>
               {msg.role === "user" && (
-                <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: "#1e1e1e", border: "1px solid #2a2a2a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: "4px" }}>
-                  <User size={14} color="#a0a0a0" />
+                <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: "var(--bg-hover)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: "4px" }}>
+                  <User size={14} color="var(--text-secondary)" />
                 </div>
               )}
             </div>
@@ -314,13 +314,13 @@ DATA KEUANGAN USER (bulan ini):
           {isLoading && (
             <div style={{ display: "flex", gap: "10px", animation: "fadeIn 0.3s ease" }}>
               <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: "rgba(34, 197, 94, 0.12)", border: "1px solid rgba(34, 197, 94, 0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Bot size={14} color="#22c55e" />
+                <Bot size={14} color="var(--green)" />
               </div>
-              <div style={{ background: "#161616", border: "1px solid #2a2a2a", borderRadius: "16px 16px 16px 4px", padding: "10px 14px", display: "flex", alignItems: "center", gap: "6px" }}>
+              <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "16px 16px 16px 4px", padding: "10px 14px", display: "flex", alignItems: "center", gap: "6px" }}>
                 {/* <span style={{ display: "inline-flex", animation: "spin 1s linear infinite" }}>
-                  <Loader2 size={14} color="#22c55e" />
+                  <Loader2 size={14} color="var(--green)" />
                 </span> */}
-                <span style={{ fontSize: "13px", color: "#666666" }}>Sedang berpikir...</span>
+                <span style={{ fontSize: "13px", color: "var(--text-muted)" }}>Sedang berpikir...</span>
               </div>
             </div>
           )}
@@ -335,10 +335,10 @@ DATA KEUANGAN USER (bulan ini):
                 onClick={() => sendMessage(prompt)}
                 style={{
                   padding: "7px 12px",
-                  background: "#161616",
-                  border: "1px solid #2a2a2a",
+                  background: "var(--bg-card)",
+                  border: "1px solid var(--border)",
                   borderRadius: "20px",
-                  color: "#a0a0a0",
+                  color: "var(--text-secondary)",
                   fontSize: "12px",
                   cursor: "pointer",
                   whiteSpace: "nowrap",
@@ -351,7 +351,7 @@ DATA KEUANGAN USER (bulan ini):
           </div>
 
         {/* Input */}
-        <div style={{ padding: "12px 20px", borderTop: "1px solid #2a2a2a", background: "#0a0a0a", flexShrink: 0, display: "flex", gap: "10px" }}>
+        <div style={{ padding: "12px 20px", borderTop: "1px solid var(--border)", background: "var(--bg-primary)", flexShrink: 0, display: "flex", gap: "10px" }}>
           <input
             placeholder="Ketik pesan atau transaksi..."
             value={input}
@@ -359,11 +359,11 @@ DATA KEUANGAN USER (bulan ini):
             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
             style={{
               flex: 1,
-              background: "#161616",
-              border: "1px solid #2a2a2a",
+              background: "var(--bg-card)",
+              border: "1px solid var(--border)",
               borderRadius: "10px",
               padding: "10px 14px",
-              color: "#f5f5f5",
+              color: "var(--text-primary)",
               fontSize: "14px",
               outline: "none",
             }}
@@ -375,7 +375,7 @@ DATA KEUANGAN USER (bulan ini):
               width: "40px",
               height: "40px",
               borderRadius: "10px",
-              background: input.trim() && !isLoading ? "#22c55e" : "#2a2a2a",
+              background: input.trim() && !isLoading ? "var(--green)" : "var(--border)",
               border: "none",
               display: "flex",
               alignItems: "center",
@@ -384,7 +384,7 @@ DATA KEUANGAN USER (bulan ini):
               flexShrink: 0,
             }}
           >
-            <Send size={16} color={input.trim() && !isLoading ? "#000" : "#444444"} />
+            <Send size={16} color={input.trim() && !isLoading ? "var(--on-accent)" : "var(--text-faint)"} />
           </button>
         </div>
       </div>

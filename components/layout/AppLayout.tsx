@@ -10,7 +10,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     <div
       style={{
         minHeight: "100vh",
-        background: "#0a0a0a",
+        background: "var(--bg-primary)",
         paddingBottom: "80px",
       }}
     >

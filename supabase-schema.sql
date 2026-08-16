@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS public.wallets (
   user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   balance DECIMAL(15,2) DEFAULT 0,
+  initial_balance DECIMAL(15,2) NOT NULL DEFAULT 0,
   icon TEXT DEFAULT 'cash',
   color TEXT DEFAULT '#22c55e',
   created_at TIMESTAMPTZ DEFAULT NOW()
@@ -91,29 +92,86 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- Function: Update wallet balance on transaction
-CREATE OR REPLACE FUNCTION update_wallet_balance()
-RETURNS TRIGGER AS $$
+-- Migration: add initial_balance to existing wallets (idempotent)
+ALTER TABLE public.wallets ADD COLUMN IF NOT EXISTS initial_balance DECIMAL(15,2) NOT NULL DEFAULT 0;
+
+-- Function: Recompute a wallet's balance from all related transactions
+CREATE OR REPLACE FUNCTION public.recalc_wallet_balance(wallet_uuid UUID)
+RETURNS VOID AS $$
 BEGIN
-  IF TG_OP = 'INSERT' THEN
-    IF NEW.type = 'IN' THEN
-      UPDATE public.wallets SET balance = balance + NEW.amount WHERE id = NEW.wallet_id;
-    ELSIF NEW.type = 'OUT' THEN
-      UPDATE public.wallets SET balance = balance - NEW.amount WHERE id = NEW.wallet_id;
-    ELSIF NEW.type = 'TRANSFER' THEN
-      UPDATE public.wallets SET balance = balance - NEW.amount WHERE id = NEW.wallet_id;
-      IF NEW.to_wallet_id IS NOT NULL THEN
-        UPDATE public.wallets SET balance = balance + NEW.amount WHERE id = NEW.to_wallet_id;
-      END IF;
-    END IF;
-  END IF;
-  RETURN NEW;
+  UPDATE public.wallets w
+  SET balance = w.initial_balance
+    + COALESCE((
+        SELECT SUM(CASE
+          WHEN t.type = 'IN' THEN t.amount
+          WHEN t.type = 'OUT' THEN -t.amount
+          WHEN t.type = 'TRANSFER' THEN -t.amount
+          ELSE 0
+        END)
+        FROM public.transactions t
+        WHERE t.wallet_id = w.id
+      ), 0)
+    + COALESCE((
+        SELECT SUM(t.amount)
+        FROM public.transactions t
+        WHERE t.to_wallet_id = w.id
+      ), 0)
+  WHERE w.id = wallet_uuid;
 END;
 $$ LANGUAGE plpgsql;
 
+-- Function: Recompute balances for all wallets affected by a transaction change
+CREATE OR REPLACE FUNCTION public.update_wallet_balance()
+RETURNS TRIGGER AS $$
+DECLARE
+  ids UUID[] := '{}'::UUID[];
+  wid UUID;
+BEGIN
+  IF TG_OP <> 'INSERT' THEN
+    ids := ids || OLD.wallet_id;
+    IF OLD.to_wallet_id IS NOT NULL THEN
+      ids := ids || OLD.to_wallet_id;
+    END IF;
+  END IF;
+  IF TG_OP <> 'DELETE' THEN
+    ids := ids || NEW.wallet_id;
+    IF NEW.to_wallet_id IS NOT NULL THEN
+      ids := ids || NEW.to_wallet_id;
+    END IF;
+  END IF;
+
+  FOREACH wid IN ARRAY ids LOOP
+    PERFORM public.recalc_wallet_balance(wid);
+  END LOOP;
+
+  RETURN COALESCE(NEW, OLD);
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trigger_update_wallet_balance ON public.transactions;
 CREATE TRIGGER trigger_update_wallet_balance
-AFTER INSERT ON public.transactions
-FOR EACH ROW EXECUTE FUNCTION update_wallet_balance();
+  AFTER INSERT OR UPDATE OR DELETE ON public.transactions
+  FOR EACH ROW EXECUTE FUNCTION public.update_wallet_balance();
+
+-- One-time migration: recover true opening balance and fix any drift
+UPDATE public.wallets w
+SET initial_balance = w.balance
+  - COALESCE((
+      SELECT SUM(CASE
+        WHEN t.type = 'IN' THEN t.amount
+        WHEN t.type = 'OUT' THEN -t.amount
+        WHEN t.type = 'TRANSFER' THEN -t.amount
+        ELSE 0 END)
+      FROM public.transactions t
+      WHERE t.wallet_id = w.id
+    ), 0)
+  - COALESCE((
+      SELECT SUM(t.amount)
+      FROM public.transactions t
+      WHERE t.to_wallet_id = w.id
+    ), 0);
+
+SELECT public.recalc_wallet_balance(id) FROM public.wallets;
 
 -- AI Chat History
 CREATE TABLE IF NOT EXISTS public.ai_chats (

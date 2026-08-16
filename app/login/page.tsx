@@ -45,7 +45,7 @@ export default function LoginPage() {
     <div
       style={{
         minHeight: "100vh",
-        background: "#0a0a0a",
+        background: "var(--bg-primary)",
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
@@ -60,22 +60,22 @@ export default function LoginPage() {
               width: "64px",
               height: "64px",
               borderRadius: "20px",
-              background: "linear-gradient(135deg, #22c55e, #16a34a)",
+              background: "linear-gradient(135deg, var(--green), var(--green-dark))",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: "28px",
               fontWeight: 800,
-              color: "#000",
+              color: "var(--on-accent)",
               margin: "0 auto 16px",
             }}
           >
             D
           </div>
-          <h1 style={{ fontSize: "24px", fontWeight: 700, color: "#f5f5f5", marginBottom: "6px" }}>
+          <h1 style={{ fontSize: "24px", fontWeight: 700, color: "var(--text-primary)", marginBottom: "6px" }}>
             DuitQu
           </h1>
-          <p style={{ fontSize: "14px", color: "#666666" }}>
+          <p style={{ fontSize: "14px", color: "var(--text-muted)" }}>
             Masuk untuk melanjutkan
           </p>
         </div>
@@ -83,8 +83,8 @@ export default function LoginPage() {
         {/* Form */}
         <div
           style={{
-            background: "#111111",
-            border: "1px solid #2a2a2a",
+            background: "var(--bg-secondary)",
+            border: "1px solid var(--border)",
             borderRadius: "16px",
             padding: "24px",
           }}
@@ -97,7 +97,7 @@ export default function LoginPage() {
                 borderRadius: "8px",
                 padding: "10px 14px",
                 fontSize: "13px",
-                color: "#ef4444",
+                color: "var(--red)",
                 marginBottom: "16px",
               }}
             >
@@ -106,7 +106,7 @@ export default function LoginPage() {
           )}
 
           <div style={{ marginBottom: "14px" }}>
-            <label style={{ display: "block", fontSize: "12px", color: "#666666", marginBottom: "6px" }}>
+            <label style={{ display: "block", fontSize: "12px", color: "var(--text-muted)", marginBottom: "6px" }}>
               Email
             </label>
             <input
@@ -117,11 +117,11 @@ export default function LoginPage() {
               onKeyDown={(e) => e.key === "Enter" && handleLogin()}
               style={{
                 width: "100%",
-                background: "#161616",
-                border: "1px solid #2a2a2a",
+                background: "var(--bg-card)",
+                border: "1px solid var(--border)",
                 borderRadius: "8px",
                 padding: "10px 14px",
-                color: "#f5f5f5",
+                color: "var(--text-primary)",
                 fontSize: "14px",
                 outline: "none",
               }}
@@ -129,7 +129,7 @@ export default function LoginPage() {
           </div>
 
           <div style={{ marginBottom: "24px" }}>
-            <label style={{ display: "block", fontSize: "12px", color: "#666666", marginBottom: "6px" }}>
+            <label style={{ display: "block", fontSize: "12px", color: "var(--text-muted)", marginBottom: "6px" }}>
               Password
             </label>
             <div style={{ position: "relative" }}>
@@ -141,12 +141,12 @@ export default function LoginPage() {
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
                 style={{
                   width: "100%",
-                  background: "#161616",
-                  border: "1px solid #2a2a2a",
+                  background: "var(--bg-card)",
+                  border: "1px solid var(--border)",
                   borderRadius: "8px",
                   padding: "10px 14px 10px 14px",
                   paddingRight: "40px",
-                  color: "#f5f5f5",
+                  color: "var(--text-primary)",
                   fontSize: "14px",
                   outline: "none",
                 }}
@@ -161,7 +161,7 @@ export default function LoginPage() {
                   transform: "translateY(-50%)",
                   background: "none",
                   border: "none",
-                  color: "#666666",
+                  color: "var(--text-muted)",
                   cursor: "pointer",
                   padding: "4px",
                 }}
@@ -177,8 +177,8 @@ export default function LoginPage() {
             style={{
               width: "100%",
               padding: "14px",
-              background: loading ? "#2a2a2a" : "#22c55e",
-              color: loading ? "#666666" : "#000",
+              background: loading ? "var(--border)" : "var(--green)",
+              color: loading ? "var(--text-muted)" : "var(--on-accent)",
               border: "none",
               borderRadius: "10px",
               fontWeight: 700,
@@ -202,7 +202,7 @@ export default function LoginPage() {
           </button>
         </div>
 
-        <p style={{ textAlign: "center", fontSize: "12px", color: "#444444", marginTop: "20px" }}>
+        <p style={{ textAlign: "center", fontSize: "12px", color: "var(--text-faint)", marginTop: "20px" }}>
           Aplikasi keuangan pribadi Anda
         </p>
       </div>

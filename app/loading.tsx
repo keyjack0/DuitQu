@@ -3,8 +3,8 @@ export default function Loading() {
     <main
       style={{
         minHeight: "100vh",
-        background: "#0a0a0a",
-        color: "#f5f5f5",
+        background: "var(--bg-primary)",
+        color: "var(--text-primary)",
         padding: "56px 20px 96px",
       }}
     >
@@ -30,8 +30,8 @@ export default function Loading() {
                 width: "92px",
                 height: "12px",
                 borderRadius: "999px",
-                background: "#161616",
-                border: "1px solid #2a2a2a",
+                background: "var(--bg-card)",
+                border: "1px solid var(--border)",
                 marginBottom: "10px",
               }}
             />
@@ -40,7 +40,7 @@ export default function Loading() {
                 width: "148px",
                 height: "22px",
                 borderRadius: "8px",
-                background: "#1e1e1e",
+                background: "var(--bg-hover)",
               }}
             />
           </div>
@@ -59,8 +59,8 @@ export default function Loading() {
           style={{
             minHeight: "156px",
             borderRadius: "16px",
-            background: "#161616",
-            border: "1px solid #2a2a2a",
+            background: "var(--bg-card)",
+            border: "1px solid var(--border)",
             padding: "24px",
             display: "flex",
             flexDirection: "column",
@@ -72,7 +72,7 @@ export default function Loading() {
               width: "96px",
               height: "12px",
               borderRadius: "999px",
-              background: "#222222",
+              background: "var(--skeleton)",
             }}
           />
           <div
@@ -80,7 +80,7 @@ export default function Loading() {
               width: "70%",
               height: "34px",
               borderRadius: "10px",
-              background: "#1e1e1e",
+              background: "var(--bg-hover)",
             }}
           />
           <div style={{ display: "flex", gap: "12px" }}>
@@ -89,7 +89,7 @@ export default function Loading() {
                 width: "116px",
                 height: "30px",
                 borderRadius: "8px",
-                background: "#1e1e1e",
+                background: "var(--bg-hover)",
               }}
             />
             <div
@@ -97,7 +97,7 @@ export default function Loading() {
                 width: "116px",
                 height: "30px",
                 borderRadius: "8px",
-                background: "#1e1e1e",
+                background: "var(--bg-hover)",
               }}
             />
           </div>
@@ -109,8 +109,8 @@ export default function Loading() {
             style={{
               height: "64px",
               borderRadius: "10px",
-              background: "#161616",
-              border: "1px solid #2a2a2a",
+              background: "var(--bg-card)",
+              border: "1px solid var(--border)",
               display: "flex",
               alignItems: "center",
               gap: "12px",
@@ -122,7 +122,7 @@ export default function Loading() {
                 width: "36px",
                 height: "36px",
                 borderRadius: "10px",
-                background: "#1e1e1e",
+                background: "var(--bg-hover)",
                 flexShrink: 0,
               }}
             />
@@ -132,7 +132,7 @@ export default function Loading() {
                   width: "58%",
                   height: "12px",
                   borderRadius: "999px",
-                  background: "#1e1e1e",
+                  background: "var(--bg-hover)",
                   marginBottom: "8px",
                 }}
               />
@@ -141,7 +141,7 @@ export default function Loading() {
                   width: "34%",
                   height: "10px",
                   borderRadius: "999px",
-                  background: "#202020",
+                  background: "var(--skeleton)",
                 }}
               />
             </div>

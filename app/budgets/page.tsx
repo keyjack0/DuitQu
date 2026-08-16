@@ -28,6 +28,7 @@ export default function BudgetsPage() {
 
   const totalLimit = budgets.reduce((s, b) => s + b.amount_limit, 0);
   const totalSpent = budgetsWithSpent.reduce((s, b) => s + b.spent, 0);
+  const totalPct = totalLimit > 0 ? Math.round((totalSpent / totalLimit) * 100) : 0;
 
   const formatAmount = (val: string) => {
     const num = val.replace(/\D/g, "");
@@ -54,16 +55,16 @@ export default function BudgetsPage() {
   return (
     <AppLayout>
       <div style={{ padding: "0 0 24px" }}>
-        <div style={{ padding: "56px 20px 24px", background: "#111111" }}>
+        <div style={{ padding: "56px 20px 24px", background: "var(--bg-secondary)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-            <h1 style={{ fontSize: "22px", fontWeight: 700, color: "#f5f5f5" }}>Budget</h1>
+            <h1 style={{ fontSize: "22px", fontWeight: 700, color: "var(--text-primary)" }}>Budget</h1>
             <button
               onClick={() => setShowAdd(true)}
               style={{
                 width: "36px",
                 height: "36px",
                 borderRadius: "10px",
-                background: "#22c55e",
+                background: "var(--green)",
                 border: "none",
                 display: "flex",
                 alignItems: "center",
@@ -71,42 +72,42 @@ export default function BudgetsPage() {
                 cursor: "pointer",
               }}
             >
-              <Plus size={18} color="#000" strokeWidth={2.5} />
+              <Plus size={18} color="var(--on-accent)" strokeWidth={2.5} />
             </button>
           </div>
 
           {/* Overview */}
-          <div style={{ background: "#161616", border: "1px solid #2a2a2a", borderRadius: "14px", padding: "20px" }}>
+          <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "14px", padding: "20px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px" }}>
               <div>
-                <p style={{ fontSize: "11px", color: "#666666", marginBottom: "4px" }}>Total Terpakai</p>
-                <p style={{ fontSize: "20px", fontWeight: 700, color: "#f5f5f5" }}>{formatCurrency(totalSpent)}</p>
+                <p style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: "4px" }}>Total Terpakai</p>
+                <p style={{ fontSize: "20px", fontWeight: 700, color: "var(--text-primary)" }}>{formatCurrency(totalSpent)}</p>
               </div>
               <div style={{ textAlign: "right" }}>
-                <p style={{ fontSize: "11px", color: "#666666", marginBottom: "4px" }}>Total Budget</p>
-                <p style={{ fontSize: "20px", fontWeight: 700, color: "#22c55e" }}>{formatCurrency(totalLimit)}</p>
+                <p style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: "4px" }}>Total Budget</p>
+                <p style={{ fontSize: "20px", fontWeight: 700, color: "var(--green)" }}>{formatCurrency(totalLimit)}</p>
               </div>
             </div>
-            <div style={{ background: "#2a2a2a", borderRadius: "4px", height: "6px", overflow: "hidden" }}>
+            <div style={{ background: "var(--border)", borderRadius: "4px", height: "6px", overflow: "hidden" }}>
               <div
                 style={{
                   height: "100%",
-                  width: `${Math.min((totalSpent / totalLimit) * 100, 100)}%`,
-                  background: totalSpent / totalLimit > 0.9 ? "#ef4444" : totalSpent / totalLimit > 0.7 ? "#f59e0b" : "#22c55e",
+                  width: `${totalPct}%`,
+                  background: totalPct > 90 ? "var(--red)" : totalPct > 70 ? "var(--amber)" : "var(--green)",
                   borderRadius: "4px",
                   transition: "width 0.5s ease",
                 }}
               />
             </div>
-            <p style={{ fontSize: "11px", color: "#666666", marginTop: "8px" }}>
-              {Math.round((totalSpent / totalLimit) * 100)}% dari total budget bulan ini
+            <p style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "8px" }}>
+              {totalPct}% dari total budget bulan ini
             </p>
           </div>
 
           {dangerCount > 0 && (
             <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.2)", borderRadius: "10px", padding: "10px 14px", marginTop: "12px" }}>
-              <AlertTriangle size={14} color="#ef4444" />
-              <p style={{ fontSize: "13px", color: "#ef4444" }}>
+              <AlertTriangle size={14} color="var(--red)" />
+              <p style={{ fontSize: "13px", color: "var(--red)" }}>
                 {dangerCount} kategori melebihi 90% budget
               </p>
             </div>
@@ -114,13 +115,13 @@ export default function BudgetsPage() {
         </div>
 
         <div style={{ padding: "0 20px" }}>
-          <p style={{ fontSize: "12px", color: "#666666", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "12px" }}>
+          <p style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "12px" }}>
             Budget per Kategori
           </p>
 
           {budgetsWithSpent.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "60px 0", color: "#666666" }}>
-              <p style={{ marginBottom: "12px" }}><Target size={32} color="#666666" /></p>
+            <div style={{ textAlign: "center", padding: "60px 0", color: "var(--text-muted)" }}>
+              <p style={{ marginBottom: "12px" }}><Target size={32} color="var(--text-muted)" /></p>
               <p style={{ marginBottom: "8px" }}>Belum ada budget</p>
               <p style={{ fontSize: "12px" }}>Tambahkan budget per kategori untuk memulai</p>
             </div>
@@ -129,16 +130,16 @@ export default function BudgetsPage() {
               {budgetsWithSpent.map((budget) => {
                 const pct = calculatePercentage(budget.spent, budget.amount_limit);
                 const status = getBudgetStatus(pct);
-                const barColor = status === "danger" ? "#ef4444" : status === "warning" ? "#f59e0b" : "#22c55e";
+                const barColor = status === "danger" ? "var(--red)" : status === "warning" ? "var(--amber)" : "var(--green)";
                 const remaining = budget.amount_limit - budget.spent;
 
                 return (
                   <div
                     key={budget.id}
                     style={{
-                      background: "#161616",
+                      background: "var(--bg-card)",
                       border: "1px solid",
-                      borderColor: status === "danger" ? "rgba(239,68,68,0.2)" : "#2a2a2a",
+                      borderColor: status === "danger" ? "rgba(239,68,68,0.2)" : "var(--border)",
                       borderRadius: "12px",
                       padding: "16px",
                     }}
@@ -147,8 +148,8 @@ export default function BudgetsPage() {
                       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                         <CategoryIcon category={budget.category} size={20} />
                         <div>
-                          <p style={{ fontSize: "13px", fontWeight: 600, color: "#f5f5f5" }}>{budget.category}</p>
-                          <p style={{ fontSize: "11px", color: "#666666" }}>
+                          <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)" }}>{budget.category}</p>
+                          <p style={{ fontSize: "11px", color: "var(--text-muted)" }}>
                             {formatCurrency(budget.spent)} / {formatCurrency(budget.amount_limit)}
                           </p>
                         </div>
@@ -168,14 +169,14 @@ export default function BudgetsPage() {
                         </span>
                         <button
                           onClick={() => setConfirmDeleteId(budget.id)}
-                          style={{ width: "24px", height: "24px", borderRadius: "6px", background: "transparent", border: "none", cursor: "pointer", color: "#444444", display: "flex", alignItems: "center", justifyContent: "center" }}
+                          style={{ width: "24px", height: "24px", borderRadius: "6px", background: "transparent", border: "none", cursor: "pointer", color: "var(--text-faint)", display: "flex", alignItems: "center", justifyContent: "center" }}
                         >
                           <Trash2 size={12} />
                         </button>
                       </div>
                     </div>
 
-                    <div style={{ background: "#2a2a2a", borderRadius: "4px", height: "5px", overflow: "hidden" }}>
+                    <div style={{ background: "var(--border)", borderRadius: "4px", height: "5px", overflow: "hidden" }}>
                       <div
                         style={{
                           height: "100%",
@@ -187,7 +188,7 @@ export default function BudgetsPage() {
                       />
                     </div>
 
-                    <p style={{ fontSize: "11px", color: remaining >= 0 ? "#666666" : "#ef4444", marginTop: "6px" }}>
+                    <p style={{ fontSize: "11px", color: remaining >= 0 ? "var(--text-muted)" : "var(--red)", marginTop: "6px" }}>
                       {remaining >= 0 ? `Sisa ${formatCurrency(remaining)}` : `Melebihi ${formatCurrency(Math.abs(remaining))}`}
                     </p>
                   </div>
@@ -203,27 +204,27 @@ export default function BudgetsPage() {
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", backdropFilter: "blur(8px)", display: "flex", alignItems: "flex-end", zIndex: 200 }}
           onClick={(e) => e.target === e.currentTarget && setShowAdd(false)}
         >
-          <div style={{ width: "100%", background: "#111111", borderRadius: "20px 20px 0 0", border: "1px solid #2a2a2a", padding: "24px 20px 40px" }}>
-            <h2 style={{ fontSize: "17px", fontWeight: 700, color: "#f5f5f5", marginBottom: "20px" }}>Tambah Budget</h2>
+          <div style={{ width: "100%", background: "var(--bg-secondary)", borderRadius: "20px 20px 0 0", border: "1px solid var(--border)", padding: "24px 20px 40px" }}>
+            <h2 style={{ fontSize: "17px", fontWeight: 700, color: "var(--text-primary)", marginBottom: "20px" }}>Tambah Budget</h2>
 
             <div style={{ marginBottom: "14px" }}>
-              <label style={{ display: "block", fontSize: "12px", color: "#666666", marginBottom: "6px" }}>Kategori</label>
-              <select value={category} onChange={(e) => setCategory(e.target.value)} style={{ width: "100%", background: "#161616", border: "1px solid #2a2a2a", borderRadius: "8px", padding: "10px 14px", color: "#f5f5f5", fontSize: "14px", outline: "none" }}>
+              <label style={{ display: "block", fontSize: "12px", color: "var(--text-muted)", marginBottom: "6px" }}>Kategori</label>
+              <select value={category} onChange={(e) => setCategory(e.target.value)} style={{ width: "100%", background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "8px", padding: "10px 14px", color: "var(--text-primary)", fontSize: "14px", outline: "none" }}>
                 {CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat} style={{ background: "#161616" }}>{cat}</option>
+                  <option key={cat} value={cat} style={{ background: "var(--bg-card)" }}>{cat}</option>
                 ))}
               </select>
             </div>
 
             <div style={{ marginBottom: "24px" }}>
-              <label style={{ display: "block", fontSize: "12px", color: "#666666", marginBottom: "6px" }}>Limit per Bulan</label>
+              <label style={{ display: "block", fontSize: "12px", color: "var(--text-muted)", marginBottom: "6px" }}>Limit per Bulan</label>
               <div style={{ position: "relative" }}>
-                <span style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "#666666", fontSize: "13px" }}>Rp</span>
-                <input type="text" inputMode="numeric" placeholder="0" value={limit} onChange={(e) => setLimit(formatAmount(e.target.value))} style={{ width: "100%", background: "#161616", border: "1px solid #2a2a2a", borderRadius: "8px", padding: "10px 14px 10px 38px", color: "#f5f5f5", fontSize: "14px", outline: "none" }} />
+                <span style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", fontSize: "13px" }}>Rp</span>
+                <input type="text" inputMode="numeric" placeholder="0" value={limit} onChange={(e) => setLimit(formatAmount(e.target.value))} style={{ width: "100%", background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "8px", padding: "10px 14px 10px 38px", color: "var(--text-primary)", fontSize: "14px", outline: "none" }} />
               </div>
             </div>
 
-            <button onClick={handleAdd} style={{ width: "100%", padding: "14px", background: "#22c55e", color: "#000", border: "none", borderRadius: "10px", fontWeight: 700, fontSize: "15px", cursor: "pointer" }}>
+            <button onClick={handleAdd} style={{ width: "100%", padding: "14px", background: "var(--green)", color: "var(--on-accent)", border: "none", borderRadius: "10px", fontWeight: 700, fontSize: "15px", cursor: "pointer" }}>
               Simpan Budget
             </button>
           </div>

@@ -3,11 +3,12 @@
 interface Props {
   title: string;
   description?: string;
+  confirmLabel?: string;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
-export function ConfirmDialog({ title, description, onConfirm, onCancel }: Props) {
+export function ConfirmDialog({ title, description, confirmLabel, onConfirm, onCancel }: Props) {
   return (
     <div
       style={{
@@ -25,8 +26,8 @@ export function ConfirmDialog({ title, description, onConfirm, onCancel }: Props
     >
       <div
         style={{
-          background: "#111111",
-          border: "1px solid #2a2a2a",
+          background: "var(--bg-secondary)",
+          border: "1px solid var(--border)",
           borderRadius: "16px",
           padding: "24px",
           width: "300px",
@@ -34,11 +35,11 @@ export function ConfirmDialog({ title, description, onConfirm, onCancel }: Props
           animation: "slideUp 0.2s ease",
         }}
       >
-        <p style={{ fontSize: "16px", fontWeight: 700, color: "#f5f5f5", marginBottom: "8px" }}>
+        <p style={{ fontSize: "16px", fontWeight: 700, color: "var(--text-primary)", marginBottom: "8px" }}>
           {title}
         </p>
         {description && (
-          <p style={{ fontSize: "13px", color: "#666666", marginBottom: "20px" }}>
+          <p style={{ fontSize: "13px", color: "var(--text-muted)", marginBottom: "20px" }}>
             {description}
           </p>
         )}
@@ -49,9 +50,9 @@ export function ConfirmDialog({ title, description, onConfirm, onCancel }: Props
               flex: 1,
               padding: "12px",
               borderRadius: "10px",
-              border: "1px solid #2a2a2a",
+              border: "1px solid var(--border)",
               background: "transparent",
-              color: "#a0a0a0",
+              color: "var(--text-secondary)",
               fontSize: "14px",
               fontWeight: 600,
               cursor: "pointer",
@@ -66,14 +67,14 @@ export function ConfirmDialog({ title, description, onConfirm, onCancel }: Props
               padding: "12px",
               borderRadius: "10px",
               border: "none",
-              background: "#ef4444",
+              background: "var(--red)",
               color: "#fff",
               fontSize: "14px",
               fontWeight: 600,
               cursor: "pointer",
             }}
           >
-            Ya, Hapus
+            {confirmLabel ?? "Ya, Hapus"}
           </button>
         </div>
       </div>
