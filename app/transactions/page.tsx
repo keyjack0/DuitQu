@@ -5,21 +5,24 @@ import { useAppStore } from "@/lib/store";
 import { formatCurrency } from "@/lib/utils";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { LazyAddTransactionModal } from "@/components/transactions/LazyAddTransactionModal";
-import { Plus, Search, Trash2, Inbox } from "lucide-react";
+import { Plus, Search, Trash2, Pencil, Inbox } from "lucide-react";
 import { CategoryIcon } from "@/lib/icons";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { SwipeableRow } from "@/components/ui/SwipeableRow";
+import type { Transaction } from "@/types";
 
 export default function TransactionsPage() {
   const { user, transactions, deleteTransaction, fetchMoreTransactions } = useAppStore();
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingTx, setEditingTx] = useState<Transaction | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [openRowId, setOpenRowId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterType, setFilterType] = useState("all");
   const [visibleCount, setVisibleCount] = useState(300);
   const [loadingMore, setLoadingMore] = useState(false);
   
-
   const filtered = useMemo(() => {
     const result = transactions.filter((t) => {
       const matchSearch =
@@ -159,62 +162,59 @@ export default function TransactionsPage() {
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                   {txs.map((tx) => (
-                    <div
+                    <SwipeableRow
                       key={tx.id}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "12px",
-                        background: "var(--bg-card)",
-                        border: "1px solid var(--border)",
-                        borderRadius: "10px",
-                        padding: "12px 14px",
-                      }}
+                      isOpen={openRowId === tx.id}
+                      onOpenChange={(open) => setOpenRowId(open ? tx.id : null)}
+                      actions={
+                        <>
+                          {tx.type !== "TRANSFER" && (
+                            <button
+                              onClick={() => setEditingTx(tx)}
+                              aria-label="Edit transaksi"
+                              style={{ background: "var(--bg-hover)", color: "var(--text-primary)" }}
+                            >
+                              <Pencil size={15} />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => setConfirmDeleteId(tx.id)}
+                            aria-label="Hapus transaksi"
+                            style={{ background: "var(--red)", color: "#fff" }}
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </>
+                      }
                     >
-                      <div
-                        style={{
-                          width: "36px",
-                          height: "36px",
-                          borderRadius: "10px",
-                          background: tx.type === "IN" ? "rgba(34,197,94,0.12)" : "var(--overlay-soft)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          flexShrink: 0,
-                        }}
-                      >
-                        <CategoryIcon category={tx.category} size={16} />
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: "13px", fontWeight: 500, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {tx.description}
+                      <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: "12px" }}>
+                        <div
+                          style={{
+                            width: "36px",
+                            height: "36px",
+                            borderRadius: "10px",
+                            background: tx.type === "IN" ? "rgba(34,197,94,0.12)" : "var(--overlay-soft)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <CategoryIcon category={tx.category} size={16} />
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontSize: "13px", fontWeight: 500, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {tx.description}
+                          </p>
+                          <p style={{ fontSize: "11px", color: "var(--text-muted)" }}>{tx.category}</p>
+                          <p style={{ fontSize: "10px", color: "var(--text-faint)", marginTop: "2px" }}>Pukul {new Date(tx.created_at || tx.date).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })} WIB
+                          </p>
+                        </div>
+                        <p style={{ fontSize: "14px", fontWeight: 600, color: tx.type === "IN" ? "var(--green)" : "var(--text-primary)", flexShrink: 0 }}>
+                          {tx.type === "IN" ? "+" : "-"}{formatCurrency(tx.amount)}
                         </p>
-                        <p style={{ fontSize: "11px", color: "var(--text-muted)" }}>{tx.category}</p>
-                        <p style={{ fontSize: "10px", color: "var(--text-faint)", marginTop: "2px" }}>Pukul {new Date(tx.created_at || tx.date).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })} WIB
-                        </p>
                       </div>
-                      <p style={{ fontSize: "14px", fontWeight: 600, color: tx.type === "IN" ? "var(--green)" : "var(--text-primary)", flexShrink: 0 }}>
-                        {tx.type === "IN" ? "+" : "-"}{formatCurrency(tx.amount)}
-                      </p>
-                      <button
-                        onClick={() => setConfirmDeleteId(tx.id)}
-                        style={{
-                          width: "28px",
-                          height: "28px",
-                          borderRadius: "6px",
-                          background: "transparent",
-                          border: "none",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          cursor: "pointer",
-                          color: "var(--text-faint)",
-                          flexShrink: 0,
-                        }}
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
+                    </SwipeableRow>
                   ))}
                 </div>
               </div>
@@ -246,6 +246,13 @@ export default function TransactionsPage() {
       </div>
 
       {showAddModal && <LazyAddTransactionModal onClose={() => setShowAddModal(false)} />}
+
+      {editingTx && (
+        <LazyAddTransactionModal
+          onClose={() => setEditingTx(null)}
+          editingTransaction={editingTx}
+        />
+      )}
 
       {confirmDeleteId && (
         <ConfirmDialog

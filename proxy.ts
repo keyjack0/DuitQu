@@ -27,7 +27,9 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isLoginPage = request.nextUrl.pathname === "/login";
+  const isAuthPath =
+    request.nextUrl.pathname === "/login" ||
+    request.nextUrl.pathname === "/register";
   const isPublicPath =
     request.nextUrl.pathname.startsWith("/_next") ||
     request.nextUrl.pathname.startsWith("/favicon") ||
@@ -40,12 +42,12 @@ export async function proxy(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/vercel.svg") ||
     request.nextUrl.pathname.startsWith("/window.svg");
 
-  if (!user && !isLoginPage && !isPublicPath) {
+  if (!user && !isAuthPath && !isPublicPath) {
     const loginUrl = new URL("/login", request.url);
     return NextResponse.redirect(loginUrl);
   }
 
-  if (user && isLoginPage) {
+  if (user && isAuthPath) {
     const dashboardUrl = new URL("/dashboard", request.url);
     return NextResponse.redirect(dashboardUrl);
   }

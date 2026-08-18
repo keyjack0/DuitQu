@@ -4,14 +4,20 @@ import { useState } from "react";
 import { useAppStore } from "@/lib/store";
 import { formatCurrency } from "@/lib/utils";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { Plus, Trash2, Edit3 } from "lucide-react";
+import { Plus, Trash2, Edit3, ArrowLeftRight } from "lucide-react";
 import { WalletIcon, WALLET_ICON_OPTIONS } from "@/lib/icons";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { SwipeableRow } from "@/components/ui/SwipeableRow";
+import { TransferModal } from "@/components/wallets/TransferModal";
+import type { Wallet } from "@/types";
 
 export default function WalletsPage() {
   const { user, wallets, addWallet, updateWallet, deleteWallet } = useAppStore();
   const [showAdd, setShowAdd] = useState(false);
+  const [editingWallet, setEditingWallet] = useState<Wallet | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [openRowId, setOpenRowId] = useState<string | null>(null);
+  const [showTransfer, setShowTransfer] = useState(false);
   const [name, setName] = useState("");
   const [balance, setBalance] = useState("");
   const [icon, setIcon] = useState("cash");
@@ -23,21 +29,42 @@ export default function WalletsPage() {
     return num.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   };
 
-  const handleAdd = () => {
-    if (!name) return;
-    const parsedBalance = parseFloat(balance.replace(/\./g, "") || "0");
-    addWallet({
-      id: crypto.randomUUID(),
-      user_id: user!.id,
-      name,
-      balance: parsedBalance,
-      icon,
-      color: null,
-      created_at: new Date().toISOString(),
-    });
+  const closeAdd = () => {
+    setShowAdd(false);
+    setEditingWallet(null);
     setName("");
     setBalance("");
     setIcon("cash");
+  };
+
+  const openEdit = (wallet: Wallet) => {
+    setEditingWallet(wallet);
+    setName(wallet.name);
+    setBalance(formatAmount(wallet.balance.toString()));
+    setIcon(wallet.icon || "cash");
+    setShowAdd(true);
+  };
+
+  const handleAdd = () => {
+    if (!name) return;
+    const parsedBalance = parseFloat(balance.replace(/\./g, "") || "0");
+    if (editingWallet) {
+      updateWallet(editingWallet.id, { name, balance: parsedBalance, icon });
+    } else {
+      addWallet({
+        id: crypto.randomUUID(),
+        user_id: user!.id,
+        name,
+        balance: parsedBalance,
+        icon,
+        color: null,
+        created_at: new Date().toISOString(),
+      });
+    }
+    setName("");
+    setBalance("");
+    setIcon("cash");
+    setEditingWallet(null);
     setShowAdd(false);
   };
 
@@ -47,22 +74,41 @@ export default function WalletsPage() {
         <div style={{ padding: "56px 20px 24px", background: "var(--bg-secondary)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
             <h1 style={{ fontSize: "22px", fontWeight: 700, color: "var(--text-primary)" }}>Dompet</h1>
-            <button
-              onClick={() => setShowAdd(true)}
-              style={{
-                width: "36px",
-                height: "36px",
-                borderRadius: "10px",
-                background: "var(--green)",
-                border: "none",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-              }}
-            >
-              <Plus size={18} color="var(--on-accent)" strokeWidth={2.5} />
-            </button>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button
+                onClick={() => setShowTransfer(true)}
+                title="Transfer antar dompet"
+                style={{
+                  width: "36px",
+                  height: "36px",
+                  borderRadius: "10px",
+                  background: "var(--bg-card)",
+                  border: "1px solid var(--border)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                }}
+              >
+                <ArrowLeftRight size={18} color="var(--text-secondary)" strokeWidth={2.5} />
+              </button>
+              <button
+                onClick={() => setShowAdd(true)}
+                style={{
+                  width: "36px",
+                  height: "36px",
+                  borderRadius: "10px",
+                  background: "var(--green)",
+                  border: "none",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                }}
+              >
+                <Plus size={18} color="var(--on-accent)" strokeWidth={2.5} />
+              </button>
+            </div>
           </div>
 
           {/* Total */}
@@ -114,55 +160,51 @@ export default function WalletsPage() {
           {/* Wallet list */}
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {wallets.map((wallet) => (
-              <div
+              <SwipeableRow
                 key={wallet.id}
-                style={{
-                  background: "var(--bg-card)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "12px",
-                  padding: "16px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "14px",
-                }}
+                isOpen={openRowId === wallet.id}
+                onOpenChange={(open) => setOpenRowId(open ? wallet.id : null)}
+                actions={
+                  <>
+                    <button
+                      onClick={() => openEdit(wallet)}
+                      aria-label="Edit dompet"
+                      style={{ background: "var(--bg-hover)", color: "var(--text-primary)" }}
+                    >
+                      <Edit3 size={15} />
+                    </button>
+                    <button
+                      onClick={() => setConfirmDeleteId(wallet.id)}
+                      aria-label="Hapus dompet"
+                      style={{ background: "var(--red)", color: "#fff" }}
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </>
+                }
               >
-                <div
-                  style={{
-                    width: "44px",
-                    height: "44px",
-                    borderRadius: "12px",
-                    background: "rgba(34, 197, 94, 0.08)",
-                    border: "1px solid rgba(34, 197, 94, 0.15)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  <WalletIcon icon={wallet.icon} size={20} />
+                <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: "14px" }}>
+                  <div
+                    style={{
+                      width: "44px",
+                      height: "44px",
+                      borderRadius: "12px",
+                      background: "rgba(34, 197, 94, 0.08)",
+                      border: "1px solid rgba(34, 197, 94, 0.15)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <WalletIcon icon={wallet.icon} size={20} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "2px" }}>{wallet.name}</p>
+                    <p style={{ fontSize: "16px", fontWeight: 700, color: "var(--green)" }}>{formatCurrency(wallet.balance)}</p>
+                  </div>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "2px" }}>{wallet.name}</p>
-                  <p style={{ fontSize: "16px", fontWeight: 700, color: "var(--green)" }}>{formatCurrency(wallet.balance)}</p>
-                </div>
-                <button
-                  onClick={() => setConfirmDeleteId(wallet.id)}
-                  style={{
-                    width: "32px",
-                    height: "32px",
-                    borderRadius: "8px",
-                    background: "transparent",
-                    border: "1px solid var(--border)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    color: "var(--text-faint)",
-                  }}
-                >
-                  <Trash2 size={13} />
-                </button>
-              </div>
+              </SwipeableRow>
             ))}
           </div>
         </div>
@@ -180,10 +222,10 @@ export default function WalletsPage() {
             alignItems: "flex-end",
             zIndex: 200,
           }}
-          onClick={(e) => e.target === e.currentTarget && setShowAdd(false)}
+          onClick={(e) => e.target === e.currentTarget && closeAdd()}
         >
           <div style={{ width: "100%", background: "var(--bg-secondary)", borderRadius: "20px 20px 0 0", border: "1px solid var(--border)", padding: "24px 20px 40px" }}>
-            <h2 style={{ fontSize: "17px", fontWeight: 700, color: "var(--text-primary)", marginBottom: "20px" }}>Tambah Dompet</h2>
+            <h2 style={{ fontSize: "17px", fontWeight: 700, color: "var(--text-primary)", marginBottom: "20px" }}>{editingWallet ? "Edit Dompet" : "Tambah Dompet"}</h2>
 
             <div style={{ marginBottom: "14px" }}>
               <label style={{ display: "block", fontSize: "12px", color: "var(--text-muted)", marginBottom: "6px" }}>Nama Dompet</label>
@@ -239,11 +281,13 @@ export default function WalletsPage() {
               onClick={handleAdd}
               style={{ width: "100%", padding: "14px", background: "var(--green)", color: "var(--on-accent)", border: "none", borderRadius: "10px", fontWeight: 700, fontSize: "15px", cursor: "pointer" }}
             >
-              Simpan Dompet
+              {editingWallet ? "Simpan Perubahan" : "Simpan Dompet"}
             </button>
           </div>
         </div>
       )}
+
+      {showTransfer && <TransferModal onClose={() => setShowTransfer(false)} />}
 
       {confirmDeleteId && (
         <ConfirmDialog

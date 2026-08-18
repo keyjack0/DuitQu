@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useAppStore } from "@/lib/store";
-import { CATEGORIES, TransactionType } from "@/types";
-import { X, Sparkles, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
+import { CATEGORIES, Transaction } from "@/types";
+import { X, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
 
 export interface AddTransactionModalProps {
   onClose: () => void;
@@ -14,27 +14,48 @@ export interface AddTransactionModalProps {
     walletName?: string;
     type?: "IN" | "OUT";
   };
+  editingTransaction?: Transaction;
 }
 
-export function AddTransactionModal({ onClose, prefill }: AddTransactionModalProps) {
-  const { user, wallets, addTransaction } = useAppStore();
-  const [type, setType] = useState<"IN" | "OUT">(prefill?.type || "OUT");
+export function AddTransactionModal({ onClose, prefill, editingTransaction }: AddTransactionModalProps) {
+  const { user, wallets, addTransaction, updateTransaction } = useAppStore();
+  const editing = editingTransaction;
+  const [type, setType] = useState<"IN" | "OUT">(
+    editing?.type === "IN" || editing?.type === "OUT"
+      ? editing.type
+      : prefill?.type || "OUT"
+  );
   const [submitting, setSubmitting] = useState(false);
-  const [amount, setAmount] = useState(prefill?.amount?.toString() || "");
-  const [category, setCategory] = useState(prefill?.category || CATEGORIES[0]);
-  const [description, setDescription] = useState(prefill?.description || "");
+  const [amount, setAmount] = useState(editing?.amount?.toString() || prefill?.amount?.toString() || "");
+  const [category, setCategory] = useState(editing?.category || prefill?.category || CATEGORIES[0]);
+  const [description, setDescription] = useState(editing?.description || prefill?.description || "");
   const [walletId, setWalletId] = useState(
-    wallets.find((w) => w.name.toLowerCase().includes(prefill?.walletName?.toLowerCase() || ""))?.id ||
+    editing?.wallet_id ||
+      wallets.find((w) => w.name.toLowerCase().includes(prefill?.walletName?.toLowerCase() || ""))?.id ||
       wallets[0]?.id ||
       ""
   );
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [date, setDate] = useState(editing?.date || new Date().toISOString().split("T")[0]);
 
   const handleSubmit = () => {
     if (!amount || !walletId || submitting) return;
     setSubmitting(true);
     const parsedAmount = parseFloat(amount.replace(/\./g, "").replace(",", "."));
     if (isNaN(parsedAmount) || parsedAmount <= 0) return;
+
+    if (editing) {
+      updateTransaction(editing.id, {
+        type,
+        amount: parsedAmount,
+        category,
+        description: description || category,
+        date,
+        wallet_id: walletId,
+        to_wallet_id: editing.to_wallet_id,
+      });
+      onClose();
+      return;
+    }
 
     const id = crypto.randomUUID();
 
@@ -86,7 +107,7 @@ export function AddTransactionModal({ onClose, prefill }: AddTransactionModalPro
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
           <h2 style={{ fontSize: "17px", fontWeight: 700, color: "var(--text-primary)" }}>
-            Tambah Transaksi
+            {editing ? "Edit Transaksi" : "Tambah Transaksi"}
           </h2>
           <button
             onClick={onClose}
@@ -292,7 +313,7 @@ export function AddTransactionModal({ onClose, prefill }: AddTransactionModalPro
             transition: "all 0.2s",
           }}
         >
-          {submitting ? "Menyimpan..." : "Simpan Transaksi"}
+          {submitting ? "Menyimpan..." : editing ? "Simpan Perubahan" : "Simpan Transaksi"}
         </button>
       </div>
     </div>

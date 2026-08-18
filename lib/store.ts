@@ -27,6 +27,7 @@ interface AppState {
   updateBudget: (id: string, updates: Partial<Budget>) => void;
   deleteBudget: (id: string) => void;
   deleteTransaction: (id: string) => void;
+  updateTransaction: (id: string, updates: Partial<Transaction>) => void;
   fetchMoreTransactions: (userId: string, offset: number, limit: number) => Promise<number>;
   signOut: () => Promise<void>;
 }
@@ -249,6 +250,45 @@ export const useAppStore = create<AppState>()(
             if (error) {
               set({ transactions: prev });
               toast.error("Gagal menghapus transaksi");
+            } else if (userId) {
+              refreshWallets(userId);
+            }
+          });
+      },
+
+      updateTransaction: (id, updates) => {
+        const userId = useAppStore.getState().user?.id;
+        set((state) => ({
+          transactions: state.transactions.map((t) => (t.id === id ? { ...t, ...updates } : t)),
+        }));
+        toast.success("Transaksi berhasil diperbarui");
+        getSupabaseClient()
+          .from("transactions")
+          .update({
+            type: updates.type,
+            amount: updates.amount,
+            category: updates.category,
+            description: updates.description,
+            date: updates.date,
+            wallet_id: updates.wallet_id,
+            to_wallet_id: updates.to_wallet_id ?? null,
+          })
+          .eq("id", id)
+          .then(({ error }: { error: { message: string } | null }) => {
+            if (error) {
+              toast.error("Gagal memperbarui transaksi");
+              getSupabaseClient()
+                .from("transactions")
+                .select("*")
+                .eq("id", id)
+                .single()
+                .then(({ data }: { data: Transaction | null }) => {
+                  if (data) {
+                    set((state) => ({
+                      transactions: state.transactions.map((t) => (t.id === id ? { ...t, ...data } : t)),
+                    }));
+                  }
+                });
             } else if (userId) {
               refreshWallets(userId);
             }

@@ -3,43 +3,109 @@
 import { useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
-import { LogIn, Eye, EyeOff } from "lucide-react";
+import { UserPlus, Eye, EyeOff } from "lucide-react";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [needConfirm, setNeedConfirm] = useState(false);
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      setError("Email dan password harus diisi");
+  const handleRegister = async () => {
+    if (!name || !email || !password) {
+      setError("Semua kolom harus diisi");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password minimal 6 karakter");
       return;
     }
 
     setLoading(true);
     setError("");
 
-    const { error: authError } =
-      await getSupabaseClient().auth.signInWithPassword({
-        email,
-        password,
-      });
+    const { data, error: authError } = await getSupabaseClient().auth.signUp({
+      email,
+      password,
+      options: { data: { name } },
+    });
 
     if (authError) {
-      setError(authError.message === "Invalid login credentials"
-        ? "Email atau password salah"
-        : authError.message
+      setError(
+        authError.message === "User already registered"
+          ? "Email sudah terdaftar. Silakan masuk."
+          : authError.message
       );
       setLoading(false);
       return;
     }
 
-    router.push("/dashboard");
-    router.refresh();
+    if (data.session) {
+      router.push("/dashboard");
+      router.refresh();
+      return;
+    }
+
+    setNeedConfirm(true);
+    setLoading(false);
   };
+
+  if (needConfirm) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "var(--bg-primary)",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          padding: "24px",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "360px",
+            width: "100%",
+            margin: "0 auto",
+            background: "var(--bg-secondary)",
+            border: "1px solid var(--border)",
+            borderRadius: "16px",
+            padding: "32px 24px",
+            textAlign: "center",
+          }}
+        >
+          <h1 style={{ fontSize: "20px", fontWeight: 700, color: "var(--text-primary)", marginBottom: "12px" }}>
+            Cek Email Anda 📬
+          </h1>
+          <p style={{ fontSize: "14px", color: "var(--text-muted)", marginBottom: "24px" }}>
+            Kami telah mengirim link verifikasi ke <b style={{ color: "var(--text-primary)" }}>{email}</b>.
+            Klik link tersebut, lalu kembali masuk ke aplikasi.
+          </p>
+          <a
+            href="/login"
+            style={{
+              display: "block",
+              padding: "12px",
+              background: "var(--green)",
+              color: "var(--on-accent)",
+              border: "none",
+              borderRadius: "10px",
+              fontWeight: 700,
+              fontSize: "14px",
+              textAlign: "center",
+              textDecoration: "none",
+            }}
+          >
+            Ke Halaman Masuk
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -76,7 +142,7 @@ export default function LoginPage() {
             DuitQu
           </h1>
           <p style={{ fontSize: "14px", color: "var(--text-muted)" }}>
-            Masuk untuk melanjutkan
+            Buat akun untuk mulai mencatat keuangan
           </p>
         </div>
 
@@ -107,6 +173,28 @@ export default function LoginPage() {
 
           <div style={{ marginBottom: "14px" }}>
             <label style={{ display: "block", fontSize: "12px", color: "var(--text-muted)", marginBottom: "6px" }}>
+              Nama
+            </label>
+            <input
+              type="text"
+              placeholder="Nama kamu"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              style={{
+                width: "100%",
+                background: "var(--bg-card)",
+                border: "1px solid var(--border)",
+                borderRadius: "8px",
+                padding: "10px 14px",
+                color: "var(--text-primary)",
+                fontSize: "14px",
+                outline: "none",
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: "14px" }}>
+            <label style={{ display: "block", fontSize: "12px", color: "var(--text-muted)", marginBottom: "6px" }}>
               Email
             </label>
             <input
@@ -114,7 +202,6 @@ export default function LoginPage() {
               placeholder="admin@duitqu.app"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
               style={{
                 width: "100%",
                 background: "var(--bg-card)",
@@ -135,16 +222,16 @@ export default function LoginPage() {
             <div style={{ position: "relative" }}>
               <input
                 type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
+                placeholder="Minimal 6 karakter"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                onKeyDown={(e) => e.key === "Enter" && handleRegister()}
                 style={{
                   width: "100%",
                   background: "var(--bg-card)",
                   border: "1px solid var(--border)",
                   borderRadius: "8px",
-                  padding: "10px 14px 10px 14px",
+                  padding: "10px 14px",
                   paddingRight: "40px",
                   color: "var(--text-primary)",
                   fontSize: "14px",
@@ -172,7 +259,7 @@ export default function LoginPage() {
           </div>
 
           <button
-            onClick={handleLogin}
+            onClick={handleRegister}
             disabled={loading}
             style={{
               width: "100%",
@@ -195,22 +282,18 @@ export default function LoginPage() {
               <span>Memproses...</span>
             ) : (
               <>
-                <LogIn size={16} />
-                Masuk
+                <UserPlus size={16} />
+                Daftar
               </>
             )}
           </button>
         </div>
 
         <p style={{ textAlign: "center", fontSize: "13px", color: "var(--text-muted)", marginTop: "16px" }}>
-          Belum punya akun?{" "}
-          <a href="/register" style={{ color: "var(--green)", fontWeight: 600, textDecoration: "none" }}>
-            Daftar
+          Sudah punya akun?{" "}
+          <a href="/login" style={{ color: "var(--green)", fontWeight: 600, textDecoration: "none" }}>
+            Masuk
           </a>
-        </p>
-
-        <p style={{ textAlign: "center", fontSize: "12px", color: "var(--text-faint)", marginTop: "20px" }}>
-          Aplikasi keuangan pribadi Anda
         </p>
       </div>
     </div>

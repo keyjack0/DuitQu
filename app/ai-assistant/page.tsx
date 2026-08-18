@@ -228,7 +228,7 @@ DATA KEUANGAN USER (bulan ini):
   //layout page ai button send message and input field
   return (
     <AppLayout>
-      <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
+      <div style={{ display: "flex", flexDirection: "column", height: "calc(100dvh - 80px)" }}>
         {/* Header */}
         <div style={{ padding: "16px 20px", background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)", flexShrink: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -272,7 +272,7 @@ DATA KEUANGAN USER (bulan ini):
         </div>
 
         {/* Messages */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px", display: "flex", flexDirection: "column", gap: "12px" }}>
+        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "16px 20px", display: "flex", flexDirection: "column", gap: "12px" }}>
           {messages.map((msg, idx) => (
             <div
               key={idx}

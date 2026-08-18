@@ -1,6 +1,44 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+
+const RATE_LIMIT_MS = 3000;
+const rateLimit = new Map<string, number>();
 
 export async function POST(request: NextRequest) {
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+        },
+      },
+    }
+  );
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const last = rateLimit.get(user.id) ?? 0;
+  if (Date.now() - last < RATE_LIMIT_MS) {
+    return NextResponse.json({ error: "Terlalu banyak permintaan" }, { status: 429 });
+  }
+  rateLimit.set(user.id, Date.now());
+  if (rateLimit.size > 1000) {
+    for (const [key, at] of rateLimit) {
+      if (Date.now() - at > RATE_LIMIT_MS * 20) rateLimit.delete(key);
+    }
+  }
+
   const { messages, systemPrompt } = await request.json();
 
   const apiKey = process.env.GEMINI_API_KEY;
