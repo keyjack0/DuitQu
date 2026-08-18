@@ -225,11 +225,12 @@ DATA KEUANGAN USER (bulan ini):
     }
   };
 
+  //layout page ai button send message and input field
   return (
     <AppLayout>
-      <div style={{ display: "flex", flexDirection: "column", height: "100vh", paddingBottom: "80px" }}>
+      <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
         {/* Header */}
-        <div style={{ padding: "56px 20px 16px", background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)", flexShrink: 0 }}>
+        <div style={{ padding: "16px 20px", background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)", flexShrink: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <div
               style={{

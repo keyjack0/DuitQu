@@ -18,6 +18,7 @@ export default function TransactionsPage() {
   const [filterType, setFilterType] = useState("all");
   const [visibleCount, setVisibleCount] = useState(300);
   const [loadingMore, setLoadingMore] = useState(false);
+  
 
   const filtered = useMemo(() => {
     const result = transactions.filter((t) => {
@@ -137,11 +138,25 @@ export default function TransactionsPage() {
               <p>Belum ada transaksi</p>
             </div>
           ) : (
-            grouped.map(([date, txs]) => (
+            grouped.map(([date, txs]) => {
+              const dayExpense = txs
+                .filter((t) => t.type === "OUT")
+                .reduce((s, t) => s + t.amount, 0);
+              return (
               <div key={date} style={{ marginBottom: "20px" }}>
-                <p style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 600, marginBottom: "8px", letterSpacing: "0.06em" }}>
-                  {new Date(date).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long" })}
-                </p>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                  <p style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 600, letterSpacing: "0.06em" }}>
+                    {new Date(date).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                  </p>
+                  {dayExpense > 0 && (
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <span style={{ fontSize: "11px", color: "var(--text-muted)" }}></span>
+                      <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--red)" }}>
+                        {formatCurrency(dayExpense)}
+                      </span>
+                    </div>
+                  )}
+                </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                   {txs.map((tx) => (
                     <div
@@ -175,8 +190,7 @@ export default function TransactionsPage() {
                           {tx.description}
                         </p>
                         <p style={{ fontSize: "11px", color: "var(--text-muted)" }}>{tx.category}</p>
-                        <p style={{ fontSize: "10px", color: "var(--text-faint)", marginTop: "2px" }}>
-                          {new Date(tx.created_at || tx.date).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                        <p style={{ fontSize: "10px", color: "var(--text-faint)", marginTop: "2px" }}>Pukul {new Date(tx.created_at || tx.date).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })} WIB
                         </p>
                       </div>
                       <p style={{ fontSize: "14px", fontWeight: 600, color: tx.type === "IN" ? "var(--green)" : "var(--text-primary)", flexShrink: 0 }}>
@@ -204,7 +218,8 @@ export default function TransactionsPage() {
                   ))}
                 </div>
               </div>
-            ))
+              );
+            })
           )}
 
           {grouped.length > 0 && canLoadMore && (
