@@ -45,7 +45,7 @@ export default function SettingsPage() {
     setLoggingOut(true);
     await signOut();
     router.push("/login");
-    router.refresh();
+    // router.refresh();
   };
 
   return (
