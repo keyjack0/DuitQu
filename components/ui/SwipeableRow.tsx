@@ -88,19 +88,9 @@ export function SwipeableRow({ actions, children, isOpen, onOpenChange }: Swipea
 
   if (isDesktop) {
     return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
-          background: "var(--bg-card)",
-          border: "1px solid var(--border)",
-          borderRadius: "10px",
-          padding: "12px 14px",
-        }}
-      >
-        <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center" }}>{children}</div>
-        <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>{styleActions("desktop")}</div>
+      <div className="swipe-desktop">
+        <div className="swipe-content">{children}</div>
+        <div className="swipe-actions">{styleActions("desktop")}</div>
       </div>
     );
   }
@@ -141,26 +131,8 @@ export function SwipeableRow({ actions, children, isOpen, onOpenChange }: Swipea
   };
 
   return (
-    <div
-      ref={rootRef}
-      style={{
-        position: "relative",
-        overflow: "hidden",
-        borderRadius: "10px",
-        background: "var(--bg-card)",
-        border: "1px solid var(--border)",
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          bottom: 0,
-          right: 0,
-          width: OPEN_OFFSET,
-          display: "flex",
-        }}
-      >
+    <div ref={rootRef} className="swipe-mobile">
+      <div className="swipe-actions-layer">
         {styleActions("mobile")}
       </div>
       <div
@@ -168,14 +140,10 @@ export function SwipeableRow({ actions, children, isOpen, onOpenChange }: Swipea
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerCancel}
+        className="swipe-drag"
         style={{
           transform: `translateX(${offset}px)`,
           transition: dragging ? "none" : "transform 0.25s ease",
-          background: "var(--bg-card)",
-          touchAction: "pan-y",
-          padding: "12px 14px",
-          display: "flex",
-          alignItems: "center",
         }}
       >
         {children}

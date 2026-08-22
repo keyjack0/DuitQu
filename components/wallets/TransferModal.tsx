@@ -47,172 +47,85 @@ export function TransferModal({ onClose }: TransferModalProps) {
 
   return (
     <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(0,0,0,0.8)",
-        backdropFilter: "blur(8px)",
-        display: "flex",
-        alignItems: "flex-end",
-        zIndex: 200,
-        animation: "fadeIn 0.2s ease",
-      }}
+      className="sheet-overlay sheet-overlay--fade"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div
-        style={{
-          width: "100%",
-          background: "var(--bg-secondary)",
-          borderRadius: "20px 20px 0 0",
-          border: "1px solid var(--border)",
-          borderBottom: "none",
-          padding: "24px 20px 40px",
-          animation: "slideUp 0.3s ease",
-        }}
-      >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-          <h2 style={{ fontSize: "17px", fontWeight: 700, color: "var(--text-primary)" }}>
-            Transfer Antar Dompet
-          </h2>
-          <button
-            onClick={onClose}
-            style={{
-              width: "32px",
-              height: "32px",
-              borderRadius: "50%",
-              background: "var(--bg-hover)",
-              border: "1px solid var(--border)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: "pointer",
-              color: "var(--text-secondary)",
-            }}
-          >
+      <div className="sheet-panel sheet-panel--rise">
+        <div className="sheet-head">
+          <h2 className="sheet-title">Transfer Antar Dompet</h2>
+          <button onClick={onClose} className="sheet-close">
             <X size={15} />
           </button>
         </div>
 
         {wallets.length < 2 ? (
-          <p style={{ fontSize: "14px", color: "var(--text-muted)", textAlign: "center", padding: "24px 0" }}>
+          <p className="text-sm text-muted text-center py-6">
             Kamu butuh minimal 2 dompet untuk transfer. Tambah dompet dulu ya!
           </p>
         ) : (
           <>
-            <div style={{ marginBottom: "14px" }}>
-              <label style={{ display: "block", fontSize: "12px", color: "var(--text-muted)", marginBottom: "6px" }}>Dari Dompet</label>
+            <div className="form-field">
+              <label className="form-label">Dari Dompet</label>
               <select
                 value={fromWallet}
                 onChange={(e) => setFromWallet(e.target.value)}
-                style={{
-                  width: "100%",
-                  background: "var(--bg-card)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "8px",
-                  padding: "10px 14px",
-                  color: "var(--text-primary)",
-                  fontSize: "14px",
-                  outline: "none",
-                }}
+                className="form-input"
               >
                 {wallets.map((w) => (
-                  <option key={w.id} value={w.id} style={{ background: "var(--bg-card)" }}>
+                  <option key={w.id} value={w.id}>
                     {w.name} ({formatCurrency(w.balance)})
                   </option>
                 ))}
               </select>
             </div>
 
-            <div style={{ display: "flex", justifyContent: "center", marginBottom: "14px" }}>
+            <div className="flex justify-center mb-3.5">
               <ArrowLeftRight size={18} color="var(--text-muted)" />
             </div>
 
-            <div style={{ marginBottom: "14px" }}>
-              <label style={{ display: "block", fontSize: "12px", color: "var(--text-muted)", marginBottom: "6px" }}>Ke Dompet</label>
+            <div className="form-field">
+              <label className="form-label">Ke Dompet</label>
               <select
                 value={toWallet}
                 onChange={(e) => setToWallet(e.target.value)}
-                style={{
-                  width: "100%",
-                  background: "var(--bg-card)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "8px",
-                  padding: "10px 14px",
-                  color: "var(--text-primary)",
-                  fontSize: "14px",
-                  outline: "none",
-                }}
+                className="form-input"
               >
                 {wallets
                   .filter((w) => w.id !== fromWallet)
                   .map((w) => (
-                    <option key={w.id} value={w.id} style={{ background: "var(--bg-card)" }}>
+                    <option key={w.id} value={w.id}>
                       {w.name} ({formatCurrency(w.balance)})
                     </option>
                   ))}
               </select>
             </div>
 
-            <div style={{ marginBottom: "14px" }}>
-              <label style={{ display: "block", fontSize: "12px", color: "var(--text-muted)", marginBottom: "6px" }}>Nominal</label>
-              <div style={{ position: "relative" }}>
-                <span style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", fontSize: "14px" }}>Rp</span>
+            <div className="form-field">
+              <label className="form-label">Nominal</label>
+              <div className="relative">
+                <span className="input-prefix input-prefix--lg">Rp</span>
                 <input
                   type="text"
                   inputMode="numeric"
                   placeholder="0"
                   value={amount}
                   onChange={(e) => setAmount(formatAmount(e.target.value))}
-                  style={{
-                    width: "100%",
-                    background: "var(--bg-card)",
-                    border: "1px solid var(--border)",
-                    borderRadius: "8px",
-                    padding: "12px 14px 12px 40px",
-                    color: "var(--text-primary)",
-                    fontSize: "18px",
-                    fontWeight: 700,
-                    outline: "none",
-                  }}
+                  className="form-input form-input--amount"
                 />
               </div>
             </div>
 
-            <div style={{ marginBottom: "24px" }}>
-              <label style={{ display: "block", fontSize: "12px", color: "var(--text-muted)", marginBottom: "6px" }}>Tanggal</label>
+            <div className="form-field form-field--spaced">
+              <label className="form-label">Tanggal</label>
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                style={{
-                  width: "100%",
-                  background: "var(--bg-card)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "8px",
-                  padding: "10px 14px",
-                  color: "var(--text-primary)",
-                  fontSize: "14px",
-                  outline: "none",
-                }}
+                className="form-input"
               />
             </div>
 
-            <button
-              onClick={handleSubmit}
-              disabled={!canSubmit}
-              style={{
-                width: "100%",
-                padding: "14px",
-                background: canSubmit ? "var(--green)" : "var(--border)",
-                color: canSubmit ? "var(--on-accent)" : "var(--text-muted)",
-                border: "none",
-                borderRadius: "10px",
-                fontWeight: 700,
-                fontSize: "15px",
-                cursor: canSubmit ? "pointer" : "not-allowed",
-                transition: "all 0.2s",
-              }}
-            >
+            <button onClick={handleSubmit} disabled={!canSubmit} className="btn-primary">
               {submitting ? "Menyimpan..." : "Transfer"}
             </button>
           </>

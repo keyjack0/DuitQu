@@ -22,42 +22,14 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav
-      style={{
-        position: "fixed",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        background: "var(--nav-bg)",
-        backdropFilter: "blur(20px)",
-        borderTop: "1px solid var(--border)",
-        display: "flex",
-        justifyContent: "space-around",
-        alignItems: "center",
-        padding: "8px 8px 20px",
-        zIndex: 100,
-      }}
-    >
+    <nav className="bottom-nav">
       {navItems.map(({ href, icon: Icon, label }) => {
         const isActive = pathname === href || pathname.startsWith(href + "/");
         return (
           <Link
             key={href}
             href={href}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: "4px",
-              padding: "8px 16px",
-              color: isActive ? "var(--green)" : "var(--text-muted)",
-              borderRadius: "10px",
-              transition: "all 0.2s ease",
-              textDecoration: "none",
-              fontSize: "11px",
-              fontWeight: isActive ? 600 : 400,
-              background: isActive ? "var(--green-dim)" : "transparent",
-            }}
+            className={`bottom-nav-item ${isActive ? "bottom-nav-item--active" : ""}`}
           >
             <Icon size={20} strokeWidth={isActive ? 2.5 : 1.5} />
             <span>{label}</span>

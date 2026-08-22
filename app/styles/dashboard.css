@@ -1,0 +1,190 @@
+@layer components {
+  .dashboard {
+    @apply pb-8 max-[560px]:pb-7;
+  }
+
+  .dashboard-hero {
+    @apply pt-[20px] px-5 pb-7 max-[560px]:pb-[26px] bg-linear-to-b from-secondary from-0% to-primary to-[92%];
+  }
+
+  .dashboard-container {
+    @apply w-full mx-auto max-w-[1180px] max-[900px]:max-w-[720px];
+  }
+
+  .dashboard-content {
+    @apply grid grid-cols-1 gap-5 px-5;
+  }
+
+  .dashboard-column {
+    @apply min-w-0;
+  }
+
+  .dashboard-topbar {
+    @apply flex items-start justify-between gap-[18px] mb-6;
+  }
+
+  .dashboard-greeting {
+    @apply text-muted text-[13px] leading-[1.3] mb-1.5;
+  }
+
+  .dashboard-title {
+    @apply text-fg text-[26px] font-[750] leading-[1.12];
+  }
+
+  .dashboard-header-actions {
+    @apply flex items-center gap-2.5 shrink-0;
+  }
+
+  .dashboard-icon-button {
+    @apply size-10 rounded-full bg-green-dim border border-green-border shadow-[0_10px_24px_rgba(0,0,0,0.12)] flex items-center justify-center text-green cursor-pointer;
+  }
+
+  .dashboard-balance-card {
+    @apply bg-linear-to-br from-green to-green-dark border border-green-border rounded-[18px] p-6 shadow-[0_22px_42px_rgba(34,197,94,0.18),0_8px_18px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.24),inset_0_-18px_42px_rgba(0,0,0,0.12)] overflow-hidden transform-gpu;
+  }
+
+  .dashboard-balance-label-row {
+    @apply flex items-center gap-2 mb-2;
+  }
+
+  .dashboard-balance-label {
+    @apply text-white/75 text-xs uppercase;
+  }
+
+  .dashboard-balance-toggle {
+    @apply size-6 rounded-full border-none bg-transparent text-white/80 flex items-center justify-center cursor-pointer p-0;
+  }
+
+  .dashboard-balance-amount {
+    @apply text-white text-[32px] font-bold mb-5;
+  }
+
+  .dashboard-balance-stats {
+    @apply flex gap-3 flex-wrap;
+  }
+
+  .dashboard-balance-stat {
+    @apply flex items-center gap-2;
+  }
+
+  .dashboard-balance-stat-icon {
+    @apply size-7 rounded-full bg-white/15 flex items-center justify-center shrink-0;
+  }
+
+  .dashboard-balance-stat-label {
+    @apply text-white/70 text-[10px];
+  }
+
+  .dashboard-balance-stat-value {
+    @apply text-white text-[13px] font-semibold;
+  }
+
+  .dashboard-quick-actions {
+    @apply flex gap-2.5 -mt-0.5 mb-[22px];
+  }
+
+  .dashboard-action {
+    @apply rounded-xl px-3.5 py-[13px] flex items-center justify-center gap-2 text-sm no-underline cursor-pointer;
+  }
+
+  .dashboard-action--primary {
+    @apply flex-1 bg-green text-on-accent border-none font-semibold shadow-[0_12px_24px_rgba(34,197,94,0.16)];
+  }
+
+  .dashboard-action--secondary {
+    @apply bg-card border border-border text-soft font-medium shadow-[0_10px_22px_rgba(0,0,0,0.08)] whitespace-nowrap;
+  }
+
+  .dashboard-section-head {
+    @apply flex items-center justify-between gap-3 mb-3;
+  }
+
+  .dashboard-section-title {
+    @apply text-muted text-[13px] font-semibold uppercase;
+  }
+
+  .dashboard-section-link {
+    @apply text-green text-xs font-semibold no-underline whitespace-nowrap;
+  }
+
+  .dashboard-tx-list {
+    @apply flex flex-col gap-2.5;
+  }
+
+  .dashboard-wallet-list {
+    @apply grid grid-cols-[repeat(auto-fit,minmax(148px,1fr))] gap-2.5 mb-6 max-[900px]:flex max-[900px]:overflow-x-auto max-[900px]:pb-2;
+  }
+
+  .dashboard-wallet-card {
+    @apply min-w-0 max-[900px]:min-w-[150px] bg-linear-to-br from-card to-card-2 border border-border rounded-[14px] p-[15px] no-underline shadow-[0_12px_24px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.03)];
+  }
+
+  .dashboard-wallet-icon {
+    @apply mb-2;
+  }
+
+  .dashboard-wallet-name {
+    @apply text-muted text-[11px] mb-1;
+  }
+
+  .dashboard-wallet-balance {
+    @apply text-fg text-sm font-bold;
+  }
+}
+
+/* ===== Chart cards (ExpenseChart, CategoryPieChart) ===== */
+.chart-card {
+  @apply border border-border rounded-2xl p-[18px] mb-5 shadow-[0_14px_28px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.03)] [background:linear-gradient(145deg,var(--bg-card)_0%,var(--bg-card-2)_100%)];
+}
+
+.chart-head {
+  @apply flex items-center gap-2 mb-4;
+}
+
+.chart-title {
+  @apply text-[13px] font-semibold text-soft tracking-[0.05em] uppercase;
+}
+
+.chart-tooltip {
+  @apply bg-card border border-border rounded-lg px-3 py-2 text-xs;
+}
+
+.chart-empty {
+  @apply text-center text-faint text-[13px] py-5;
+}
+
+.pie-legend {
+  @apply mt-3;
+}
+
+.pie-legend-item {
+  @apply flex items-center gap-2 py-1;
+}
+
+.pie-legend-dot {
+  @apply size-2 rounded-full shrink-0;
+}
+
+.pie-legend-name {
+  @apply flex-1 text-[11px] text-soft truncate;
+}
+
+.pie-legend-pct {
+  @apply text-[11px] text-faint w-9 text-right;
+}
+
+.pie-legend-val {
+  @apply text-[11px] text-fg font-semibold w-20 text-right;
+}
+
+.chart-tooltip-value {
+  @apply text-green font-semibold;
+}
+
+.chart-tooltip-title {
+  @apply text-fg font-semibold mb-1;
+}
+
+.chart-tooltip-note {
+  @apply text-muted mt-0.5;
+}

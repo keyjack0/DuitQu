@@ -1,0 +1,49 @@
+@layer components {
+  .settings-list {
+    @apply px-5 flex flex-col gap-5;
+  }
+
+  .card--row {
+    @apply flex items-center justify-between gap-3;
+  }
+
+  .profile-row {
+    @apply flex items-center gap-3.5 mb-5;
+  }
+
+  .avatar-circle {
+    @apply size-[52px] rounded-full bg-linear-to-br from-green to-green-dark text-on-accent flex items-center justify-center text-xl font-extrabold shrink-0;
+  }
+
+  .profile-info {
+    @apply flex-1 min-w-0;
+  }
+
+  .profile-name {
+    @apply text-[15px] font-bold text-fg;
+  }
+
+  .profile-email {
+    @apply text-[13px] text-muted;
+  }
+
+  .profile-footer {
+    @apply flex items-center justify-between gap-3 mt-5;
+  }
+
+  .meta-label {
+    @apply text-[11px] text-muted mb-0.5;
+  }
+
+  .meta-value {
+    @apply text-[13px] text-fg font-semibold;
+  }
+
+  .about-title {
+    @apply text-sm font-semibold text-fg;
+  }
+
+  .about-desc {
+    @apply text-xs text-muted mt-0.5;
+  }
+}

@@ -3,12 +3,12 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useAppStore } from "@/lib/store";
 import { formatCurrency, isThisMonth } from "@/lib/utils";
-import { AppLayout } from "@/components/layout/AppLayout";
 import { LazyAddTransactionModal } from "@/components/transactions/LazyAddTransactionModal";
 import { Bot, Send, Sparkles, User, Loader2, Trash2 } from "lucide-react";
 import { ParsedTransaction } from "@/types";
 import { getSupabaseClient } from "@/lib/supabase";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import MarkdownText from "@/components/ai/MarkdownText";
 
 interface Message {
   role: "user" | "assistant";
@@ -71,7 +71,7 @@ function stripTransactionJson(text: string): { text: string; parsed: ParsedTrans
 }
 
 export default function AIAssistantPage() {
-  const { user, wallets, transactions, budgets } = useAppStore();
+  const { user, wallets, transactions, monthTransactions, budgets } = useAppStore();
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -87,7 +87,7 @@ export default function AIAssistantPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const financialContext = useMemo(() => {
-    const thisMonthTx = transactions.filter((t) => isThisMonth(t.date));
+    const thisMonthTx = monthTransactions.filter((t) => isThisMonth(t.date));
     const income = thisMonthTx.filter((t) => t.type === "IN").reduce((s, t) => s + t.amount, 0);
     const expense = thisMonthTx.filter((t) => t.type === "OUT").reduce((s, t) => s + t.amount, 0);
     const totalBalance = wallets.reduce((s, w) => s + w.balance, 0);
@@ -110,7 +110,7 @@ DATA KEUANGAN USER (bulan ini):
 - Budget: ${budgetDetails || "Tidak ada budget"}
 - Transaksi terbaru: ${[...transactions].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5).map((t) => `${t.description} ${formatCurrency(t.amount)} (${t.type})`).join(", ")}
     `;
-  }, [wallets, transactions, budgets]);
+  }, [wallets, transactions, monthTransactions, budgets]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -227,44 +227,21 @@ DATA KEUANGAN USER (bulan ini):
 
   //layout page ai button send message and input field
   return (
-    <AppLayout>
-      <div style={{ display: "flex", flexDirection: "column", height: "calc(100dvh - 80px)" }}>
+    <>
+      <div className="ai-shell">
         {/* Header */}
-        <div style={{ padding: "16px 20px", background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)", flexShrink: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <div
-              style={{
-                width: "40px",
-                height: "40px",
-                borderRadius: "12px",
-                background: "rgba(34, 197, 94, 0.12)",
-                border: "1px solid rgba(34, 197, 94, 0.25)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
+        <div className="ai-head">
+          <div className="ai-head-row">
+            <div className="ai-logo">
               <Bot size={20} color="var(--green)" />
             </div>
             <div>
-              <h1 style={{ fontSize: "17px", fontWeight: 700, color: "var(--text-primary)" }}>DuitQu AI</h1>
-              <p style={{ fontSize: "11px", color: "var(--green)" }}>● Online</p>
+              <h1 className="ai-name">DuitQu AI</h1>
+              <p className="ai-status">● Online</p>
             </div>
             <button
               onClick={() => setShowClearConfirm(true)}
-              style={{
-                marginLeft: "auto",
-                width: "32px",
-                height: "32px",
-                borderRadius: "8px",
-                background: "transparent",
-                border: "1px solid var(--border)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                color: "var(--text-faint)",
-              }}
+              className="ai-clear-btn"
             >
               <Trash2 size={13} />
             </button>
@@ -272,51 +249,26 @@ DATA KEUANGAN USER (bulan ini):
         </div>
 
         {/* Messages */}
-        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "16px 20px", display: "flex", flexDirection: "column", gap: "12px" }}>
+        <div className="ai-messages">
           {messages.map((msg, idx) => (
             <div
               key={idx}
-              style={{
-                display: "flex",
-                gap: "10px",
-                justifyContent: msg.role === "user" ? "flex-end" : "flex-start",
-                animation: "slideUp 0.3s ease",
-              }}
+              className={`ai-msg ${msg.role === "user" ? "ai-msg--user" : ""}`}
             >
               {msg.role === "assistant" && (
-                <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: "rgba(34, 197, 94, 0.12)", border: "1px solid rgba(34, 197, 94, 0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: "4px" }}>
+                <div className="ai-avatar ai-avatar--bot">
                   <Bot size={14} color="var(--green)" />
                 </div>
               )}
-              <div style={{ maxWidth: "80%", display: "flex", flexDirection: "column", gap: "6px", alignItems: msg.role === "user" ? "flex-end" : "flex-start" }}>
-                <div
-                  style={{
-                    background: msg.role === "user" ? "var(--green)" : "var(--bg-card)",
-                    color: msg.role === "user" ? "var(--on-accent)" : "var(--text-primary)",
-                    border: msg.role === "assistant" ? "1px solid var(--border)" : "none",
-                    borderRadius: msg.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
-                    padding: "10px 14px",
-                    fontSize: "14px",
-                    lineHeight: "1.5",
-                    whiteSpace: "pre-wrap",
-                    wordBreak: "break-word",
-                  }}
-                >
-                  {msg.content}
+              <div className={`ai-bubble-wrap ${msg.role === "user" ? "ai-bubble-wrap--user" : ""}`}>
+                <div className={`ai-bubble ${msg.role === "user" ? "ai-bubble--user" : "ai-bubble--bot"}`}>
+                  {msg.role === "assistant" ? <MarkdownText content={msg.content} /> : msg.content}
                 </div>
                 {msg.parsedTransaction && (
-                  <div
-                    style={{
-                      background: "rgba(34, 197, 94, 0.08)",
-                      border: "1px solid rgba(34, 197, 94, 0.25)",
-                      borderRadius: "10px",
-                      padding: "10px 12px",
-                      fontSize: "12px",
-                    }}
-                  >
-                    <p style={{ color: "var(--green)", fontWeight: 600, marginBottom: "4px" }}>💡 Transaksi terdeteksi:</p>
-                    <p style={{ color: "var(--text-secondary)" }}>{msg.parsedTransaction.tipe === "pemasukan" ? "+" : "-"}{formatCurrency(msg.parsedTransaction.nominal)} · {msg.parsedTransaction.kategori}</p>
-                    <p style={{ color: "var(--text-muted)", marginBottom: "8px" }}>{msg.parsedTransaction.deskripsi}</p>
+                  <div className="ai-tx-chip">
+                    <p className="ai-tx-chip-label">💡 Transaksi terdeteksi:</p>
+                    <p className="ai-tx-chip-line">{msg.parsedTransaction.tipe === "pemasukan" ? "+" : "-"}{formatCurrency(msg.parsedTransaction.nominal)} · {msg.parsedTransaction.kategori}</p>
+                    <p className="ai-tx-chip-desc">{msg.parsedTransaction.deskripsi}</p>
                     {/* <button
                       onClick={() => setPendingTransaction(msg.parsedTransaction!)}
                       style={{ background: "var(--green)", color: "var(--on-accent)", border: "none", borderRadius: "6px", padding: "6px 12px", fontSize: "11px", fontWeight: 700, cursor: "pointer" }}
@@ -327,7 +279,7 @@ DATA KEUANGAN USER (bulan ini):
                 )}
               </div>
               {msg.role === "user" && (
-                <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: "var(--bg-hover)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: "4px" }}>
+                <div className="ai-avatar ai-avatar--user">
                   <User size={14} color="var(--text-secondary)" />
                 </div>
               )}
@@ -335,15 +287,15 @@ DATA KEUANGAN USER (bulan ini):
           ))}
 
           {isLoading && (
-            <div style={{ display: "flex", gap: "10px", animation: "fadeIn 0.3s ease" }}>
-              <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: "rgba(34, 197, 94, 0.12)", border: "1px solid rgba(34, 197, 94, 0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div className="ai-loading-row">
+              <div className="ai-avatar ai-avatar--bot-loading">
                 <Bot size={14} color="var(--green)" />
               </div>
-              <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "16px 16px 16px 4px", padding: "10px 14px", display: "flex", alignItems: "center", gap: "6px" }}>
+              <div className="ai-typing">
                 {/* <span style={{ display: "inline-flex", animation: "spin 1s linear infinite" }}>
                   <Loader2 size={14} color="var(--green)" />
                 </span> */}
-                <span style={{ fontSize: "13px", color: "var(--text-muted)" }}>Sedang berpikir...</span>
+                <span className="ai-typing-text">Sedang berpikir...</span>
               </div>
             </div>
           )}
@@ -351,22 +303,12 @@ DATA KEUANGAN USER (bulan ini):
         </div>
 
         {/* Quick Prompts */}
-        <div style={{ padding: "0 20px 12px", display: "flex", gap: "8px", overflowX: "auto", flexShrink: 0 }}>
+        <div className="ai-prompts">
             {QUICK_PROMPTS.map((prompt) => (
               <button
                 key={prompt}
                 onClick={() => sendMessage(prompt)}
-                style={{
-                  padding: "7px 12px",
-                  background: "var(--bg-card)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "20px",
-                  color: "var(--text-secondary)",
-                  fontSize: "12px",
-                  cursor: "pointer",
-                  whiteSpace: "nowrap",
-                  transition: "border-color 0.2s",
-                }}
+                className="ai-prompt-chip"
               >
                 {prompt}
               </button>
@@ -374,38 +316,18 @@ DATA KEUANGAN USER (bulan ini):
           </div>
 
         {/* Input */}
-        <div style={{ padding: "12px 20px", borderTop: "1px solid var(--border)", background: "var(--bg-primary)", flexShrink: 0, display: "flex", gap: "10px" }}>
+        <div className="ai-input-bar">
           <input
             placeholder="Ketik pesan atau transaksi..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
-            style={{
-              flex: 1,
-              background: "var(--bg-card)",
-              border: "1px solid var(--border)",
-              borderRadius: "10px",
-              padding: "10px 14px",
-              color: "var(--text-primary)",
-              fontSize: "14px",
-              outline: "none",
-            }}
+            className="ai-input"
           />
           <button
             onClick={() => sendMessage()}
             disabled={!input.trim() || isLoading}
-            style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "10px",
-              background: input.trim() && !isLoading ? "var(--green)" : "var(--border)",
-              border: "none",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: input.trim() && !isLoading ? "pointer" : "not-allowed",
-              flexShrink: 0,
-            }}
+            className={`ai-send-btn ${input.trim() && !isLoading ? "ai-send-btn--on" : ""}`}
           >
             <Send size={16} color={input.trim() && !isLoading ? "var(--on-accent)" : "var(--text-faint)"} />
           </button>
@@ -436,6 +358,6 @@ DATA KEUANGAN USER (bulan ini):
           onCancel={() => setShowClearConfirm(false)}
         />
       )}
-    </AppLayout>
+    </>
   );
 }

@@ -2,12 +2,14 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Transaction, Wallet, Budget, User } from "@/types";
 import { getSupabaseClient } from "./supabase";
+import { isThisMonth } from "./utils";
 import { toast } from "react-toastify";
 
 interface AppState {
   user: User | null;
   wallets: Wallet[];
   transactions: Transaction[];
+  monthTransactions: Transaction[];
   budgets: Budget[];
   isLoading: boolean;
   syncMeta: { userId: string; at: number } | null;
@@ -15,6 +17,7 @@ interface AppState {
   setUser: (user: User | null) => void;
   setWallets: (wallets: Wallet[]) => void;
   setTransactions: (transactions: Transaction[]) => void;
+  setMonthTransactions: (transactions: Transaction[]) => void;
   setBudgets: (budgets: Budget[]) => void;
   setLoading: (loading: boolean) => void;
   setSyncMeta: (meta: { userId: string; at: number } | null) => void;
@@ -28,7 +31,7 @@ interface AppState {
   deleteBudget: (id: string) => void;
   deleteTransaction: (id: string) => void;
   updateTransaction: (id: string, updates: Partial<Transaction>) => void;
-  fetchMoreTransactions: (userId: string, offset: number, limit: number) => Promise<number>;
+  fetchMoreTransactions: (userId: string, offset: number, limit: number) => Promise<{ loaded: number; hasMore: boolean }>;
   signOut: () => Promise<void>;
 }
 
@@ -47,6 +50,7 @@ export const useAppStore = create<AppState>()(
       user: null,
       wallets: [],
       transactions: [],
+      monthTransactions: [],
       budgets: [],
       isLoading: false,
       syncMeta: null,
@@ -54,6 +58,7 @@ export const useAppStore = create<AppState>()(
       setUser: (user) => set({ user }),
       setWallets: (wallets) => set({ wallets }),
       setTransactions: (transactions) => set({ transactions }),
+      setMonthTransactions: (monthTransactions) => set({ monthTransactions }),
       setBudgets: (budgets) => set({ budgets }),
       setLoading: (isLoading) => set({ isLoading }),
       setSyncMeta: (syncMeta) => set({ syncMeta }),
@@ -62,6 +67,9 @@ export const useAppStore = create<AppState>()(
         const txWithTimestamp = { ...transaction, created_at: transaction.created_at || new Date().toISOString() };
         set((state) => ({
           transactions: [txWithTimestamp, ...state.transactions],
+          monthTransactions: isThisMonth(txWithTimestamp.date)
+            ? [txWithTimestamp, ...state.monthTransactions]
+            : state.monthTransactions,
         }));
         toast.success("Transaksi berhasil ditambahkan");
         getSupabaseClient()
@@ -117,38 +125,44 @@ export const useAppStore = create<AppState>()(
 
       updateWallet: (id, updates) => {
         const userId = useAppStore.getState().user?.id;
+        const prev = useAppStore.getState().wallets;
         set((state) => ({
           wallets: state.wallets.map((w) => (w.id === id ? { ...w, ...updates } : w)),
         }));
-        toast.success("Dompet berhasil diperbarui");
-        getSupabaseClient()
-          .from("wallets")
-          .update({
-            name: updates.name,
-            initial_balance: typeof updates.balance === "number" ? updates.balance : undefined,
-            icon: updates.icon ?? null,
-            color: updates.color ?? null,
-          })
-          .eq("id", id)
-          .then(({ error }: { error: any }) => {
-            if (error) {
-              toast.error("Gagal memperbarui dompet");
-              getSupabaseClient()
-                .from("wallets")
-                .select("*")
-                .eq("id", id)
-                .single()
-                .then(({ data }: { data: any }) => {
-                  if (data) {
-                    set((state) => ({
-                      wallets: state.wallets.map((w) => (w.id === id ? { ...w, ...data as any } : w)),
-                    }));
-                  }
-                });
-            } else if (userId) {
-              refreshWallets(userId);
-            }
-          });
+
+        const revert = () => {
+          set({ wallets: prev });
+          toast.error("Gagal memperbarui dompet");
+        };
+
+        const run = async () => {
+          const payload: { name?: string; icon?: string | null; color?: string | null } = {};
+          if (updates.name !== undefined) payload.name = updates.name;
+          if (updates.icon !== undefined) payload.icon = updates.icon;
+          if (updates.color !== undefined) payload.color = updates.color;
+
+          const client = getSupabaseClient();
+
+          if (Object.keys(payload).length > 0) {
+            let query = client.from("wallets").update(payload, { count: "exact" }).eq("id", id);
+            if (userId) query = query.eq("user_id", userId);
+            const { error, count } = await query;
+            if (error || !count) return revert();
+          }
+
+          if (typeof updates.balance === "number") {
+            const { error } = await client.rpc("set_wallet_balance", {
+              wallet_uuid: id,
+              new_balance: updates.balance,
+            });
+            if (error) return revert();
+          }
+
+          toast.success("Dompet berhasil diperbarui");
+          if (userId) refreshWallets(userId);
+        };
+
+        run();
       },
 
       deleteWallet: (id) => {
@@ -237,9 +251,11 @@ export const useAppStore = create<AppState>()(
 
       deleteTransaction: (id) => {
         const prev = useAppStore.getState().transactions;
+        const prevMonth = useAppStore.getState().monthTransactions;
         const userId = useAppStore.getState().user?.id;
         set((state) => ({
           transactions: state.transactions.filter((t) => t.id !== id),
+          monthTransactions: state.monthTransactions.filter((t) => t.id !== id),
         }));
         toast.success("Transaksi berhasil dihapus");
         getSupabaseClient()
@@ -248,7 +264,7 @@ export const useAppStore = create<AppState>()(
           .eq("id", id)
           .then(({ error }: { error: any }) => {
             if (error) {
-              set({ transactions: prev });
+              set({ transactions: prev, monthTransactions: prevMonth });
               toast.error("Gagal menghapus transaksi");
             } else if (userId) {
               refreshWallets(userId);
@@ -260,6 +276,7 @@ export const useAppStore = create<AppState>()(
         const userId = useAppStore.getState().user?.id;
         set((state) => ({
           transactions: state.transactions.map((t) => (t.id === id ? { ...t, ...updates } : t)),
+          monthTransactions: state.monthTransactions.map((t) => (t.id === id ? { ...t, ...updates } : t)),
         }));
         toast.success("Transaksi berhasil diperbarui");
         getSupabaseClient()
@@ -302,9 +319,9 @@ export const useAppStore = create<AppState>()(
           .eq("user_id", userId)
           .order("date", { ascending: false })
           .range(offset, offset + limit - 1);
-        if (error || !data) return 0;
+        if (error || !data) return { loaded: 0, hasMore: false };
         const rows = data as Transaction[];
-        if (rows.length === 0) return 0;
+        if (rows.length === 0) return { loaded: 0, hasMore: false };
         const existing = new Set(useAppStore.getState().transactions.map((t) => t.id));
         const newRows = rows.filter((t) => !existing.has(t.id));
         if (newRows.length > 0) {
@@ -312,7 +329,7 @@ export const useAppStore = create<AppState>()(
             transactions: [...state.transactions, ...newRows],
           }));
         }
-        return rows.length;
+        return { loaded: rows.length, hasMore: rows.length >= limit };
       },
 
       signOut: async () => {

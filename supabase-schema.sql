@@ -120,6 +120,36 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Function: Set a wallet's current balance to an exact value,
+-- adjusting initial_balance so it stays consistent with its transactions
+CREATE OR REPLACE FUNCTION public.set_wallet_balance(wallet_uuid UUID, new_balance DECIMAL(15,2))
+RETURNS VOID AS $$
+DECLARE
+  delta DECIMAL(15,2);
+  incoming DECIMAL(15,2);
+BEGIN
+  SELECT COALESCE(SUM(CASE
+      WHEN t.type = 'IN' THEN t.amount
+      WHEN t.type = 'OUT' THEN -t.amount
+      WHEN t.type = 'TRANSFER' THEN -t.amount
+      ELSE 0
+    END), 0)
+    INTO delta
+  FROM public.transactions t
+  WHERE t.wallet_id = wallet_uuid;
+
+  SELECT COALESCE(SUM(t.amount), 0)
+    INTO incoming
+  FROM public.transactions t
+  WHERE t.to_wallet_id = wallet_uuid;
+
+  UPDATE public.wallets w
+  SET initial_balance = new_balance - delta - incoming,
+      balance = new_balance
+  WHERE w.id = wallet_uuid;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Function: Recompute balances for all wallets affected by a transaction change
 CREATE OR REPLACE FUNCTION public.update_wallet_balance()
 RETURNS TRIGGER AS $$

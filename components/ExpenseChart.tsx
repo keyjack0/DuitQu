@@ -20,16 +20,8 @@ function CustomTooltip({
 }) {
   if (active && payload && payload.length) {
     return (
-      <div
-        style={{
-          background: "var(--bg-card)",
-          border: "1px solid var(--border)",
-          borderRadius: "8px",
-          padding: "8px 12px",
-          fontSize: "12px",
-        }}
-      >
-        <p style={{ color: "var(--green)", fontWeight: 600 }}>
+      <div className="chart-tooltip">
+        <p className="chart-tooltip-value">
           {formatCurrency(payload[0]?.value || 0)}
         </p>
       </div>
@@ -44,35 +36,10 @@ export default function ExpenseChart({
   data: { day: string; amount: number }[];
 }) {
   return (
-    <div
-      style={{
-        background: "var(--bg-card)",
-        border: "1px solid var(--border)",
-        borderRadius: "12px",
-        padding: "18px",
-        marginBottom: "20px",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-          marginBottom: "16px",
-        }}
-      >
+    <div className="chart-card">
+      <div className="chart-head">
         <TrendingUp size={14} color="var(--green)" />
-        <p
-          style={{
-            fontSize: "13px",
-            fontWeight: 600,
-            color: "var(--text-secondary)",
-            letterSpacing: "0.05em",
-            textTransform: "uppercase",
-          }}
-        >
-          Pengeluaran 7 Hari Terakhir
-        </p>
+        <p className="chart-title">Pengeluaran 7 Hari Terakhir</p>
       </div>
       <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
         <defs>

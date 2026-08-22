@@ -23,9 +23,25 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
+        sans: [
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "SF Pro Display",
+          "SF Pro Text",
+          "Segoe UI",
+          "system-ui",
+          "sans-serif",
+        ],
         mono: ["var(--font-geist-mono)", "monospace"],
-        display: ["var(--font-display)", "sans-serif"],
+        display: [
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "SF Pro Display",
+          "SF Pro Text",
+          "Segoe UI",
+          "system-ui",
+          "sans-serif",
+        ],
       },
       animation: {
         "fade-in": "fadeIn 0.4s ease-out forwards",

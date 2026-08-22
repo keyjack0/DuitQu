@@ -13,42 +13,49 @@ import { PieChartIcon } from "lucide-react";
 import { Transaction } from "@/types";
 
 const CATEGORY_COLORS: Record<string, string> = {
-  "Makanan & Minuman": "#FF6384",
-  "Transportasi": "#36A2EB",
-  "Hiburan": "#FFCE56",
-  "Investasi": "#4BC0C0",
-  "Belanja": "#9966FF",
-  "Kesehatan": "#FF9F40",
-  "Pendidikan": "#C9CBCF",
-  "Tagihan & Utilitas": "#7BC8A4",
-  "Tabungan": "#E7E9ED",
-  "Gaji & Penghasilan": "#36A2EB",
-  "Hadiah": "#FF6384",
-  "Lainnya": "var(--text-muted)",
+  "Makanan & Minuman": "#E96A6A",
+  "Transportasi": "#5A8FD8",
+  "Hiburan": "#D9AE4A",
+  "Investasi": "#4FA69A",
+  "Belanja": "#8578D1",
+  "Kesehatan": "#E7956D",
+  "Pendidikan": "#8993A3",
+  "Tagihan & Utilitas": "#72AA91",
+  "Tabungan": "#C4C9D1",
+  "Gaji & Penghasilan": "#4675BD",
+  "Hadiah": "#CE6D88",
+  "Lainnya": "#A5A9B1",
 };
 
 const DEFAULT_COLOR = "var(--text-muted)";
 
-function CustomTooltip({ active, payload }: any) {
-  if (active && payload && payload.length) {
-    const data = payload[0].payload;
+type CategoryTooltipItem = {
+  payload?: {
+    name: string;
+    value: number;
+    percentage: string;
+  };
+};
+
+function CustomTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: CategoryTooltipItem[];
+}) {
+  const data = payload?.[0]?.payload;
+
+  if (active && data) {
     return (
-      <div
-        style={{
-          background: "var(--bg-card)",
-          border: "1px solid var(--border)",
-          borderRadius: "8px",
-          padding: "8px 12px",
-          fontSize: "12px",
-        }}
-      >
-        <p style={{ color: "var(--text-primary)", fontWeight: 600, marginBottom: "4px" }}>
+      <div className="chart-tooltip">
+        <p className="chart-tooltip-title">
           {data.name}
         </p>
-        <p style={{ color: "var(--green)", fontWeight: 600 }}>
+        <p className="chart-tooltip-value">
           {formatCurrency(data.value)}
         </p>
-        <p style={{ color: "var(--text-muted)", marginTop: "2px" }}>
+        <p className="chart-tooltip-note">
           {data.percentage}%
         </p>
       </div>
@@ -83,41 +90,14 @@ export default function CategoryPieChart({
   }, [transactions]);
 
   return (
-    <div
-      style={{
-        background: "var(--bg-card)",
-        border: "1px solid var(--border)",
-        borderRadius: "12px",
-        padding: "18px",
-        marginBottom: "20px",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-          marginBottom: "16px",
-        }}
-      >
+    <div className="chart-card">
+      <div className="chart-head">
         <PieChartIcon size={14} color="var(--green)" />
-        <p
-          style={{
-            fontSize: "13px",
-            fontWeight: 600,
-            color: "var(--text-secondary)",
-            letterSpacing: "0.05em",
-            textTransform: "uppercase",
-          }}
-        >
-          Pengeluaran Bulan Ini
-        </p>
+        <p className="chart-title">Pengeluaran Bulan Ini</p>
       </div>
 
       {data.length === 0 ? (
-        <p style={{ textAlign: "center", color: "var(--text-faint)", fontSize: "13px", padding: "20px 0" }}>
-          Belum ada pengeluaran bulan ini
-        </p>
+        <p className="chart-empty">Belum ada pengeluaran bulan ini</p>
       ) : (
         <>
           <ResponsiveContainer width="100%" height={180}>
@@ -142,44 +122,16 @@ export default function CategoryPieChart({
             </PieChart>
           </ResponsiveContainer>
 
-          <div style={{ marginTop: "12px" }}>
+          <div className="pie-legend">
             {data.map((item) => (
-              <div
-                key={item.name}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  padding: "4px 0",
-                }}
-              >
+              <div key={item.name} className="pie-legend-item">
                 <div
-                  style={{
-                    width: "8px",
-                    height: "8px",
-                    borderRadius: "50%",
-                    background: CATEGORY_COLORS[item.name] || DEFAULT_COLOR,
-                    flexShrink: 0,
-                  }}
+                  className="pie-legend-dot"
+                  style={{ background: CATEGORY_COLORS[item.name] || DEFAULT_COLOR }}
                 />
-                <p
-                  style={{
-                    flex: 1,
-                    fontSize: "11px",
-                    color: "var(--text-secondary)",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {item.name}
-                </p>
-                <p style={{ fontSize: "11px", color: "var(--text-faint)", width: "36px", textAlign: "right" }}>
-                  {item.percentage}%
-                </p>
-                <p style={{ fontSize: "11px", color: "var(--text-primary)", fontWeight: 600, width: "80px", textAlign: "right" }}>
-                  {formatCurrency(item.value)}
-                </p>
+                <p className="pie-legend-name">{item.name}</p>
+                <p className="pie-legend-pct">{item.percentage}%</p>
+                <p className="pie-legend-val">{formatCurrency(item.value)}</p>
               </div>
             ))}
           </div>

@@ -32,11 +32,6 @@ export default function RootLayout({
     <html lang="id" suppressHydrationWarning>
       <body
         suppressHydrationWarning
-        style={{
-          fontFamily: "system-ui, -apple-system, sans-serif",
-          background: "var(--bg-primary)",
-          color: "var(--text-primary)",
-        }}
       >
         <script
           dangerouslySetInnerHTML={{

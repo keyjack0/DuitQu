@@ -67,19 +67,7 @@ export function ThemeToggle() {
       onClick={toggleTheme}
       aria-label={isLight ? "Aktifkan mode gelap" : "Aktifkan mode terang"}
       title={isLight ? "Mode gelap" : "Mode terang"}
-      style={{
-        width: "40px",
-        height: "40px",
-        borderRadius: "50%",
-        background: "var(--green-dim)",
-        border: "1px solid var(--green-border)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        cursor: "pointer",
-        color: "var(--green)",
-        transition: "all 0.2s ease",
-      }}
+      className="icon-btn-round"
     >
       {isLight ? <Moon size={16} /> : <Sun size={16} />}
     </button>

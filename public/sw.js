@@ -1,5 +1,5 @@
-const CACHE_VERSION = "duitqu-static-v2";
-const NAV_CACHE_NAME = "duitqu-nav-v2";
+const CACHE_VERSION = "duitqu-static-v3";
+const NAV_CACHE_NAME = "duitqu-nav-v3";
 const SHELL_URLS = ["/", "/dashboard", "/transactions", "/wallets", "/budgets", "/ai-assistant", "/login"];
 
 self.addEventListener("install", (event) => {

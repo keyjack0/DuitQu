@@ -1,0 +1,27 @@
+@theme inline {
+  --color-primary: var(--bg-primary);
+  --color-secondary: var(--bg-secondary);
+  --color-card: var(--bg-card);
+  --color-card-2: var(--bg-card-2);
+  --color-hover: var(--bg-hover);
+  --color-skeleton: var(--skeleton);
+  --color-border: var(--border);
+  --color-border-light: var(--border-light);
+  --color-fg: var(--text-primary);
+  --color-soft: var(--text-secondary);
+  --color-muted: var(--text-muted);
+  --color-faint: var(--text-faint);
+  --color-overlay: var(--overlay);
+  --color-overlay-soft: var(--overlay-soft);
+  --color-nav-bg: var(--nav-bg);
+  --color-green: var(--green);
+  --color-green-dark: var(--green-dark);
+  --color-green-dim: var(--green-dim);
+  --color-green-border: var(--green-border);
+  --color-on-accent: var(--on-accent);
+  --color-red: var(--red);
+  --color-red-dim: var(--red-dim);
+  --color-red-border: var(--red-border);
+  --color-amber: var(--amber);
+  --color-amber-dim: var(--amber-dim);
+}

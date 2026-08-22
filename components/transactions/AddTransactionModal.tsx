@@ -81,96 +81,35 @@ export function AddTransactionModal({ onClose, prefill, editingTransaction }: Ad
 
   return (
     <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(0,0,0,0.8)",
-        backdropFilter: "blur(8px)",
-        display: "flex",
-        alignItems: "flex-end",
-        zIndex: 200,
-        animation: "fadeIn 0.2s ease",
-      }}
+      className="sheet-overlay sheet-overlay--fade"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div
-        style={{
-          width: "100%",
-          background: "var(--bg-secondary)",
-          borderRadius: "20px 20px 0 0",
-          border: "1px solid var(--border)",
-          borderBottom: "none",
-          padding: "24px 20px 40px",
-          animation: "slideUp 0.3s ease",
-        }}
-      >
+      <div className="sheet-panel sheet-panel--rise">
         {/* Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-          <h2 style={{ fontSize: "17px", fontWeight: 700, color: "var(--text-primary)" }}>
+        <div className="sheet-head">
+          <h2 className="sheet-title">
             {editing ? "Edit Transaksi" : "Tambah Transaksi"}
           </h2>
-          <button
-            onClick={onClose}
-            style={{
-              width: "32px",
-              height: "32px",
-              borderRadius: "50%",
-              background: "var(--bg-hover)",
-              border: "1px solid var(--border)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: "pointer",
-              color: "var(--text-secondary)",
-            }}
-          >
+          <button onClick={onClose} className="sheet-close">
             <X size={15} />
           </button>
         </div>
 
         {/* Type Toggle */}
-        <div
-          style={{
-            display: "flex",
-            background: "var(--bg-card)",
-            borderRadius: "10px",
-            padding: "4px",
-            marginBottom: "20px",
-            border: "1px solid var(--border)",
-          }}
-        >
+        <div className="type-toggle">
           {(["OUT", "IN"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setType(t)}
-              style={{
-                flex: 1,
-                padding: "8px",
-                borderRadius: "8px",
-                border: "none",
-                background:
-                  type === t
-                    ? t === "IN"
-                      ? "var(--green)"
-                      : "var(--text-primary)"
-                    : "transparent",
-                color:
-                  type === t
-                    ? "var(--on-accent)"
-                    : "var(--text-muted)",
-                fontWeight: 600,
-                fontSize: "13px",
-                cursor: "pointer",
-                transition: "all 0.2s",
-              }}
+              className={`type-option ${type === t ? (t === "IN" ? "type-option--in" : "type-option--out") : ""}`}
             >
               {t === "IN" ? (
-                <span style={{ display: "flex", alignItems: "center", gap: "6px", justifyContent: "center" }}>
+                <span className="type-option-label">
                   <ArrowUpCircle size={14} />
                   Pemasukan
                 </span>
               ) : (
-                <span style={{ display: "flex", alignItems: "center", gap: "6px", justifyContent: "center" }}>
+                <span className="type-option-label">
                   <ArrowDownCircle size={14} />
                   Pengeluaran
                 </span>
@@ -180,71 +119,43 @@ export function AddTransactionModal({ onClose, prefill, editingTransaction }: Ad
         </div>
 
         {/* Amount */}
-        <div style={{ marginBottom: "14px" }}>
-          <label style={{ display: "block", fontSize: "12px", color: "var(--text-muted)", marginBottom: "6px" }}>Nominal</label>
-          <div style={{ position: "relative" }}>
-            <span style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", fontSize: "14px" }}>Rp</span>
+        <div className="form-field">
+          <label className="form-label">Nominal</label>
+          <div className="relative">
+            <span className="input-prefix input-prefix--lg">Rp</span>
             <input
               type="text"
               inputMode="numeric"
               placeholder="0"
               value={amount}
               onChange={(e) => setAmount(formatAmount(e.target.value))}
-              style={{
-                width: "100%",
-                background: "var(--bg-card)",
-                border: "1px solid var(--border)",
-                borderRadius: "8px",
-                padding: "12px 14px 12px 40px",
-                color: "var(--text-primary)",
-                fontSize: "18px",
-                fontWeight: 700,
-                outline: "none",
-              }}
+              className="form-input form-input--amount"
             />
           </div>
         </div>
 
         {/* Description */}
-        <div style={{ marginBottom: "14px" }}>
-          <label style={{ display: "block", fontSize: "12px", color: "var(--text-muted)", marginBottom: "6px" }}>Deskripsi</label>
+        <div className="form-field">
+          <label className="form-label">Deskripsi</label>
           <input
             type="text"
             placeholder="Contoh: Makan siang, Gaji, dll."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            style={{
-              width: "100%",
-              background: "var(--bg-card)",
-              border: "1px solid var(--border)",
-              borderRadius: "8px",
-              padding: "10px 14px",
-              color: "var(--text-primary)",
-              fontSize: "14px",
-              outline: "none",
-            }}
+            className="form-input"
           />
         </div>
 
         {/* Category */}
-        <div style={{ marginBottom: "14px" }}>
-          <label style={{ display: "block", fontSize: "12px", color: "var(--text-muted)", marginBottom: "6px" }}>Kategori</label>
+        <div className="form-field">
+          <label className="form-label">Kategori</label>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            style={{
-              width: "100%",
-              background: "var(--bg-card)",
-              border: "1px solid var(--border)",
-              borderRadius: "8px",
-              padding: "10px 14px",
-              color: "var(--text-primary)",
-              fontSize: "14px",
-              outline: "none",
-            }}
+            className="form-input"
           >
             {CATEGORIES.map((cat) => (
-              <option key={cat} value={cat} style={{ background: "var(--bg-card)" }}>
+              <option key={cat} value={cat}>
                 {cat}
               </option>
             ))}
@@ -252,24 +163,15 @@ export function AddTransactionModal({ onClose, prefill, editingTransaction }: Ad
         </div>
 
         {/* Wallet */}
-        <div style={{ marginBottom: "14px" }}>
-          <label style={{ display: "block", fontSize: "12px", color: "var(--text-muted)", marginBottom: "6px" }}>Dari Dompet</label>
+        <div className="form-field">
+          <label className="form-label">Dari Dompet</label>
           <select
             value={walletId}
             onChange={(e) => setWalletId(e.target.value)}
-            style={{
-              width: "100%",
-              background: "var(--bg-card)",
-              border: "1px solid var(--border)",
-              borderRadius: "8px",
-              padding: "10px 14px",
-              color: "var(--text-primary)",
-              fontSize: "14px",
-              outline: "none",
-            }}
+            className="form-input"
           >
             {wallets.map((w) => (
-              <option key={w.id} value={w.id} style={{ background: "var(--bg-card)" }}>
+              <option key={w.id} value={w.id}>
                 {w.name}
               </option>
             ))}
@@ -277,42 +179,18 @@ export function AddTransactionModal({ onClose, prefill, editingTransaction }: Ad
         </div>
 
         {/* Date */}
-        <div style={{ marginBottom: "24px" }}>
-          <label style={{ display: "block", fontSize: "12px", color: "var(--text-muted)", marginBottom: "6px" }}>Tanggal</label>
+        <div className="form-field form-field--spaced">
+          <label className="form-label">Tanggal</label>
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            style={{
-              width: "100%",
-              background: "var(--bg-card)",
-              border: "1px solid var(--border)",
-              borderRadius: "8px",
-              padding: "10px 14px",
-              color: "var(--text-primary)",
-              fontSize: "14px",
-              outline: "none",
-            }}
+            className="form-input"
           />
         </div>
 
         {/* Submit */}
-        <button
-          onClick={handleSubmit}
-          disabled={!amount || !walletId || submitting}
-          style={{
-            width: "100%",
-            padding: "14px",
-            background: amount && walletId && !submitting ? "var(--green)" : "var(--border)",
-            color: amount && walletId && !submitting ? "var(--on-accent)" : "var(--text-muted)",
-            border: "none",
-            borderRadius: "10px",
-            fontWeight: 700,
-            fontSize: "15px",
-            cursor: amount && walletId && !submitting ? "pointer" : "not-allowed",
-            transition: "all 0.2s",
-          }}
-        >
+        <button onClick={handleSubmit} disabled={!amount || !walletId || submitting} className="btn-primary">
           {submitting ? "Menyimpan..." : editing ? "Simpan Perubahan" : "Simpan Transaksi"}
         </button>
       </div>

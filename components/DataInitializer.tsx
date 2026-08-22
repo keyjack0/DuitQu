@@ -4,13 +4,14 @@ import { useEffect } from "react";
 import { useAppStore } from "@/lib/store";
 import { getSupabaseClient } from "@/lib/supabase";
 import type { UserRow, WalletRow, TransactionRow, BudgetRow } from "@/lib/supabase";
+import { getStartOfMonth } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
 const SYNC_TTL_MS = 60_000;
-const TRANSACTIONS_PAGE_SIZE = 300;
+const TRANSACTIONS_PAGE_SIZE = 10;
 
 export function DataInitializer() {
-  const { syncMeta, setUser, setWallets, setTransactions, setBudgets, setLoading, setSyncMeta } = useAppStore();
+  const { syncMeta, setUser, setWallets, setTransactions, setMonthTransactions, setBudgets, setLoading, setSyncMeta } = useAppStore();
   const router = useRouter();
 
   useEffect(() => {
@@ -78,7 +79,7 @@ export function DataInitializer() {
         // Table may not exist
       }
 
-      // Load transactions (recent page only)
+      // Load transactions (halaman pertama saja — sisanya via infinite scroll)
       try {
         const txResult = await getSupabaseClient()
           .from("transactions")
@@ -88,6 +89,20 @@ export function DataInitializer() {
           .limit(TRANSACTIONS_PAGE_SIZE);
         const transactions = txResult.data as TransactionRow[] | null;
         if (transactions) setTransactions(transactions);
+      } catch {
+        // Table may not exist
+      }
+
+      // Load transaksi bulan berjalan untuk statistik dashboard/budget
+      try {
+        const monthResult = await getSupabaseClient()
+          .from("transactions")
+          .select("*")
+          .eq("user_id", session.user.id)
+          .gte("date", getStartOfMonth())
+          .order("date", { ascending: false });
+        const monthTx = monthResult.data as TransactionRow[] | null;
+        if (monthTx) setMonthTransactions(monthTx);
       } catch {
         // Table may not exist
       }
@@ -117,6 +132,7 @@ export function DataInitializer() {
         setUser(null);
         setWallets([]);
         setTransactions([]);
+        setMonthTransactions([]);
         setBudgets([]);
         setSyncMeta(null);
         router.push("/login");
@@ -132,6 +148,7 @@ export function DataInitializer() {
     setUser,
     setWallets,
     setTransactions,
+    setMonthTransactions,
     setBudgets,
     setLoading,
     setSyncMeta,

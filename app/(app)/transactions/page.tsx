@@ -1,15 +1,17 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useAppStore } from "@/lib/store";
 import { formatCurrency } from "@/lib/utils";
-import { AppLayout } from "@/components/layout/AppLayout";
 import { LazyAddTransactionModal } from "@/components/transactions/LazyAddTransactionModal";
 import { Plus, Search, Trash2, Pencil, Inbox } from "lucide-react";
 import { CategoryIcon } from "@/lib/icons";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { SwipeableRow } from "@/components/ui/SwipeableRow";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import type { Transaction } from "@/types";
+
+const PAGE_SIZE = 10;
 
 export default function TransactionsPage() {
   const { user, transactions, deleteTransaction, fetchMoreTransactions } = useAppStore();
@@ -20,9 +22,9 @@ export default function TransactionsPage() {
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterType, setFilterType] = useState("all");
-  const [visibleCount, setVisibleCount] = useState(300);
+  const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  
+
   const filtered = useMemo(() => {
     const result = transactions.filter((t) => {
       const matchSearch =
@@ -36,97 +38,58 @@ export default function TransactionsPage() {
     return result.sort((a, b) => b.date.localeCompare(a.date));
   }, [transactions, search, filterCategory, filterType]);
 
-  const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
-
   const grouped = useMemo(() => {
-    const groups: Record<string, typeof visible> = {};
-    visible.forEach((t) => {
+    const groups: Record<string, typeof filtered> = {};
+    filtered.forEach((t) => {
       if (!groups[t.date]) groups[t.date] = [];
       groups[t.date].push(t);
     });
     return Object.entries(groups).sort(([a], [b]) => b.localeCompare(a));
-  }, [visible]);
+  }, [filtered]);
 
-  const handleLoadMore = async () => {
-    if (visibleCount < filtered.length) {
-      setVisibleCount((v) => v + 100);
-      return;
-    }
-    if (!user || loadingMore) return;
+  const loadMore = useCallback(async () => {
+    if (!user || loadingMore || !hasMore) return;
     setLoadingMore(true);
-    const loaded = await fetchMoreTransactions(user.id, transactions.length, 300);
+    const result = await fetchMoreTransactions(user.id, transactions.length, PAGE_SIZE);
+    setHasMore(result.hasMore);
     setLoadingMore(false);
-    if (loaded > 0) {
-      setVisibleCount((v) => v + loaded);
-    }
-  };
+  }, [user, loadingMore, hasMore, fetchMoreTransactions, transactions.length]);
 
-  const canLoadMore =
-    visibleCount < filtered.length || transactions.length >= 300;
+  const sentinelRef = useInfiniteScroll(loadMore, hasMore && !loadingMore && grouped.length > 0);
 
   return (
-    <AppLayout>
-      <div style={{ padding: "0 0 24px" }}>
+    <>
+      <div className="page-shell">
         {/* Header */}
-        <div style={{ padding: "56px 20px 16px", background: "var(--bg-secondary)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-            <h1 style={{ fontSize: "22px", fontWeight: 700, color: "var(--text-primary)" }}>Transaksi</h1>
+        <div className="page-hero pb-4">
+          <div className="page-title-row mb-4">
+            <h1 className="page-title">Transaksi</h1>
             <button
               onClick={() => setShowAddModal(true)}
-              style={{
-                width: "36px",
-                height: "36px",
-                borderRadius: "10px",
-                background: "var(--green)",
-                border: "none",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-              }}
+              className="icon-btn-square icon-btn-square--primary"
             >
               <Plus size={18} color="var(--on-accent)" strokeWidth={2.5} />
             </button>
           </div>
 
           {/* Search */}
-          <div style={{ position: "relative", marginBottom: "12px" }}>
-            <Search size={14} color="var(--text-muted)" style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)" }} />
+          <div className="search-wrap">
+            <Search size={14} color="var(--text-muted)" className="absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               placeholder="Cari transaksi..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{
-                width: "100%",
-                background: "var(--bg-card)",
-                border: "1px solid var(--border)",
-                borderRadius: "8px",
-                padding: "10px 14px 10px 36px",
-                color: "var(--text-primary)",
-                fontSize: "14px",
-                outline: "none",
-              }}
+              className="form-input form-input--search"
             />
           </div>
 
           {/* Filters */}
-          <div style={{ display: "flex", gap: "8px", overflowX: "auto", paddingBottom: "4px" }}>
+          <div className="filter-row">
             {["all", "IN", "OUT"].map((t) => (
               <button
                 key={t}
                 onClick={() => setFilterType(t)}
-                style={{
-                  padding: "5px 12px",
-                  borderRadius: "20px",
-                  border: "1px solid",
-                  borderColor: filterType === t ? "var(--green)" : "var(--border)",
-                  background: filterType === t ? "rgba(34,197,94,0.12)" : "transparent",
-                  color: filterType === t ? "var(--green)" : "var(--text-muted)",
-                  fontSize: "12px",
-                  fontWeight: 500,
-                  cursor: "pointer",
-                  whiteSpace: "nowrap",
-                }}
+                className={`chip ${filterType === t ? "chip--active" : ""}`}
               >
                 {t === "all" ? "Semua" : t === "IN" ? "Pemasukan" : "Pengeluaran"}
               </button>
@@ -134,10 +97,10 @@ export default function TransactionsPage() {
           </div>
         </div>
 
-        <div style={{ padding: "0 20px" }}>
+        <div className="page-body">
           {grouped.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "60px 0", color: "var(--text-muted)" }}>
-              <p style={{ marginBottom: "12px" }}><Inbox size={32} color="var(--text-muted)" /></p>
+            <div className="empty-state">
+              <p className="empty-icon"><Inbox size={32} color="var(--text-muted)" /></p>
               <p>Belum ada transaksi</p>
             </div>
           ) : (
@@ -146,21 +109,21 @@ export default function TransactionsPage() {
                 .filter((t) => t.type === "OUT")
                 .reduce((s, t) => s + t.amount, 0);
               return (
-              <div key={date} style={{ marginBottom: "20px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                  <p style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 600, letterSpacing: "0.06em" }}>
+              <div key={date} className="tx-group">
+                <div className="tx-day-row">
+                  <p className="tx-day-label">
                     {new Date(date).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
                   </p>
                   {dayExpense > 0 && (
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                      <span style={{ fontSize: "11px", color: "var(--text-muted)" }}></span>
-                      <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--red)" }}>
+                    <div className="tx-day-sum">
+                      <span className="tx-day-sum-label"></span>
+                      <span className="tx-day-sum-value">
                         {formatCurrency(dayExpense)}
                       </span>
                     </div>
                   )}
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                <div className="tx-list-page">
                   {txs.map((tx) => (
                     <SwipeableRow
                       key={tx.id}
@@ -187,30 +150,19 @@ export default function TransactionsPage() {
                         </>
                       }
                     >
-                      <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: "12px" }}>
-                        <div
-                          style={{
-                            width: "36px",
-                            height: "36px",
-                            borderRadius: "10px",
-                            background: tx.type === "IN" ? "rgba(34,197,94,0.12)" : "var(--overlay-soft)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            flexShrink: 0,
-                          }}
-                        >
+                      <div className="tx-row-content">
+                        <div className={`tx-icon-box ${tx.type === "IN" ? "tx-icon-box--income" : "tx-icon-box--expense"}`}>
                           <CategoryIcon category={tx.category} size={16} />
                         </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ fontSize: "13px", fontWeight: 500, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <div className="transaction-info">
+                          <p className="transaction-desc">
                             {tx.description}
                           </p>
-                          <p style={{ fontSize: "11px", color: "var(--text-muted)" }}>{tx.category}</p>
-                          <p style={{ fontSize: "10px", color: "var(--text-faint)", marginTop: "2px" }}>Pukul {new Date(tx.created_at || tx.date).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })} WIB
+                          <p className="transaction-category">{tx.category}</p>
+                          <p className="transaction-date">Pukul {new Date(tx.created_at || tx.date).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })} WIB
                           </p>
                         </div>
-                        <p style={{ fontSize: "14px", fontWeight: 600, color: tx.type === "IN" ? "var(--green)" : "var(--text-primary)", flexShrink: 0 }}>
+                        <p className={`transaction-amount ${tx.type === "IN" ? "transaction-amount--income" : ""}`}>
                           {tx.type === "IN" ? "+" : "-"}{formatCurrency(tx.amount)}
                         </p>
                       </div>
@@ -222,25 +174,12 @@ export default function TransactionsPage() {
             })
           )}
 
-          {grouped.length > 0 && canLoadMore && (
-            <button
-              onClick={handleLoadMore}
-              disabled={loadingMore}
-              style={{
-                width: "100%",
-                padding: "12px",
-                background: "var(--bg-card)",
-                border: "1px solid var(--border)",
-                borderRadius: "10px",
-                color: "var(--green)",
-                fontWeight: 600,
-                fontSize: "14px",
-                cursor: loadingMore ? "not-allowed" : "pointer",
-                marginBottom: "12px",
-              }}
-            >
-              {loadingMore ? "Memuat..." : "Muat lebih banyak"}
-            </button>
+          {grouped.length > 0 && hasMore && (
+            <div ref={sentinelRef} className="tx-sentinel">
+              {loadingMore ? (
+                <p className="text-xs text-muted">Memuat...</p>
+              ) : null}
+            </div>
           )}
         </div>
       </div>
@@ -265,6 +204,6 @@ export default function TransactionsPage() {
           onCancel={() => setConfirmDeleteId(null)}
         />
       )}
-    </AppLayout>
+    </>
   );
 }

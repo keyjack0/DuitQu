@@ -1,0 +1,90 @@
+@layer components {
+  /* ===== Page ===== */
+  .search-wrap {
+    @apply relative mb-3;
+  }
+
+  .filter-row {
+    @apply flex gap-2 overflow-x-auto pb-1;
+  }
+
+  /* ===== Day group ===== */
+  .tx-group {
+    @apply mb-5;
+  }
+
+  .tx-day-row {
+    @apply flex justify-between items-center mb-2;
+  }
+
+  .tx-day-label {
+    @apply text-xs text-muted font-semibold tracking-[0.06em];
+  }
+
+  .tx-day-sum {
+    @apply flex items-center gap-1.5;
+  }
+
+  .tx-day-sum-label {
+    @apply text-[11px] text-muted;
+  }
+
+  .tx-day-sum-value {
+    @apply text-xs font-bold text-red;
+  }
+
+  .tx-list-page {
+    @apply flex flex-col gap-1.5;
+  }
+
+  .tx-sentinel {
+    @apply flex justify-center items-center pt-4 pb-6 min-h-[40px];
+  }
+
+  /* ===== Row content (di dalam SwipeableRow) ===== */
+  .tx-row-content {
+    @apply flex-1 min-w-0 flex items-center gap-3;
+  }
+
+  .tx-icon-box {
+    @apply size-9 rounded-[10px] flex items-center justify-center shrink-0;
+  }
+
+  .tx-icon-box--income {
+    @apply bg-[rgba(34,197,94,0.12)];
+  }
+
+  .tx-icon-box--expense {
+    @apply bg-overlay-soft;
+  }
+
+  /* ===== Sheet skeleton (LazyAdd fallback) ===== */
+  .sk-sheet-title {
+    @apply w-[42%] h-[18px] rounded-md bg-hover mb-6;
+  }
+
+  .sk-sheet-row {
+    @apply rounded-lg bg-card border border-border mb-3.5;
+  }
+
+  /* ===== Type toggle (AddTransactionModal) ===== */
+  .type-toggle {
+    @apply flex bg-card rounded-[10px] p-1 mb-5 border border-border;
+  }
+
+  .type-option {
+    @apply flex-1 py-2 rounded-lg border-none font-semibold text-[13px] cursor-pointer transition-all duration-200 text-muted bg-transparent;
+  }
+
+  .type-option--in {
+    @apply bg-green text-on-accent;
+  }
+
+  .type-option--out {
+    @apply bg-fg text-on-accent;
+  }
+
+  .type-option-label {
+    @apply flex items-center justify-center gap-1.5;
+  }
+}
