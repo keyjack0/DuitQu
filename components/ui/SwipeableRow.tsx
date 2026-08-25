@@ -69,16 +69,18 @@ export function SwipeableRow({ actions, children, isOpen, onOpenChange }: Swipea
                   alignItems: "center",
                   justifyContent: "center",
                   cursor: "pointer",
+                  padding: 0,
                 }
               : {
                   width: 40,
                   height: 40,
-                  borderRadius: 8,
+                  borderRadius: 12,
                   border: "none",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   cursor: "pointer",
+                  padding: 0,
                 }),
           },
         });

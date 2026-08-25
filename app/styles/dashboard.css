@@ -4,7 +4,7 @@
   }
 
   .dashboard-hero {
-    @apply pt-[20px] px-5 pb-7 max-[560px]:pb-[26px] bg-linear-to-b from-secondary from-0% to-primary to-[92%];
+    @apply pt-[20px] px-5 pb-7 max-[560px]:pb-[26px] bg-secondary;
   }
 
   .dashboard-container {
@@ -36,11 +36,11 @@
   }
 
   .dashboard-icon-button {
-    @apply size-10 rounded-full bg-green-dim border border-green-border shadow-[0_10px_24px_rgba(0,0,0,0.12)] flex items-center justify-center text-green cursor-pointer;
+    @apply size-10 rounded-full bg-green-dim flex items-center justify-center text-green cursor-pointer;
   }
 
   .dashboard-balance-card {
-    @apply bg-linear-to-br from-green to-green-dark border border-green-border rounded-[18px] p-6 shadow-[0_22px_42px_rgba(34,197,94,0.18),0_8px_18px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.24),inset_0_-18px_42px_rgba(0,0,0,0.12)] overflow-hidden transform-gpu;
+    @apply bg-green-surface rounded-[24px] p-6 overflow-hidden transform-gpu;
   }
 
   .dashboard-balance-label-row {
@@ -48,15 +48,15 @@
   }
 
   .dashboard-balance-label {
-    @apply text-white/75 text-xs uppercase;
+    @apply text-on-accent/65 text-xs uppercase;
   }
 
   .dashboard-balance-toggle {
-    @apply size-6 rounded-full border-none bg-transparent text-white/80 flex items-center justify-center cursor-pointer p-0;
+    @apply size-6 rounded-full border-none bg-transparent text-on-accent/70 flex items-center justify-center cursor-pointer p-0;
   }
 
   .dashboard-balance-amount {
-    @apply text-white text-[32px] font-bold mb-5;
+    @apply text-on-accent text-[32px] font-bold mb-5;
   }
 
   .dashboard-balance-stats {
@@ -68,15 +68,15 @@
   }
 
   .dashboard-balance-stat-icon {
-    @apply size-7 rounded-full bg-white/15 flex items-center justify-center shrink-0;
+    @apply size-7 rounded-full bg-black/10 flex items-center justify-center shrink-0;
   }
 
   .dashboard-balance-stat-label {
-    @apply text-white/70 text-[10px];
+    @apply text-on-accent/60 text-[10px];
   }
 
   .dashboard-balance-stat-value {
-    @apply text-white text-[13px] font-semibold;
+    @apply text-on-accent text-[13px] font-semibold;
   }
 
   .dashboard-quick-actions {
@@ -88,11 +88,11 @@
   }
 
   .dashboard-action--primary {
-    @apply flex-1 bg-green text-on-accent border-none font-semibold shadow-[0_12px_24px_rgba(34,197,94,0.16)];
+    @apply flex-1 bg-green text-on-accent border-none font-semibold;
   }
 
   .dashboard-action--secondary {
-    @apply bg-card border border-border text-soft font-medium shadow-[0_10px_22px_rgba(0,0,0,0.08)] whitespace-nowrap;
+    @apply bg-card text-soft font-medium whitespace-nowrap;
   }
 
   .dashboard-section-head {
@@ -116,7 +116,7 @@
   }
 
   .dashboard-wallet-card {
-    @apply min-w-0 max-[900px]:min-w-[150px] bg-linear-to-br from-card to-card-2 border border-border rounded-[14px] p-[15px] no-underline shadow-[0_12px_24px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.03)];
+    @apply min-w-0 max-[900px]:min-w-[150px] bg-card rounded-[16px] p-[15px] no-underline;
   }
 
   .dashboard-wallet-icon {
@@ -134,7 +134,7 @@
 
 /* ===== Chart cards (ExpenseChart, CategoryPieChart) ===== */
 .chart-card {
-  @apply border border-border rounded-2xl p-[18px] mb-5 shadow-[0_14px_28px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.03)] [background:linear-gradient(145deg,var(--bg-card)_0%,var(--bg-card-2)_100%)];
+  @apply rounded-[20px] p-[18px] mb-5 bg-card;
 }
 
 .chart-head {
@@ -187,4 +187,119 @@
 
 .chart-tooltip-note {
   @apply text-muted mt-0.5;
+}
+
+/* ===== Financial Health Score ===== */
+.health-main {
+  @apply flex items-center gap-5 mb-2 max-[400px]:gap-4;
+}
+
+.health-gauge {
+  @apply relative size-[100px] shrink-0;
+}
+
+.health-gauge svg {
+  @apply size-full -rotate-90;
+}
+
+.health-gauge-track {
+  fill: none;
+  stroke: var(--bg-hover);
+  stroke-width: 10;
+}
+
+.health-gauge-progress {
+  fill: none;
+  stroke-width: 10;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.health-gauge-center {
+  @apply absolute inset-0 flex flex-col items-center justify-center;
+}
+
+.health-score-num {
+  @apply text-fg text-[26px] font-bold leading-none;
+}
+
+.health-score-pct {
+  @apply text-muted text-[14px] font-semibold ml-0.5;
+}
+
+.health-summary {
+  @apply flex-1 min-w-0;
+}
+
+.health-level-badge {
+  @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-white text-xs font-bold w-fit;
+}
+
+.health-level-desc {
+  @apply text-muted text-[13px] leading-snug mt-2.5 m-0;
+}
+
+.chart-toggle {
+  @apply flex items-center gap-1 bg-transparent border-none p-0 cursor-pointer text-green text-xs font-semibold mt-3 mb-3;
+}
+
+.chart-toggle-icon {
+  transition: transform 0.25s ease;
+}
+
+.chart-toggle-icon--open {
+  transform: rotate(180deg);
+}
+
+.health-breakdown {
+  @apply flex flex-col gap-3.5 border-t border-border pt-3.5 mb-4;
+}
+
+.health-factor-row {
+  @apply flex items-center justify-between gap-2;
+}
+
+.health-factor-label {
+  @apply text-soft text-[11px] font-semibold;
+}
+
+.health-factor-points {
+  @apply text-faint text-[11px];
+}
+
+.health-factor-bar {
+  @apply h-[6px] rounded-full bg-card-2 overflow-hidden mt-1.5;
+}
+
+.health-factor-bar-fill {
+  @apply h-full rounded-full;
+  transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.health-factor-note {
+  @apply text-faint text-[11px] mt-1.5 leading-snug m-0;
+}
+
+.health-factor-note strong {
+  @apply text-muted font-medium;
+}
+
+.health-factor--na .health-factor-bar-fill {
+  opacity: 0.35;
+}
+
+.health-empty {
+  @apply text-center py-3;
+}
+
+.health-empty-title {
+  @apply text-soft text-sm font-semibold m-0 mb-1;
+}
+
+.health-empty-desc {
+  @apply text-faint text-xs m-0;
+}
+
+.health-ai-btn {
+  @apply w-full flex items-center justify-center gap-2 rounded-xl bg-green-dim text-green text-sm font-medium py-2.5 no-underline cursor-pointer transition-colors hover:bg-green hover:text-on-accent;
 }

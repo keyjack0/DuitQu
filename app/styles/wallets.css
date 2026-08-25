@@ -1,7 +1,7 @@
 @layer components {
   /* ===== Total card ===== */
   .wallet-total-card {
-    @apply bg-linear-to-br from-card to-card-2 border border-border rounded-[14px] p-5 shadow-[0_4px_20px_rgba(34,197,94,0.08)];
+    @apply bg-card rounded-[16px] p-5;
   }
 
   .total-label {
@@ -15,6 +15,19 @@
   .total-sub {
     @apply text-xs text-muted mt-1.5;
   }
+
+  .wallet-total-card.card--accent .total-label,
+  .wallet-total-card.card--accent .total-sub {
+    @apply text-on-accent/65;
+  }
+
+  .wallet-total-card.card--accent .total-value {
+    @apply text-on-accent;
+  }
+
+  .wallet-total-card.card--accent {
+  @apply bg-green-surface text-on-accent;
+}
 
   /* ===== Distribution bar ===== */
   .dist-wrap {
@@ -67,7 +80,7 @@
   }
 
   .wallet-icon-box {
-    @apply size-11 rounded-xl bg-[rgba(34,197,94,0.08)] border border-[rgba(34,197,94,0.15)] flex items-center justify-center shrink-0;
+    @apply size-11 rounded-xl bg-green-dim flex items-center justify-center shrink-0;
   }
 
   .wallet-info {
@@ -88,16 +101,16 @@
   }
 
   .icon-option {
-    @apply px-3 py-2 rounded-lg border border-border bg-card cursor-pointer flex items-center justify-center;
+    @apply px-3 py-2 rounded-[12px] bg-card cursor-pointer flex items-center justify-center;
   }
 
   .icon-option--active {
-    @apply border-green bg-[rgba(34,197,94,0.12)];
+    @apply bg-green-dim;
   }
 
   /* ===== SwipeableRow ===== */
   .swipe-desktop {
-    @apply flex items-center gap-2.5 bg-card border border-border rounded-[10px] px-3.5 py-3;
+    @apply flex items-center gap-2.5 bg-card rounded-[12px] px-3.5 py-3;
   }
 
   .swipe-content {
@@ -109,7 +122,7 @@
   }
 
   .swipe-mobile {
-    @apply relative overflow-hidden rounded-[10px] bg-card border border-border;
+    @apply relative overflow-hidden rounded-[12px] bg-card;
   }
 
   .swipe-actions-layer {
@@ -117,6 +130,6 @@
   }
 
   .swipe-drag {
-    @apply bg-card [touch-action:pan-y] px-3.5 py-3 flex items-center;
+    @apply bg-card [touch-action:pan-y] px-3.5 py-3 flex items-center relative z-10;
   }
 }

@@ -24,9 +24,18 @@
     @apply text-[11px] text-muted mt-2;
   }
 
+  .card--accent .ov-label,
+  .card--accent .ov-note {
+    @apply text-on-accent/65;
+  }
+
+  .card--accent .ov-value {
+    @apply text-on-accent;
+  }
+
   /* ===== Budget item ===== */
   .budget-card {
-    @apply bg-card border border-border rounded-xl p-4;
+    @apply bg-card rounded-[16px] p-4;
   }
 
   .budget-card--danger {

@@ -47,11 +47,11 @@
   }
 
   .tx-icon-box {
-    @apply size-9 rounded-[10px] flex items-center justify-center shrink-0;
+    @apply size-9 rounded-[12px] flex items-center justify-center shrink-0;
   }
 
   .tx-icon-box--income {
-    @apply bg-[rgba(34,197,94,0.12)];
+    @apply bg-green-dim;
   }
 
   .tx-icon-box--expense {
@@ -69,7 +69,7 @@
 
   /* ===== Type toggle (AddTransactionModal) ===== */
   .type-toggle {
-    @apply flex bg-card rounded-[10px] p-1 mb-5 border border-border;
+    @apply flex bg-card rounded-[12px] p-1 mb-5 border border-border;
   }
 
   .type-option {

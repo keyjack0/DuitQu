@@ -29,6 +29,8 @@ export function BottomNav() {
           <Link
             key={href}
             href={href}
+            aria-label={label}
+            title={label}
             className={`bottom-nav-item ${isActive ? "bottom-nav-item--active" : ""}`}
           >
             <Icon size={20} strokeWidth={isActive ? 2.5 : 1.5} />

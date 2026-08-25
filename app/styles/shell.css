@@ -1,20 +1,28 @@
 @layer components {
   /* ===== App shell ===== */
   .app-shell {
-    @apply min-h-screen bg-primary pb-20;
+    @apply min-h-screen bg-primary pb-[96px];
   }
 
   /* ===== Bottom navigation ===== */
   .bottom-nav {
-    @apply fixed bottom-0 inset-x-0 bg-nav-bg backdrop-blur-[20px] border-t border-border flex justify-around items-center pt-2 px-2 pb-2 z-[100];
+    @apply fixed z-[100] left-1/2 -translate-x-1/2 bottom-[calc(12px+env(safe-area-inset-bottom))] w-[85%] max-w-[295px] flex justify-center items-center gap-0.5 px-3 py-2 bg-green-surface rounded-full;
   }
 
   .bottom-nav-item {
-    @apply flex flex-col items-center gap-1 px-4 py-2 rounded-[10px] text-[11px] no-underline transition-all duration-200 text-muted font-normal;
+    @apply flex flex-row items-center px-3 py-2.5 rounded-full text-[11px] no-underline transition-all duration-200 text-on-accent/60 font-normal;
+  }
+
+  .bottom-nav-item > span {
+    @apply max-w-0 opacity-0 overflow-hidden whitespace-nowrap transition-all duration-300;
   }
 
   .bottom-nav-item--active {
-    @apply text-green font-semibold bg-green-dim;
+    @apply text-on-accent font-semibold bg-black/10;
+  }
+
+  .bottom-nav-item--active > span {
+    @apply max-w-[90px] opacity-100 ml-1.5;
   }
 
   /* ===== Loading skeleton ===== */
@@ -39,11 +47,11 @@
   }
 
   .sk-avatar {
-    @apply size-10 rounded-full bg-[rgba(34,197,94,0.12)] border border-[rgba(34,197,94,0.25)];
+    @apply size-10 rounded-full bg-green-dim;
   }
 
   .sk-hero {
-    @apply min-h-[156px] rounded-2xl bg-card border border-border p-6 flex flex-col justify-between;
+    @apply min-h-[156px] rounded-[20px] bg-card border border-border p-6 flex flex-col justify-between;
   }
 
   .sk-hero-label {
@@ -51,7 +59,7 @@
   }
 
   .sk-hero-amount {
-    @apply w-[70%] h-[34px] rounded-[10px] bg-hover;
+    @apply w-[70%] h-[34px] rounded-[12px] bg-hover;
   }
 
   .sk-hero-stats {
@@ -63,11 +71,11 @@
   }
 
   .sk-row {
-    @apply h-16 rounded-[10px] bg-card border border-border flex items-center gap-3 px-3.5 py-3;
+    @apply h-16 rounded-[12px] bg-card border border-border flex items-center gap-3 px-3.5 py-3;
   }
 
   .sk-thumb {
-    @apply size-9 rounded-[10px] bg-hover shrink-0;
+    @apply size-9 rounded-[12px] bg-hover shrink-0;
   }
 
   .sk-row-lines {

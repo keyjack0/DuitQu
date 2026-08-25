@@ -9,13 +9,14 @@ import { ArrowUpRight, ArrowDownRight, Plus, Bot, Hand, Settings, Eye, EyeOff } 
 
 const ExpenseChart = dynamic(() => import("@/components/ExpenseChart"), { ssr: false });
 const CategoryPieChart = dynamic(() => import("@/components/CategoryPieChart"), { ssr: false });
+const HealthScoreCard = dynamic(() => import("@/components/HealthScoreCard"), { ssr: false });
 import { WalletIcon, CategoryIcon } from "@/lib/icons";
 import { useMemo, useState } from "react";
 import { LazyAddTransactionModal } from "@/components/transactions/LazyAddTransactionModal";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function DashboardPage() {
-  const { user, wallets, transactions, monthTransactions } = useAppStore();
+  const { user, wallets, transactions, monthTransactions, budgets } = useAppStore();
   const [showAddModal, setShowAddModal] = useState(false);
   const [balanceVisible, setBalanceVisible] = useState(false);
 
@@ -165,6 +166,7 @@ export default function DashboardPage() {
             <div className="dashboard-column">
               <ExpenseChart data={chartData} />
               <CategoryPieChart transactions={thisMonthTx} />
+              <HealthScoreCard transactions={thisMonthTx} wallets={wallets} budgets={budgets} />
             </div>
 
             {/* Wallets */}

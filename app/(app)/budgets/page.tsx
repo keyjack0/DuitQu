@@ -66,7 +66,7 @@ export default function BudgetsPage() {
           </div>
 
           {/* Overview */}
-          <div className="card">
+          <div className="card card--accent">
             <div className="ov-row">
               <div>
                 <p className="ov-label">Total Terpakai</p>

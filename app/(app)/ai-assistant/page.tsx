@@ -6,6 +6,7 @@ import { formatCurrency, isThisMonth } from "@/lib/utils";
 import { LazyAddTransactionModal } from "@/components/transactions/LazyAddTransactionModal";
 import { Bot, Send, Sparkles, User, Loader2, Trash2 } from "lucide-react";
 import { ParsedTransaction } from "@/types";
+import { readPendingAiPrompt } from "@/components/HealthScoreCard";
 import { getSupabaseClient } from "@/lib/supabase";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import MarkdownText from "@/components/ai/MarkdownText";
@@ -85,6 +86,8 @@ export default function AIAssistantPage() {
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const lastRequestRef = useRef(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const autoPromptSentRef = useRef(false);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
 
   const financialContext = useMemo(() => {
     const thisMonthTx = monthTransactions.filter((t) => isThisMonth(t.date));
@@ -143,6 +146,7 @@ DATA KEUANGAN USER (bulan ini):
           };
         }));
       }
+      setHistoryLoaded(true);
     })();
   }, [user]);
 
@@ -224,6 +228,14 @@ DATA KEUANGAN USER (bulan ini):
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!historyLoaded || autoPromptSentRef.current) return;
+    const prompt = readPendingAiPrompt();
+    if (!prompt) return;
+    autoPromptSentRef.current = true;
+    setTimeout(() => sendMessage(prompt), 0);
+  }, [historyLoaded]);
 
   //layout page ai button send message and input field
   return (

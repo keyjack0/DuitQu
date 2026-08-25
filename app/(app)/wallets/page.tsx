@@ -91,7 +91,7 @@ export default function WalletsPage() {
           </div>
 
           {/* Total */}
-          <div className="wallet-total-card">
+          <div className="wallet-total-card card--accent">
             <p className="total-label">Total Saldo</p>
             <p className="total-value">{formatCurrency(totalBalance)}</p>
             <p className="total-sub">{wallets.length} dompet aktif</p>

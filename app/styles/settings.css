@@ -12,7 +12,7 @@
   }
 
   .avatar-circle {
-    @apply size-[52px] rounded-full bg-linear-to-br from-green to-green-dark text-on-accent flex items-center justify-center text-xl font-extrabold shrink-0;
+    @apply size-[52px] rounded-full bg-green text-on-accent flex items-center justify-center text-xl font-extrabold shrink-0;
   }
 
   .profile-info {

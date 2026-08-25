@@ -12,7 +12,7 @@
   }
 
   .auth-logo {
-    @apply size-16 rounded-[20px] bg-linear-to-br from-green to-green-dark text-on-accent flex items-center justify-center text-[28px] font-extrabold mx-auto mb-4;
+    @apply size-16 rounded-[24px] bg-green text-on-accent flex items-center justify-center text-[28px] font-extrabold mx-auto mb-4;
   }
 
   .auth-title {
@@ -24,7 +24,7 @@
   }
 
   .auth-card {
-    @apply bg-secondary border border-border rounded-2xl p-6;
+    @apply bg-secondary border border-border rounded-[20px] p-6;
   }
 
   .auth-error {
@@ -41,7 +41,7 @@
 
   /* Verify-email screen */
   .auth-confirm-card {
-    @apply max-w-[360px] w-full mx-auto bg-secondary border border-border rounded-2xl px-6 pt-8 pb-8 text-center;
+    @apply max-w-[360px] w-full mx-auto bg-secondary border border-border rounded-[20px] px-6 pt-8 pb-8 text-center;
   }
 
   .auth-confirm-title {
@@ -57,6 +57,6 @@
   }
 
   .auth-confirm-link {
-    @apply block p-3 bg-green text-on-accent border-none rounded-[10px] font-bold text-sm text-center no-underline;
+    @apply block p-3 bg-green text-on-accent border-none rounded-[12px] font-bold text-sm text-center no-underline;
   }
 }

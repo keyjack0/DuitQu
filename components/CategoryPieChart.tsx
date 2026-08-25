@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   PieChart,
   Pie,
@@ -9,7 +9,7 @@ import {
   Tooltip,
 } from "recharts";
 import { formatCurrency } from "@/lib/utils";
-import { PieChartIcon } from "lucide-react";
+import { ChevronDown, PieChartIcon } from "lucide-react";
 import { Transaction } from "@/types";
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -69,6 +69,8 @@ export default function CategoryPieChart({
 }: {
   transactions: Transaction[];
 }) {
+  const [expanded, setExpanded] = useState(false);
+
   const data = useMemo(() => {
     const expenseByCategory: Record<string, number> = {};
     transactions
@@ -122,19 +124,31 @@ export default function CategoryPieChart({
             </PieChart>
           </ResponsiveContainer>
 
-          <div className="pie-legend">
-            {data.map((item) => (
-              <div key={item.name} className="pie-legend-item">
-                <div
-                  className="pie-legend-dot"
-                  style={{ background: CATEGORY_COLORS[item.name] || DEFAULT_COLOR }}
-                />
-                <p className="pie-legend-name">{item.name}</p>
-                <p className="pie-legend-pct">{item.percentage}%</p>
-                <p className="pie-legend-val">{formatCurrency(item.value)}</p>
-              </div>
-            ))}
-          </div>
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            className="chart-toggle"
+            aria-expanded={expanded}
+          >
+            {expanded ? "Sembunyikan detail" : "Lihat detail"}
+            <ChevronDown size={14} className={`chart-toggle-icon ${expanded ? "chart-toggle-icon--open" : ""}`} />
+          </button>
+
+          {expanded && (
+            <div className="pie-legend">
+              {data.map((item) => (
+                <div key={item.name} className="pie-legend-item">
+                  <div
+                    className="pie-legend-dot"
+                    style={{ background: CATEGORY_COLORS[item.name] || DEFAULT_COLOR }}
+                  />
+                  <p className="pie-legend-name">{item.name}</p>
+                  <p className="pie-legend-pct">{item.percentage}%</p>
+                  <p className="pie-legend-val">{formatCurrency(item.value)}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </>
       )}
     </div>
