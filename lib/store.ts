@@ -48,6 +48,15 @@ export const useAppStore = create<AppState>()(
         if (data) set({ wallets: data as Wallet[] });
       };
 
+      const updateWalletBalanceLocal = (userId: string, walletId: string, delta: number) => {
+        set((state) => ({
+          wallets: state.wallets.map((w) =>
+            w.id === walletId ? { ...w, balance: w.balance + delta } : w
+          ),
+        }));
+        refreshWallets(userId);
+      };
+
       return {
       user: null,
       wallets: [],
@@ -98,8 +107,8 @@ export const useAppStore = create<AppState>()(
                 transactions: state.transactions.filter((t) => t.id !== transaction.id),
               }));
               toast.error("Gagal menambah transaksi");
-            } else {
-              refreshWallets(transaction.user_id);
+            } else if (transaction.wallet_id) {
+              updateWalletBalanceLocal(transaction.user_id, transaction.wallet_id, transaction.type === "OUT" ? -transaction.amount : transaction.amount);
             }
           });
       },
@@ -260,6 +269,7 @@ export const useAppStore = create<AppState>()(
         const prev = useAppStore.getState().transactions;
         const prevMonth = useAppStore.getState().monthTransactions;
         const userId = useAppStore.getState().user?.id;
+        const tx = useAppStore.getState().transactions.find((t) => t.id === id);
         set((state) => ({
           transactions: state.transactions.filter((t) => t.id !== id),
           monthTransactions: state.monthTransactions.filter((t) => t.id !== id),
@@ -274,8 +284,8 @@ export const useAppStore = create<AppState>()(
             if (error) {
               set({ transactions: prev, monthTransactions: prevMonth });
               toast.error("Gagal menghapus transaksi");
-            } else if (userId) {
-              refreshWallets(userId);
+            } else if (userId && tx?.wallet_id) {
+              updateWalletBalanceLocal(userId, tx.wallet_id, tx.type === "OUT" ? tx.amount : -tx.amount);
             }
           });
       },
@@ -347,6 +357,12 @@ export const useAppStore = create<AppState>()(
       },
       };
     },
-    { name: "duitqu-storage" }
+    {
+      name: "duitqu-storage",
+      partialize: (state: AppState) => ({
+        user: state.user,
+        syncMeta: state.syncMeta,
+      }),
+    } as any
   )
 );

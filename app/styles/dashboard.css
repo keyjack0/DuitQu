@@ -56,27 +56,31 @@
   }
 
   .dashboard-balance-amount {
-    @apply text-white text-[32px] font-bold mb-5;
+    @apply text-white text-[32px] font-bold mb-2;
   }
 
-  .dashboard-balance-stats {
-    @apply flex gap-3 flex-wrap;
+  .dashboard-balance-trend {
+    @apply flex items-center gap-1.5 mb-4;
   }
 
-  .dashboard-balance-stat {
-    @apply flex items-center gap-2;
+  .dashboard-balance-trend-icon--up {
+    @apply text-white/80;
   }
 
-  .dashboard-balance-stat-icon {
-    @apply size-7 rounded-full bg-white/15 flex items-center justify-center shrink-0;
+  .dashboard-balance-trend-icon--down {
+    @apply text-white/80;
   }
 
-  .dashboard-balance-stat-label {
-    @apply text-white/70 text-[10px];
+  .dashboard-balance-trend-text {
+    @apply text-[12px] font-medium;
   }
 
-  .dashboard-balance-stat-value {
-    @apply text-white text-[13px] font-semibold;
+  .dashboard-balance-trend-text--up {
+    @apply text-white/80;
+  }
+
+  .dashboard-balance-trend-text--down {
+    @apply text-white/80;
   }
 
   .dashboard-quick-actions {
@@ -91,8 +95,8 @@
     @apply flex-1 bg-green text-on-accent border-none font-semibold shadow-[0_12px_24px_rgba(34,197,94,0.16)];
   }
 
-  .dashboard-action--secondary {
-    @apply bg-card border border-border text-soft font-medium shadow-[0_10px_22px_rgba(0,0,0,0.08)] whitespace-nowrap;
+  .dashboard-action--green {
+    @apply  border border-border text-fg font-medium shadow-[0_10px_22px_rgba(34,197,94,0.1)] whitespace-nowrap;
   }
 
   .dashboard-section-head {

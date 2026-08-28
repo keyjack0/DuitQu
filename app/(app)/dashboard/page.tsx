@@ -1,11 +1,11 @@
 "use client";
 
 import { useAppStore } from "@/lib/store";
-import { formatCurrency, isThisMonth } from "@/lib/utils";
+import { formatCurrency, isThisMonth, isLastMonth } from "@/lib/utils";
 import { Transaction } from "@/types";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { ArrowUpRight, ArrowDownRight, Plus, Bot, Settings, Eye, EyeOff } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, Plus, Bot, Settings, Eye, EyeOff, TrendingUp, TrendingDown } from "lucide-react";
 
 const ExpenseChart = dynamic(() => import("@/components/ExpenseChart"), { ssr: false });
 const CategoryPieChart = dynamic(() => import("@/components/CategoryPieChart"), { ssr: false });
@@ -47,10 +47,15 @@ export default function DashboardPage() {
     [thisMonthTx]
   );
 
-  const totalExpense = useMemo(
-    () => thisMonthTx.filter((t) => t.type === "OUT").reduce((s, t) => s + t.amount, 0),
-    [thisMonthTx]
+  const lastMonthIncome = useMemo(
+    () => allTx.filter((t) => t.type === "IN" && isLastMonth(t.date)).reduce((s, t) => s + t.amount, 0),
+    [allTx]
   );
+
+  const incomeChange = useMemo(() => {
+    if (lastMonthIncome === 0) return totalIncome > 0 ? 100 : 0;
+    return ((totalIncome - lastMonthIncome) / lastMonthIncome) * 100;
+  }, [totalIncome, lastMonthIncome]);
 
   // Build last 7 days chart data
   const chartData = useMemo(() => {
@@ -120,26 +125,18 @@ export default function DashboardPage() {
               <p className="dashboard-balance-amount">
                 {balanceVisible ? formatCurrency(totalBalance) : "Rp ******"}
               </p>
-              {/* <div className="dashboard-balance-stats">
-                <div className="dashboard-balance-stat">
-                  <div className="dashboard-balance-stat-icon">
-                    <ArrowUpRight size={14} color="#ffffff" />
-                  </div>
-                  <div>
-                    <p className="dashboard-balance-stat-label">Pemasukan</p>
-                    <p className="dashboard-balance-stat-value">{formatCurrency(totalIncome)}</p>
-                  </div>
+              {balanceVisible && (
+                <div className="dashboard-balance-trend">
+                  {incomeChange >= 0 ? (
+                    <TrendingUp size={12} className="dashboard-balance-trend-icon--up" />
+                  ) : (
+                    <TrendingDown size={12} className="dashboard-balance-trend-icon--down" />
+                  )}
+                  <span className={`dashboard-balance-trend-text ${incomeChange >= 0 ? "dashboard-balance-trend-text--up" : "dashboard-balance-trend-text--down"}`}>
+                    {incomeChange >= 0 ? "Naik" : "Turun"} {Math.abs(incomeChange).toFixed(1)}% dari bulan lalu
+                  </span>
                 </div>
-                <div className="dashboard-balance-stat">
-                  <div className="dashboard-balance-stat-icon">
-                    <ArrowDownRight size={14} color="#ffffff" />
-                  </div>
-                  <div>
-                    <p className="dashboard-balance-stat-label">Pengeluaran</p>
-                    <p className="dashboard-balance-stat-value">{formatCurrency(totalExpense)}</p>
-                  </div>
-                </div>
-              </div> */}
+              )}
             </div>
           </div>
         </div>
@@ -155,7 +152,7 @@ export default function DashboardPage() {
                 <Plus size={16} />
                 Tambah Transaksi
               </button>
-              <Link href="/ai-assistant" className="dashboard-action dashboard-action--secondary">
+              <Link href="/ai-assistant" className="dashboard-action dashboard-action--green">
                 <Bot size={16} color="var(--green)" />
                 Tanya AI
               </Link>

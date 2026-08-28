@@ -150,8 +150,9 @@ export default function CategoryPieChart({
                   cx="50%"
                   cy="50%"
                   innerRadius={28}
-                  outerRadius={45}
-                  paddingAngle={2}
+                  outerRadius={50}
+                  paddingAngle={0}
+                  cornerRadius={3}
                   dataKey="value"
                 >
                   {data.map((entry) => (
