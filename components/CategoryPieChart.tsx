@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   PieChart,
   Pie,
@@ -9,7 +9,7 @@ import {
   Tooltip,
 } from "recharts";
 import { formatCurrency } from "@/lib/utils";
-import { PieChartIcon } from "lucide-react";
+import { PieChartIcon, ChevronDown, ChevronUp } from "lucide-react";
 import { Transaction } from "@/types";
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -28,6 +28,8 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 const DEFAULT_COLOR = "var(--text-muted)";
+
+const COLLAPSED_MAX = 3;
 
 type CategoryTooltipItem = {
   payload?: {
@@ -64,11 +66,26 @@ function CustomTooltip({
   return null;
 }
 
+function getMonthDateRange(): { start: string; end: string } {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const startDay = 1;
+  const endDay = new Date(year, month + 1, 0).getDate();
+  const monthName = new Intl.DateTimeFormat("id-ID", { month: "short" }).format(now);
+  return {
+    start: `${startDay} ${monthName} ${year}`,
+    end: `${endDay} ${monthName} ${year}`,
+  };
+}
+
 export default function CategoryPieChart({
   transactions,
 }: {
   transactions: Transaction[];
 }) {
+  const [expanded, setExpanded] = useState(false);
+
   const data = useMemo(() => {
     const expenseByCategory: Record<string, number> = {};
     transactions
@@ -89,53 +106,86 @@ export default function CategoryPieChart({
       .sort((a, b) => b.value - a.value);
   }, [transactions]);
 
+  const totalExpense = useMemo(
+    () => transactions.filter((t) => t.type === "OUT").reduce((s, t) => s + t.amount, 0),
+    [transactions]
+  );
+
+  const dateRange = getMonthDateRange();
+  const visibleData = data.slice(0, COLLAPSED_MAX);
+  const hiddenCount = data.length - COLLAPSED_MAX;
+
   return (
-    <div className="chart-card">
-      <div className="chart-head">
-        <PieChartIcon size={14} color="var(--green)" />
-        <p className="chart-title">Pengeluaran Bulan Ini</p>
+    <div className="chart-card chart-card--expense">
+      <div className="expense-info">
+        <div className="expense-info-head">
+          <PieChartIcon size={14} color="var(--green)" />
+          <p className="chart-title">Pengeluaran Bulan Ini</p>
+        </div>
+        <p className="expense-date-range">
+          {dateRange.start} - {dateRange.end}
+        </p>
+        <p className="expense-total">{formatCurrency(totalExpense)}</p>
+        {data.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            className="expense-detail-link"
+          >
+            {expanded ? "Sembunyikan" : "Lihat Detail"}
+            {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          </button>
+        )}
       </div>
 
-      {data.length === 0 ? (
-        <p className="chart-empty">Belum ada pengeluaran bulan ini</p>
-      ) : (
-        <>
-          <ResponsiveContainer width="100%" height={180}>
-            <PieChart>
-              <Pie
-                data={data}
-                cx="50%"
-                cy="50%"
-                innerRadius={55}
-                outerRadius={80}
-                paddingAngle={2}
-                dataKey="value"
-              >
-                {data.map((entry) => (
-                  <Cell
-                    key={entry.name}
-                    fill={CATEGORY_COLORS[entry.name] || DEFAULT_COLOR}
-                  />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomTooltip />} />
-            </PieChart>
-          </ResponsiveContainer>
+      <div className="expense-chart">
+        {data.length === 0 ? (
+          <p className="chart-empty">Belum ada pengeluaran bulan ini</p>
+        ) : (
+          <>
+            <ResponsiveContainer width="100%" height={110}>
+              <PieChart>
+                <Pie
+                  data={data}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={28}
+                  outerRadius={45}
+                  paddingAngle={2}
+                  dataKey="value"
+                >
+                  {data.map((entry) => (
+                    <Cell
+                      key={entry.name}
+                      fill={CATEGORY_COLORS[entry.name] || DEFAULT_COLOR}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
+          </>
+        )}
+      </div>
 
-          <div className="pie-legend">
-            {data.map((item) => (
-              <div key={item.name} className="pie-legend-item">
+      {expanded && data.length > 0 && (
+        <div className="expense-category-full">
+          {data.map((item) => (
+            <div key={item.name} className="expense-category-row">
+              <div className="expense-category-left">
                 <div
-                  className="pie-legend-dot"
+                  className="expense-category-dot"
                   style={{ background: CATEGORY_COLORS[item.name] || DEFAULT_COLOR }}
                 />
-                <p className="pie-legend-name">{item.name}</p>
-                <p className="pie-legend-pct">{item.percentage}%</p>
-                <p className="pie-legend-val">{formatCurrency(item.value)}</p>
+                <span className="expense-category-name">{item.name}</span>
               </div>
-            ))}
-          </div>
-        </>
+              <div className="expense-category-right">
+                <span className="expense-category-pct">{item.percentage}%</span>
+                <span className="expense-category-val">{formatCurrency(item.value)}</span>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

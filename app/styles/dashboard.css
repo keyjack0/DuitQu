@@ -48,7 +48,7 @@
   }
 
   .dashboard-balance-label {
-    @apply text-white/75 text-xs uppercase;
+    @apply text-white/75 text-xs capitalize tracking-[0.05em] font-semibold;
   }
 
   .dashboard-balance-toggle {
@@ -100,7 +100,7 @@
   }
 
   .dashboard-section-title {
-    @apply text-muted text-[13px] font-semibold uppercase;
+    @apply text-muted text-[13px] font-semibold capitalize tracking-[0.05em];
   }
 
   .dashboard-section-link {
@@ -112,23 +112,23 @@
   }
 
   .dashboard-wallet-list {
-    @apply grid grid-cols-[repeat(auto-fit,minmax(148px,1fr))] gap-2.5 mb-6 max-[900px]:flex max-[900px]:overflow-x-auto max-[900px]:pb-2;
+    @apply flex flex-col gap-2.5 mb-6;
   }
 
-  .dashboard-wallet-card {
-    @apply min-w-0 max-[900px]:min-w-[150px] bg-linear-to-br from-card to-card-2 border border-border rounded-[14px] p-[15px] no-underline shadow-[0_12px_24px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.03)];
+  .wallet-row {
+    @apply flex items-center gap-3 bg-linear-to-br from-card to-card-2 border border-border rounded-[14px] px-3.5 py-[13px] no-underline shadow-[0_10px_22px_rgba(0,0,0,0.07),inset_0_1px_0_rgba(255,255,255,0.03)];
   }
 
-  .dashboard-wallet-icon {
-    @apply mb-2;
+  .wallet-row-icon {
+    @apply size-9 rounded-xl bg-overlay-soft border border-border flex items-center justify-center shrink-0;
   }
 
-  .dashboard-wallet-name {
-    @apply text-muted text-[11px] mb-1;
+  .wallet-row-name {
+    @apply flex-1 min-w-0 text-fg text-[13px] font-medium truncate;
   }
 
-  .dashboard-wallet-balance {
-    @apply text-fg text-sm font-bold;
+  .wallet-row-balance {
+    @apply shrink-0 text-sm font-semibold text-fg;
   }
 }
 
@@ -137,12 +137,40 @@
   @apply border border-border rounded-2xl p-[18px] mb-5 shadow-[0_14px_28px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.03)] [background:linear-gradient(145deg,var(--bg-card)_0%,var(--bg-card-2)_100%)];
 }
 
+.chart-card--expense {
+  @apply grid grid-cols-[2fr_1fr] gap-4 items-center max-[360px]:grid-cols-1;
+}
+
+.expense-info {
+  @apply flex flex-col;
+}
+
+.expense-info-head {
+  @apply flex items-center gap-2 mb-3;
+}
+
+.expense-date-range {
+  @apply text-[12px] text-muted mb-1;
+}
+
+.expense-total {
+  @apply text-[22px] font-bold text-fg mb-3;
+}
+
+.expense-detail-link {
+  @apply inline-flex items-center gap-1.5 text-green text-[12px] font-semibold no-underline bg-transparent border-none cursor-pointer p-0;
+}
+
+.expense-chart {
+  @apply min-w-0;
+}
+
 .chart-head {
   @apply flex items-center gap-2 mb-4;
 }
 
 .chart-title {
-  @apply text-[13px] font-semibold text-soft tracking-[0.05em] uppercase;
+  @apply text-[13px] font-semibold text-soft tracking-[0.05em] capitalize ;
 }
 
 .chart-tooltip {
@@ -175,6 +203,42 @@
 
 .pie-legend-val {
   @apply text-[11px] text-fg font-semibold w-20 text-right;
+}
+
+.pie-legend-more {
+  @apply text-[11px] text-muted mt-1;
+}
+
+.expense-category-full {
+  @apply col-span-full border-t border-border mt-4 pt-4;
+}
+
+.expense-category-row {
+  @apply flex items-center justify-between py-2;
+}
+
+.expense-category-left {
+  @apply flex items-center gap-2.5 min-w-0;
+}
+
+.expense-category-dot {
+  @apply size-2.5 rounded-full shrink-0;
+}
+
+.expense-category-name {
+  @apply text-[12px] text-fg truncate;
+}
+
+.expense-category-right {
+  @apply flex items-center gap-3 shrink-0;
+}
+
+.expense-category-pct {
+  @apply text-[11px] text-muted w-10 text-right;
+}
+
+.expense-category-val {
+  @apply text-[12px] text-fg font-semibold w-24 text-right;
 }
 
 .chart-tooltip-value {

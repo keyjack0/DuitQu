@@ -5,7 +5,7 @@ import { formatCurrency, isThisMonth } from "@/lib/utils";
 import { Transaction } from "@/types";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { ArrowUpRight, ArrowDownRight, Plus, Bot, Hand, Settings, Eye, EyeOff } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, Plus, Bot, Settings, Eye, EyeOff } from "lucide-react";
 
 const ExpenseChart = dynamic(() => import("@/components/ExpenseChart"), { ssr: false });
 const CategoryPieChart = dynamic(() => import("@/components/CategoryPieChart"), { ssr: false });
@@ -120,7 +120,7 @@ export default function DashboardPage() {
               <p className="dashboard-balance-amount">
                 {balanceVisible ? formatCurrency(totalBalance) : "Rp ******"}
               </p>
-              <div className="dashboard-balance-stats">
+              {/* <div className="dashboard-balance-stats">
                 <div className="dashboard-balance-stat">
                   <div className="dashboard-balance-stat-icon">
                     <ArrowUpRight size={14} color="#ffffff" />
@@ -139,7 +139,7 @@ export default function DashboardPage() {
                     <p className="dashboard-balance-stat-value">{formatCurrency(totalExpense)}</p>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
@@ -172,19 +172,22 @@ export default function DashboardPage() {
               <p className="dashboard-section-title">
                 Dompet Saya
               </p>
+              <Link href="/wallets" className="dashboard-section-link">
+                Lihat semua
+              </Link>
             </div>
             <div className="dashboard-wallet-list">
               {wallets.map((wallet) => (
                 <Link
                   key={wallet.id}
                   href="/wallets"
-                  className="dashboard-wallet-card"
+                  className="wallet-row"
                 >
-                  <p className="dashboard-wallet-icon">
-                    <WalletIcon icon={wallet.icon} size={22} />
-                  </p>
-                  <p className="dashboard-wallet-name">{wallet.name}</p>
-                  <p className="dashboard-wallet-balance">{formatCurrency(wallet.balance)}</p>
+                  <div className="wallet-row-icon">
+                    <WalletIcon icon={wallet.icon} size={20} />
+                  </div>
+                  <p className="wallet-row-name">{wallet.name}</p>
+                  <p className="wallet-row-balance">{formatCurrency(wallet.balance)}</p>
                 </Link>
               ))}
             </div>

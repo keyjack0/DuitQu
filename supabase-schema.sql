@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS public.wallets (
 CREATE TABLE IF NOT EXISTS public.transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-  wallet_id UUID NOT NULL REFERENCES public.wallets(id) ON DELETE CASCADE,
+  wallet_id UUID REFERENCES public.wallets(id) ON DELETE SET NULL,
   type TEXT NOT NULL CHECK (type IN ('IN', 'OUT', 'TRANSFER')),
   amount DECIMAL(15,2) NOT NULL CHECK (amount > 0),
   category TEXT NOT NULL,

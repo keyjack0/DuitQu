@@ -4,14 +4,14 @@ import { useEffect } from "react";
 import { useAppStore } from "@/lib/store";
 import { getSupabaseClient } from "@/lib/supabase";
 import type { UserRow, WalletRow, TransactionRow, BudgetRow } from "@/lib/supabase";
-import { getStartOfMonth } from "@/lib/utils";
+import { getStartOfMonth, getStartOfLastMonth } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
 const SYNC_TTL_MS = 60_000;
 const TRANSACTIONS_PAGE_SIZE = 10;
 
 export function DataInitializer() {
-  const { syncMeta, setUser, setWallets, setTransactions, setMonthTransactions, setBudgets, setLoading, setSyncMeta } = useAppStore();
+  const { syncMeta, setUser, setWallets, setTransactions, setMonthTransactions, setLastMonthTransactions, setBudgets, setLoading, setSyncMeta } = useAppStore();
   const router = useRouter();
 
   useEffect(() => {
@@ -107,6 +107,21 @@ export function DataInitializer() {
         // Table may not exist
       }
 
+      // Load transaksi bulan lalu untuk perbandingan dashboard
+      try {
+        const lastMonthResult = await getSupabaseClient()
+          .from("transactions")
+          .select("*")
+          .eq("user_id", session.user.id)
+          .gte("date", getStartOfLastMonth())
+          .lt("date", getStartOfMonth())
+          .order("date", { ascending: false });
+        const lastMonthTx = lastMonthResult.data as TransactionRow[] | null;
+        if (lastMonthTx) setLastMonthTransactions(lastMonthTx);
+      } catch {
+        // Table may not exist
+      }
+
       // Load budgets
       try {
         const budgetResult = await getSupabaseClient()
@@ -133,6 +148,7 @@ export function DataInitializer() {
         setWallets([]);
         setTransactions([]);
         setMonthTransactions([]);
+        setLastMonthTransactions([]);
         setBudgets([]);
         setSyncMeta(null);
         router.push("/login");
@@ -149,6 +165,7 @@ export function DataInitializer() {
     setWallets,
     setTransactions,
     setMonthTransactions,
+    setLastMonthTransactions,
     setBudgets,
     setLoading,
     setSyncMeta,

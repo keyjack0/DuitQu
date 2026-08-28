@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useAppStore } from "@/lib/store";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, getMonthLabel } from "@/lib/utils";
+import { getSupabaseClient } from "@/lib/supabase";
 import { LazyAddTransactionModal } from "@/components/transactions/LazyAddTransactionModal";
-import { Plus, Search, Trash2, Pencil, Inbox } from "lucide-react";
+import { Plus, Search, Trash2, Pencil, Inbox, TrendingUp, TrendingDown, Calendar, X, ChevronDown } from "lucide-react";
 import { CategoryIcon } from "@/lib/icons";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { SwipeableRow } from "@/components/ui/SwipeableRow";
@@ -12,6 +13,36 @@ import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import type { Transaction } from "@/types";
 
 const PAGE_SIZE = 10;
+
+function generateMonthOptions(): { value: string; label: string }[] {
+  const options: { value: string; label: string }[] = [];
+  const now = new Date();
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const label = new Intl.DateTimeFormat("id-ID", { month: "long", year: "numeric" }).format(d);
+    options.push({ value, label });
+  }
+  return options;
+}
+
+function getMonthRange(monthStr: string): { start: string; end: string } {
+  const [year, month] = monthStr.split("-").map(Number);
+  const start = new Date(year, month - 1, 1).toISOString().split("T")[0];
+  const end = new Date(year, month, 0).toISOString().split("T")[0];
+  return { start, end };
+}
+
+function getLastMonthStr(): string {
+  const now = new Date();
+  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  return `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function getCurrentMonthStr(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
 
 export default function TransactionsPage() {
   const { user, transactions, deleteTransaction, fetchMoreTransactions } = useAppStore();
@@ -24,6 +55,75 @@ export default function TransactionsPage() {
   const [filterType, setFilterType] = useState("all");
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+
+  // Compare card state
+  const monthOptions = useMemo(() => generateMonthOptions(), []);
+  const [selectedMonthA, setSelectedMonthA] = useState(getLastMonthStr);
+  const [selectedMonthB, setSelectedMonthB] = useState(getCurrentMonthStr);
+  const [compareDataA, setCompareDataA] = useState<{ income: number; expense: number } | null>(null);
+  const [compareDataB, setCompareDataB] = useState<{ income: number; expense: number } | null>(null);
+  const [loadingCompare, setLoadingCompare] = useState(false);
+  const [showFilterSheet, setShowFilterSheet] = useState(false);
+  const [tempMonthA, setTempMonthA] = useState(getLastMonthStr);
+  const [tempMonthB, setTempMonthB] = useState(getCurrentMonthStr);
+  const [compareType, setCompareType] = useState<"IN" | "OUT">("OUT");
+
+  // Fetch compare data for both months
+  useEffect(() => {
+    const fetchCompareData = async () => {
+      if (!user) return;
+      setLoadingCompare(true);
+      try {
+        const [rangeA, rangeB] = [getMonthRange(selectedMonthA), getMonthRange(selectedMonthB)];
+        const [resultA, resultB] = await Promise.all([
+          getSupabaseClient()
+            .from("transactions")
+            .select("type, amount")
+            .eq("user_id", user.id)
+            .gte("date", rangeA.start)
+            .lte("date", rangeA.end),
+          getSupabaseClient()
+            .from("transactions")
+            .select("type, amount")
+            .eq("user_id", user.id)
+            .gte("date", rangeB.start)
+            .lte("date", rangeB.end),
+        ]);
+
+        if (resultA.data) {
+          const income = resultA.data.filter((t: { type: string; amount: number }) => t.type === "IN").reduce((s: number, t: { type: string; amount: number }) => s + t.amount, 0);
+          const expense = resultA.data.filter((t: { type: string; amount: number }) => t.type === "OUT").reduce((s: number, t: { type: string; amount: number }) => s + t.amount, 0);
+          setCompareDataA({ income, expense });
+        }
+        if (resultB.data) {
+          const income = resultB.data.filter((t: { type: string; amount: number }) => t.type === "IN").reduce((s: number, t: { type: string; amount: number }) => s + t.amount, 0);
+          const expense = resultB.data.filter((t: { type: string; amount: number }) => t.type === "OUT").reduce((s: number, t: { type: string; amount: number }) => s + t.amount, 0);
+          setCompareDataB({ income, expense });
+        }
+      } catch {
+        setCompareDataA(null);
+        setCompareDataB(null);
+      }
+      setLoadingCompare(false);
+    };
+    fetchCompareData();
+  }, [user, selectedMonthA, selectedMonthB]);
+
+  const incomeChange = useMemo(() => {
+    if (!compareDataA || !compareDataB) return null;
+    if (compareDataA.income === 0) return compareDataB.income > 0 ? 100 : 0;
+    return ((compareDataB.income - compareDataA.income) / compareDataA.income) * 100;
+  }, [compareDataA, compareDataB]);
+
+  const expenseChange = useMemo(() => {
+    if (!compareDataA || !compareDataB) return null;
+    if (compareDataA.expense === 0) return compareDataB.expense > 0 ? 100 : 0;
+    return ((compareDataB.expense - compareDataA.expense) / compareDataA.expense) * 100;
+  }, [compareDataA, compareDataB]);
+
+  const currentAmount = compareType === "OUT" ? compareDataB?.expense ?? 0 : compareDataB?.income ?? 0;
+  const prevAmount = compareType === "OUT" ? compareDataA?.expense ?? 0 : compareDataA?.income ?? 0;
+  const changePercent = compareType === "OUT" ? expenseChange : incomeChange;
 
   const filtered = useMemo(() => {
     const result = transactions.filter((t) => {
@@ -71,6 +171,108 @@ export default function TransactionsPage() {
               <Plus size={18} color="var(--on-accent)" strokeWidth={2.5} />
             </button>
           </div>
+
+          {/* Compare Card */}
+          <div className="compare-card">
+            <div className="compare-header">
+              <p className="compare-title">Perbandingan</p>
+              <button className="compare-filter-btn" onClick={() => { setTempMonthA(selectedMonthA); setTempMonthB(selectedMonthB); setShowFilterSheet(true); }}>
+                <Calendar size={15} />
+              </button>
+            </div>
+
+            <div className="compare-type-row">
+              <button
+                className={`compare-type-btn ${compareType === "OUT" ? "compare-type-btn--active" : ""}`}
+                onClick={() => setCompareType("OUT")}
+              >
+                Pengeluaran
+              </button>
+              <button
+                className={`compare-type-btn ${compareType === "IN" ? "compare-type-btn--active" : ""}`}
+                onClick={() => setCompareType("IN")}
+              >
+                Pemasukan
+              </button>
+            </div>
+
+            {loadingCompare ? (
+              <div className="compare-loading">Memuat...</div>
+            ) : compareDataA && compareDataB ? (
+              <div className="compare-body">
+                <div className="compare-big-number">{formatCurrency(currentAmount)}</div>
+
+                {changePercent !== null && (
+                  <div className="compare-trend">
+                    {changePercent >= 0 ? (
+                      <span className={`compare-trend-badge ${compareType === "OUT" ? "compare-trend-badge--neg" : "compare-trend-badge--pos"}`}>
+                        <TrendingUp size={12} /> +{changePercent.toFixed(1)}%
+                      </span>
+                    ) : (
+                      <span className={`compare-trend-badge ${compareType === "OUT" ? "compare-trend-badge--pos" : "compare-trend-badge--neg"}`}>
+                        <TrendingDown size={12} /> {changePercent.toFixed(1)}%
+                      </span>
+                    )}
+                    <span className="compare-trend-ref">
+                      dari {formatCurrency(prevAmount)} Bulan {getMonthLabel(selectedMonthA).replace(" 20", " '")?.split(" ").slice(0, 1)}
+                    </span>
+                  </div>
+                )}
+
+                {/* <div className="compare-period-row">
+                  <div className="compare-period-item">
+                    <span className="compare-period-label">{getMonthLabel(selectedMonthB)}</span>
+                    <span className="compare-period-value">{formatCurrency(currentAmount)}</span>
+                  </div>
+                  <div className="compare-period-item">
+                    <span className="compare-period-label">{getMonthLabel(selectedMonthA)}</span>
+                    <span className="compare-period-value compare-period-value--muted">{formatCurrency(prevAmount)}</span>
+                  </div>
+                </div> */}
+              </div>
+            ) : (
+              <div className="compare-empty">Tidak ada data untuk bulan ini</div>
+            )}
+          </div>
+
+          {/* Filter Bottom Sheet */}
+          {showFilterSheet && (
+            <div className="sheet-overlay sheet-overlay--fade" onClick={(e) => { if (e.target === e.currentTarget) setShowFilterSheet(false); }}>
+              <div className="sheet-panel sheet-panel--rise">
+                <div className="sheet-head">
+                  <h2 className="sheet-title">Pilih Periode</h2>
+                  <button onClick={() => setShowFilterSheet(false)} className="sheet-close"><X size={15} /></button>
+                </div>
+                <div className="filter-sheet-fields">
+                  <div className="filter-sheet-field">
+                    <label className="filter-sheet-label">Periode 1</label>
+                    <div className="compare-select-wrap">
+                      <select value={tempMonthA} onChange={(e) => setTempMonthA(e.target.value)} className="compare-select">
+                        {monthOptions.map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                      <ChevronDown size={14} className="compare-select-icon" />
+                    </div>
+                  </div>
+                  <div className="filter-sheet-field">
+                    <label className="filter-sheet-label">Periode 2</label>
+                    <div className="compare-select-wrap">
+                      <select value={tempMonthB} onChange={(e) => setTempMonthB(e.target.value)} className="compare-select">
+                        {monthOptions.map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                      <ChevronDown size={14} className="compare-select-icon" />
+                    </div>
+                  </div>
+                </div>
+                <button className="filter-sheet-apply" onClick={() => { setSelectedMonthA(tempMonthA); setSelectedMonthB(tempMonthB); setShowFilterSheet(false); }}>
+                  Terapkan
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Search */}
           <div className="search-wrap">

@@ -21,7 +21,7 @@ export interface Wallet {
 export interface Transaction {
   id: string;
   user_id: string;
-  wallet_id: string;
+  wallet_id: string | null;
   type: TransactionType;
   amount: number;
   category: string;

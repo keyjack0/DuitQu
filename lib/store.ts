@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Transaction, Wallet, Budget, User } from "@/types";
 import { getSupabaseClient } from "./supabase";
-import { isThisMonth } from "./utils";
+import { isThisMonth, isLastMonth } from "./utils";
 import { toast } from "react-toastify";
 
 interface AppState {
@@ -10,6 +10,7 @@ interface AppState {
   wallets: Wallet[];
   transactions: Transaction[];
   monthTransactions: Transaction[];
+  lastMonthTransactions: Transaction[];
   budgets: Budget[];
   isLoading: boolean;
   syncMeta: { userId: string; at: number } | null;
@@ -18,6 +19,7 @@ interface AppState {
   setWallets: (wallets: Wallet[]) => void;
   setTransactions: (transactions: Transaction[]) => void;
   setMonthTransactions: (transactions: Transaction[]) => void;
+  setLastMonthTransactions: (transactions: Transaction[]) => void;
   setBudgets: (budgets: Budget[]) => void;
   setLoading: (loading: boolean) => void;
   setSyncMeta: (meta: { userId: string; at: number } | null) => void;
@@ -51,6 +53,7 @@ export const useAppStore = create<AppState>()(
       wallets: [],
       transactions: [],
       monthTransactions: [],
+      lastMonthTransactions: [],
       budgets: [],
       isLoading: false,
       syncMeta: null,
@@ -59,6 +62,7 @@ export const useAppStore = create<AppState>()(
       setWallets: (wallets) => set({ wallets }),
       setTransactions: (transactions) => set({ transactions }),
       setMonthTransactions: (monthTransactions) => set({ monthTransactions }),
+      setLastMonthTransactions: (lastMonthTransactions) => set({ lastMonthTransactions }),
       setBudgets: (budgets) => set({ budgets }),
       setLoading: (isLoading) => set({ isLoading }),
       setSyncMeta: (syncMeta) => set({ syncMeta }),
@@ -70,6 +74,9 @@ export const useAppStore = create<AppState>()(
           monthTransactions: isThisMonth(txWithTimestamp.date)
             ? [txWithTimestamp, ...state.monthTransactions]
             : state.monthTransactions,
+          lastMonthTransactions: isLastMonth(txWithTimestamp.date)
+            ? [txWithTimestamp, ...state.lastMonthTransactions]
+            : state.lastMonthTransactions,
         }));
         toast.success("Transaksi berhasil ditambahkan");
         getSupabaseClient()
@@ -256,6 +263,7 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           transactions: state.transactions.filter((t) => t.id !== id),
           monthTransactions: state.monthTransactions.filter((t) => t.id !== id),
+          lastMonthTransactions: state.lastMonthTransactions.filter((t) => t.id !== id),
         }));
         toast.success("Transaksi berhasil dihapus");
         getSupabaseClient()
@@ -277,6 +285,7 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           transactions: state.transactions.map((t) => (t.id === id ? { ...t, ...updates } : t)),
           monthTransactions: state.monthTransactions.map((t) => (t.id === id ? { ...t, ...updates } : t)),
+          lastMonthTransactions: state.lastMonthTransactions.map((t) => (t.id === id ? { ...t, ...updates } : t)),
         }));
         toast.success("Transaksi berhasil diperbarui");
         getSupabaseClient()

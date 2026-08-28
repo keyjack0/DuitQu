@@ -46,6 +46,24 @@ export function isThisMonth(dateStr: string): boolean {
   return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
 }
 
+export function isLastMonth(dateStr: string): boolean {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  return date.getMonth() === lastMonth.getMonth() && date.getFullYear() === lastMonth.getFullYear();
+}
+
+export function getStartOfLastMonth(): string {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().split("T")[0];
+}
+
+export function getLastMonthLabel(): string {
+  const now = new Date();
+  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  return new Intl.DateTimeFormat("id-ID", { month: "long" }).format(lastMonth);
+}
+
 export function getStartOfMonth(): string {
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];

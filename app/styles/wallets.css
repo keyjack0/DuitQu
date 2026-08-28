@@ -117,6 +117,6 @@
   }
 
   .swipe-drag {
-    @apply bg-card [touch-action:pan-y] px-3.5 py-3 flex items-center;
+    @apply bg-card [touch-action:pan-y] px-3.5 py-3 flex items-center overflow-hidden relative z-[1];
   }
 }
