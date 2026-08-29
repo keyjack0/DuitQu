@@ -6,15 +6,20 @@
 
   /* ===== Bottom navigation ===== */
   .bottom-nav {
-    @apply fixed bottom-0 inset-x-0 bg-nav-bg backdrop-blur-[20px] border-t border-border flex justify-around items-center pt-2 px-2 pb-2 z-[100];
+    @apply fixed bottom-0 inset-x-0 bg-nav-bg backdrop-blur-[20px] shadow-[0_-4px_12px_rgba(0,0,0,0.06)] flex justify-around items-center pt-2 px-2 pb-2 z-[100];
   }
 
   .bottom-nav-item {
-    @apply flex flex-col items-center gap-1 px-4 py-2 rounded-[10px] text-[11px] no-underline transition-all duration-200 text-muted font-normal;
+    @apply flex flex-col items-center gap-1 px-4 py-2 rounded-[10px] text-[11px] no-underline transition-all duration-200 text-muted font-normal relative;
   }
 
   .bottom-nav-item--active {
-    @apply text-green font-semibold bg-green-dim;
+    @apply text-green font-semibold;
+  }
+
+  .bottom-nav-item--active::after {
+    content: "";
+    @apply absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-green;
   }
 
   /* ===== Loading skeleton ===== */
@@ -31,27 +36,42 @@
   }
 
   .sk-pill-sm {
-    @apply w-[92px] h-3 rounded-full bg-card border border-border mb-2.5;
+    @apply w-[92px] h-3 rounded-full mb-2.5;
+    background: linear-gradient(90deg, var(--bg-card) 25%, var(--border) 50%, var(--bg-card) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
   }
 
   .sk-title {
-    @apply w-[148px] h-[22px] rounded-lg bg-hover;
+    @apply w-[148px] h-[22px] rounded-lg;
+    background: linear-gradient(90deg, var(--bg-hover) 25%, var(--border-light) 50%, var(--bg-hover) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
   }
 
   .sk-avatar {
-    @apply size-10 rounded-full bg-[rgba(34,197,94,0.12)] border border-[rgba(34,197,94,0.25)];
+    @apply size-10 rounded-full;
+    background: linear-gradient(90deg, var(--green-dim) 25%, rgba(34,197,94,0.2) 50%, var(--green-dim) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
   }
 
   .sk-hero {
-    @apply min-h-[156px] rounded-2xl bg-card border border-border p-6 flex flex-col justify-between;
+    @apply min-h-[156px] rounded-2xl bg-card border-none p-6 flex flex-col justify-between;
   }
 
   .sk-hero-label {
-    @apply w-24 h-3 rounded-full bg-skeleton;
+    @apply w-24 h-3 rounded-full;
+    background: linear-gradient(90deg, var(--skeleton) 25%, var(--border-light) 50%, var(--skeleton) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
   }
 
   .sk-hero-amount {
-    @apply w-[70%] h-[34px] rounded-[10px] bg-hover;
+    @apply w-[70%] h-[34px] rounded-[10px];
+    background: linear-gradient(90deg, var(--bg-hover) 25%, var(--border) 50%, var(--bg-hover) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
   }
 
   .sk-hero-stats {
@@ -59,15 +79,21 @@
   }
 
   .sk-stat {
-    @apply w-[116px] h-[30px] rounded-lg bg-hover;
+    @apply w-[116px] h-[30px] rounded-lg;
+    background: linear-gradient(90deg, var(--bg-hover) 25%, var(--border) 50%, var(--bg-hover) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
   }
 
   .sk-row {
-    @apply h-16 rounded-[10px] bg-card border border-border flex items-center gap-3 px-3.5 py-3;
+    @apply h-16 rounded-[10px] bg-card border-none flex items-center gap-3 px-3.5 py-3;
   }
 
   .sk-thumb {
-    @apply size-9 rounded-[10px] bg-hover shrink-0;
+    @apply size-9 rounded-[10px] shrink-0;
+    background: linear-gradient(90deg, var(--bg-hover) 25%, var(--border) 50%, var(--bg-hover) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
   }
 
   .sk-row-lines {
@@ -75,10 +101,16 @@
   }
 
   .sk-line-a {
-    @apply w-[58%] h-3 rounded-full bg-hover mb-2;
+    @apply w-[58%] h-3 rounded-full mb-2;
+    background: linear-gradient(90deg, var(--bg-hover) 25%, var(--border) 50%, var(--bg-hover) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
   }
 
   .sk-line-b {
-    @apply w-[34%] h-2.5 rounded-full bg-skeleton;
+    @apply w-[34%] h-2.5 rounded-full;
+    background: linear-gradient(90deg, var(--skeleton) 25%, var(--border-light) 50%, var(--skeleton) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
   }
 }

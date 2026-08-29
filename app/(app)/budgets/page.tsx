@@ -124,7 +124,9 @@ export default function BudgetsPage() {
                   <div key={budget.id} className={`budget-card ${status === "danger" ? "budget-card--danger" : ""}`}>
                     <div className="budget-head">
                       <div className="budget-cat">
-                        <CategoryIcon category={budget.category} size={20} />
+                        <div className={`budget-cat-icon-box ${status === "danger" ? "budget-cat-icon-box--danger" : status === "warning" ? "budget-cat-icon-box--warning" : "budget-cat-icon-box--safe"}`}>
+                          <CategoryIcon category={budget.category} size={16} color="currentColor" />
+                        </div>
                         <div>
                           <p className="budget-cat-name">{budget.category}</p>
                           <p className="budget-cat-sum">

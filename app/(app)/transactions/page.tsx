@@ -7,6 +7,7 @@ import { getSupabaseClient } from "@/lib/supabase";
 import { LazyAddTransactionModal } from "@/components/transactions/LazyAddTransactionModal";
 import { Plus, Search, Trash2, Pencil, Inbox, TrendingUp, TrendingDown, Calendar, X, ChevronDown } from "lucide-react";
 import { CategoryIcon } from "@/lib/icons";
+import { CATEGORY_COLORS } from "@/lib/categoryColors";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { SwipeableRow } from "@/components/ui/SwipeableRow";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
@@ -44,8 +45,21 @@ function getCurrentMonthStr(): string {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
 
+function isDefaultCurrentMonth(monthStr: string): boolean {
+  return monthStr === getCurrentMonthStr();
+}
+
+function isDefaultLastMonth(monthStr: string): boolean {
+  return monthStr === getLastMonthStr();
+}
+
 export default function TransactionsPage() {
-  const { user, transactions, deleteTransaction, fetchMoreTransactions } = useAppStore();
+  const user = useAppStore((s) => s.user);
+  const transactions = useAppStore((s) => s.transactions);
+  const monthTransactions = useAppStore((s) => s.monthTransactions);
+  const lastMonthTransactions = useAppStore((s) => s.lastMonthTransactions);
+  const deleteTransaction = useAppStore((s) => s.deleteTransaction);
+  const fetchMoreTransactions = useAppStore((s) => s.fetchMoreTransactions);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -72,32 +86,79 @@ export default function TransactionsPage() {
   useEffect(() => {
     const fetchCompareData = async () => {
       if (!user) return;
+
+      const aFromStore = isDefaultLastMonth(selectedMonthA);
+      const bFromStore = isDefaultCurrentMonth(selectedMonthB);
+
+      if (aFromStore && bFromStore) {
+        const incomeA = lastMonthTransactions
+          .filter((t) => t.type === "IN")
+          .reduce((s, t) => s + t.amount, 0);
+        const expenseA = lastMonthTransactions
+          .filter((t) => t.type === "OUT")
+          .reduce((s, t) => s + t.amount, 0);
+        setCompareDataA({ income: incomeA, expense: expenseA });
+
+        const incomeB = monthTransactions
+          .filter((t) => t.type === "IN")
+          .reduce((s, t) => s + t.amount, 0);
+        const expenseB = monthTransactions
+          .filter((t) => t.type === "OUT")
+          .reduce((s, t) => s + t.amount, 0);
+        setCompareDataB({ income: incomeB, expense: expenseB });
+        return;
+      }
+
       setLoadingCompare(true);
       try {
         const [rangeA, rangeB] = [getMonthRange(selectedMonthA), getMonthRange(selectedMonthB)];
-        const [resultA, resultB] = await Promise.all([
-          getSupabaseClient()
-            .from("transactions")
-            .select("type, amount")
-            .eq("user_id", user.id)
-            .gte("date", rangeA.start)
-            .lte("date", rangeA.end),
-          getSupabaseClient()
-            .from("transactions")
-            .select("type, amount")
-            .eq("user_id", user.id)
-            .gte("date", rangeB.start)
-            .lte("date", rangeB.end),
-        ]);
+        const queries: Promise<{ data: { type: string; amount: number }[] | null }>[] = [];
 
-        if (resultA.data) {
-          const income = resultA.data.filter((t: { type: string; amount: number }) => t.type === "IN").reduce((s: number, t: { type: string; amount: number }) => s + t.amount, 0);
-          const expense = resultA.data.filter((t: { type: string; amount: number }) => t.type === "OUT").reduce((s: number, t: { type: string; amount: number }) => s + t.amount, 0);
+        if (!aFromStore) {
+          queries.push(
+            getSupabaseClient()
+              .from("transactions")
+              .select("type, amount")
+              .eq("user_id", user.id)
+              .gte("date", rangeA.start)
+              .lte("date", rangeA.end)
+          );
+        } else {
+          queries.push(Promise.resolve({ data: null }));
+        }
+
+        if (!bFromStore) {
+          queries.push(
+            getSupabaseClient()
+              .from("transactions")
+              .select("type, amount")
+              .eq("user_id", user.id)
+              .gte("date", rangeB.start)
+              .lte("date", rangeB.end)
+          );
+        } else {
+          queries.push(Promise.resolve({ data: null }));
+        }
+
+        const [resultA, resultB] = await Promise.all(queries);
+
+        if (!aFromStore && resultA.data) {
+          const income = resultA.data.filter((t) => t.type === "IN").reduce((s, t) => s + t.amount, 0);
+          const expense = resultA.data.filter((t) => t.type === "OUT").reduce((s, t) => s + t.amount, 0);
+          setCompareDataA({ income, expense });
+        } else if (aFromStore) {
+          const income = lastMonthTransactions.filter((t) => t.type === "IN").reduce((s, t) => s + t.amount, 0);
+          const expense = lastMonthTransactions.filter((t) => t.type === "OUT").reduce((s, t) => s + t.amount, 0);
           setCompareDataA({ income, expense });
         }
-        if (resultB.data) {
-          const income = resultB.data.filter((t: { type: string; amount: number }) => t.type === "IN").reduce((s: number, t: { type: string; amount: number }) => s + t.amount, 0);
-          const expense = resultB.data.filter((t: { type: string; amount: number }) => t.type === "OUT").reduce((s: number, t: { type: string; amount: number }) => s + t.amount, 0);
+
+        if (!bFromStore && resultB.data) {
+          const income = resultB.data.filter((t) => t.type === "IN").reduce((s, t) => s + t.amount, 0);
+          const expense = resultB.data.filter((t) => t.type === "OUT").reduce((s, t) => s + t.amount, 0);
+          setCompareDataB({ income, expense });
+        } else if (bFromStore) {
+          const income = monthTransactions.filter((t) => t.type === "IN").reduce((s, t) => s + t.amount, 0);
+          const expense = monthTransactions.filter((t) => t.type === "OUT").reduce((s, t) => s + t.amount, 0);
           setCompareDataB({ income, expense });
         }
       } catch {
@@ -107,7 +168,7 @@ export default function TransactionsPage() {
       setLoadingCompare(false);
     };
     fetchCompareData();
-  }, [user, selectedMonthA, selectedMonthB]);
+  }, [user?.id, selectedMonthA, selectedMonthB, monthTransactions, lastMonthTransactions]);
 
   const incomeChange = useMemo(() => {
     if (!compareDataA || !compareDataB) return null;
@@ -276,7 +337,7 @@ export default function TransactionsPage() {
 
           {/* Search */}
           <div className="search-wrap">
-            <Search size={14} color="var(--text-muted)" className="absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search size={14} color="var(--text-muted)" className="absolute left-3 top-1/2 -translate-y-1/2 " />
             <input
               placeholder="Cari transaksi..."
               value={search}
@@ -353,8 +414,14 @@ export default function TransactionsPage() {
                       }
                     >
                       <div className="tx-row-content">
-                        <div className={`tx-icon-box ${tx.type === "IN" ? "tx-icon-box--income" : "tx-icon-box--expense"}`}>
-                          <CategoryIcon category={tx.category} size={16} />
+                        <div
+                          className="tx-icon-box"
+                          style={{
+                            backgroundColor: `${CATEGORY_COLORS[tx.category]}1f`,
+                            color: CATEGORY_COLORS[tx.category],
+                          }}
+                        >
+                          <CategoryIcon category={tx.category} size={16} color="currentColor" />
                         </div>
                         <div className="transaction-info">
                           <p className="transaction-desc">

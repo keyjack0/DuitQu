@@ -11,21 +11,7 @@ import {
 import { formatCurrency } from "@/lib/utils";
 import { PieChartIcon, ChevronDown, ChevronUp } from "lucide-react";
 import { Transaction } from "@/types";
-
-const CATEGORY_COLORS: Record<string, string> = {
-  "Makanan & Minuman": "#E96A6A",
-  "Transportasi": "#5A8FD8",
-  "Hiburan": "#D9AE4A",
-  "Investasi": "#4FA69A",
-  "Belanja": "#8578D1",
-  "Kesehatan": "#E7956D",
-  "Pendidikan": "#8993A3",
-  "Tagihan & Utilitas": "#72AA91",
-  "Tabungan": "#C4C9D1",
-  "Gaji & Penghasilan": "#4675BD",
-  "Hadiah": "#CE6D88",
-  "Lainnya": "#A5A9B1",
-};
+import { CATEGORY_COLORS } from "@/lib/categoryColors";
 
 const DEFAULT_COLOR = "var(--text-muted)";
 
@@ -119,7 +105,7 @@ export default function CategoryPieChart({
     <div className="chart-card chart-card--expense">
       <div className="expense-info">
         <div className="expense-info-head">
-          <PieChartIcon size={14} color="var(--green)" />
+          {/* <PieChartIcon size={14} color="var(--green)" /> */}
           <p className="chart-title">Pengeluaran Bulan Ini</p>
         </div>
         <p className="expense-date-range">
@@ -149,11 +135,12 @@ export default function CategoryPieChart({
                   data={data}
                   cx="50%"
                   cy="50%"
-                  innerRadius={28}
-                  outerRadius={50}
-                  paddingAngle={0}
-                  cornerRadius={3}
+                  innerRadius={25}
+                  outerRadius={45}
+                  paddingAngle={2}
+                  cornerRadius={2}
                   dataKey="value"
+                  stroke="none"
                 >
                   {data.map((entry) => (
                     <Cell

@@ -1,7 +1,11 @@
 @layer components {
   /* ===== Transaction item ===== */
   .transaction-item {
-    @apply flex items-center gap-3 bg-linear-to-br from-card to-card-2 border border-border rounded-[14px] px-3.5 py-[13px] shadow-[0_10px_22px_rgba(0,0,0,0.07),inset_0_1px_0_rgba(255,255,255,0.03)];
+    @apply flex items-center gap-3 bg-linear-to-br from-card to-card-2 border-none rounded-[24px] px-3.5 py-[13px] shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-200;
+  }
+
+  .transaction-item:active {
+    @apply scale-[0.98];
   }
 
   .transaction-info {
@@ -9,15 +13,7 @@
   }
 
   .transaction-icon {
-    @apply size-9 rounded-xl border flex items-center justify-center shrink-0;
-  }
-
-  .transaction-icon--income {
-    @apply bg-[rgba(34,197,94,0.12)] border-green-border;
-  }
-
-  .transaction-icon--expense {
-    @apply bg-overlay-soft border-border;
+    @apply size-9 rounded-xl flex items-center justify-center shrink-0;
   }
 
   .transaction-desc {
@@ -46,7 +42,7 @@
   }
 
   .dialog-card {
-    @apply bg-secondary border border-border rounded-2xl p-6 w-[300px] text-center animate-[slideUp_0.2s_ease];
+    @apply bg-secondary border-none rounded-[24px] p-6 w-[300px] text-center animate-[slideUp_0.2s_ease];
   }
 
   .dialog-title {
@@ -66,11 +62,19 @@
   }
 
   .btn-secondary {
-    @apply flex-1 p-3 rounded-[10px] border border-border bg-transparent text-soft text-sm font-semibold cursor-pointer;
+    @apply flex-1 p-3 rounded-[10px] border-none bg-hover text-soft text-sm font-semibold cursor-pointer transition-all duration-200;
+  }
+
+  .btn-secondary:active {
+    @apply scale-[0.97];
   }
 
   .btn-danger {
-    @apply flex-1 p-3 rounded-[10px] bg-red text-white text-sm font-semibold border-none cursor-pointer;
+    @apply flex-1 p-3 rounded-[10px] bg-red text-white text-sm font-semibold border-none cursor-pointer transition-all duration-200;
+  }
+
+  .btn-danger:active {
+    @apply scale-[0.97];
   }
 
   /* ===== Bottom sheet ===== */
@@ -83,7 +87,7 @@
   }
 
   .sheet-panel {
-    @apply w-full bg-secondary rounded-t-[20px] border border-b-0 px-5 pt-6 pb-10;
+    @apply w-full bg-secondary rounded-t-[24px] border-none px-5 pt-6 pb-10;
   }
 
   .sheet-panel--rise {
@@ -99,7 +103,7 @@
   }
 
   .sheet-close {
-    @apply size-8 rounded-full bg-hover border border-border flex items-center justify-center cursor-pointer text-soft shrink-0;
+    @apply size-8 rounded-full bg-hover border-none flex items-center justify-center cursor-pointer text-soft shrink-0;
   }
 
   /* ===== Form controls ===== */
@@ -120,7 +124,7 @@
   }
 
   .form-input {
-    @apply w-full bg-card border border-border rounded-lg py-2.5 px-3.5 text-fg text-sm outline-none;
+    @apply w-full bg-secondary border-none rounded-xl py-2.5 px-3.5 text-fg text-sm outline-none;
   }
 
   .form-input--prefix {
@@ -160,21 +164,29 @@
     @apply w-full p-3.5 bg-green text-on-accent border-none rounded-xl font-bold text-[15px] flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer disabled:bg-border disabled:text-muted disabled:cursor-not-allowed;
   }
 
+  .btn-primary:not(:disabled):hover {
+    @apply opacity-90;
+  }
+
+  .btn-primary:not(:disabled):active {
+    @apply scale-[0.97];
+  }
+
   .btn-primary--sm {
     @apply w-auto px-[18px] py-2.5 text-sm gap-1.5;
   }
 
   .btn-danger-outline {
-    @apply w-full p-3.5 bg-[rgba(239,68,68,0.1)] text-red border border-[rgba(239,68,68,0.25)] rounded-xl font-bold text-[15px] flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed disabled:opacity-70;
+    @apply w-full p-3.5 bg-[rgba(239,68,68,0.1)] text-red border-none rounded-xl font-bold text-[15px] flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed disabled:opacity-70;
   }
 
   /* ===== Page scaffolding (budgets / wallets / transactions / settings) ===== */
   .page-shell {
-    @apply pb-6;
+    @apply pb-6 animate-[pageIn_0.2s_ease-out];
   }
 
   .page-hero {
-    @apply pt-[20px] px-5 bg-secondary;
+    @apply pt-[20px] px-5;
   }
 
   .page-body {
@@ -198,16 +210,16 @@
   }
 
   .icon-btn-square--ghost {
-    @apply bg-card border border-border;
+    @apply bg-card border-none;
   }
 
   .icon-btn-round {
-    @apply size-10 rounded-full bg-green-dim border border-green-border flex items-center justify-center cursor-pointer text-green transition-all duration-200;
+    @apply size-10 rounded-full bg-green-dim border-none flex items-center justify-center cursor-pointer text-green transition-all duration-200;
   }
 
   /* ===== Cards & labels ===== */
   .card {
-    @apply bg-card border border-border rounded-[14px] p-5;
+    @apply bg-card border-none rounded-[24px] p-5;
   }
 
   .section-label {
@@ -215,7 +227,15 @@
   }
 
   .empty-state {
-    @apply text-center py-[60px] text-muted;
+    @apply text-center py-10 text-muted rounded-[24px] bg-card/50 border-none;
+  }
+
+  .empty-icon {
+    @apply mb-3;
+  }
+
+  .empty-icon > * {
+    @apply size-14 rounded-full bg-green-dim flex items-center justify-center mx-auto;
   }
 
   .mini-icon-btn {
@@ -224,11 +244,15 @@
 
   /* ===== Chips, badges, progress, alert ===== */
   .chip {
-    @apply px-3 py-[5px] rounded-full border border-border bg-transparent text-muted text-xs font-medium whitespace-nowrap cursor-pointer;
+    @apply px-3 py-[5px] rounded-full border-none bg-hover text-muted text-xs font-medium whitespace-nowrap cursor-pointer transition-all duration-200;
+  }
+
+  .chip:active {
+    @apply scale-[0.95];
   }
 
   .chip--active {
-    @apply border-green bg-[rgba(34,197,94,0.12)] text-green;
+    @apply bg-green text-on-accent;
   }
 
   .status-badge {

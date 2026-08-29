@@ -36,11 +36,11 @@
   }
 
   .dashboard-icon-button {
-    @apply size-10 rounded-full bg-green-dim border border-green-border shadow-[0_10px_24px_rgba(0,0,0,0.12)] flex items-center justify-center text-green cursor-pointer;
+    @apply size-10 rounded-full bg-green-dim border border-green-border flex items-center justify-center text-green cursor-pointer;
   }
 
   .dashboard-balance-card {
-    @apply bg-linear-to-br from-green to-green-dark border border-green-border rounded-[18px] p-6 shadow-[0_22px_42px_rgba(34,197,94,0.18),0_8px_18px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.24),inset_0_-18px_42px_rgba(0,0,0,0.12)] overflow-hidden transform-gpu;
+    @apply bg-green border-none rounded-[24px] p-6 shadow-[0_4px_12px_rgba(0,0,0,0.06)] overflow-hidden;
   }
 
   .dashboard-balance-label-row {
@@ -72,14 +72,30 @@
   }
 
   .dashboard-balance-trend-text {
-    @apply text-[12px] font-medium;
+    @apply text-[11px] font-medium text-white/90;
   }
 
-  .dashboard-balance-trend-text--up {
-    @apply text-white/80;
+  .dashboard-balance-weekly {
+    @apply flex items-center gap-6 mt-2;
   }
 
-  .dashboard-balance-trend-text--down {
+  .dashboard-balance-stat {
+    @apply flex flex-col;
+  }
+
+  .dashboard-balance-stat-label {
+    @apply text-[10px] text-white/60 font-medium mb-0.5;
+  }
+
+  .dashboard-balance-stat-value {
+    @apply text-[14px] font-bold;
+  }
+
+  .dashboard-balance-stat-value--income {
+    @apply text-white;
+  }
+
+  .dashboard-balance-stat-value--expense {
     @apply text-white/80;
   }
 
@@ -88,15 +104,19 @@
   }
 
   .dashboard-action {
-    @apply rounded-xl px-3.5 py-[13px] flex items-center justify-center gap-2 text-sm no-underline cursor-pointer;
+    @apply rounded-xl px-3.5 py-[13px] flex items-center justify-center gap-2 text-sm no-underline cursor-pointer transition-all duration-200 bg-secondary text-fg border-none;
+  }
+
+  .dashboard-action:active {
+    @apply scale-[0.97];
   }
 
   .dashboard-action--primary {
-    @apply flex-1 bg-green text-on-accent border-none font-semibold shadow-[0_12px_24px_rgba(34,197,94,0.16)];
+    @apply flex-1 bg-green text-on-accent border-none font-semibold;
   }
 
   .dashboard-action--green {
-    @apply  border border-border text-fg font-medium shadow-[0_10px_22px_rgba(34,197,94,0.1)] whitespace-nowrap;
+    @apply border-none text-fg font-medium whitespace-nowrap;
   }
 
   .dashboard-section-head {
@@ -120,11 +140,15 @@
   }
 
   .wallet-row {
-    @apply flex items-center gap-3 bg-linear-to-br from-card to-card-2 border border-border rounded-[14px] px-3.5 py-[13px] no-underline shadow-[0_10px_22px_rgba(0,0,0,0.07),inset_0_1px_0_rgba(255,255,255,0.03)];
+    @apply flex items-center gap-3 bg-linear-to-br from-card to-card-2 border-none rounded-[24px] px-3.5 py-[13px] no-underline shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-200;
+  }
+
+  .wallet-row:active {
+    @apply scale-[0.98];
   }
 
   .wallet-row-icon {
-    @apply size-9 rounded-xl bg-overlay-soft border border-border flex items-center justify-center shrink-0;
+    @apply size-9 rounded-xl bg-overlay-soft border-none flex items-center justify-center shrink-0;
   }
 
   .wallet-row-name {
@@ -138,7 +162,11 @@
 
 /* ===== Chart cards (ExpenseChart, CategoryPieChart) ===== */
 .chart-card {
-  @apply border border-border rounded-2xl p-[18px] mb-5 shadow-[0_14px_28px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.03)] [background:linear-gradient(145deg,var(--bg-card)_0%,var(--bg-card-2)_100%)];
+  @apply border-none rounded-[24px] p-[18px] mb-5 shadow-[0_4px_12px_rgba(0,0,0,0.06)] [background:linear-gradient(145deg,var(--bg-card)_0%,var(--bg-card-2)_100%)] transition-shadow duration-300;
+}
+
+.chart-card:hover {
+  @apply shadow-[0_20px_40px_rgba(0,0,0,0.12)];
 }
 
 .chart-card--expense {
@@ -174,11 +202,11 @@
 }
 
 .chart-title {
-  @apply text-[13px] font-semibold text-soft tracking-[0.05em] capitalize ;
+  @apply text-[13px] font-semibold text-fg tracking-[0.05em] capitalize;
 }
 
 .chart-tooltip {
-  @apply bg-card border border-border rounded-lg px-3 py-2 text-xs;
+  @apply bg-card border-none rounded-lg px-3 py-2 text-xs shadow-[0_4px_12px_rgba(0,0,0,0.06)] backdrop-blur-sm;
 }
 
 .chart-empty {
@@ -214,7 +242,7 @@
 }
 
 .expense-category-full {
-  @apply col-span-full border-t border-border mt-4 pt-4;
+  @apply col-span-full;
 }
 
 .expense-category-row {

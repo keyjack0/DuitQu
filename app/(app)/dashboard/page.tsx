@@ -9,7 +9,8 @@ import { ArrowUpRight, ArrowDownRight, Plus, Bot, Settings, Eye, EyeOff, Trendin
 
 const ExpenseChart = dynamic(() => import("@/components/ExpenseChart"), { ssr: false });
 const CategoryPieChart = dynamic(() => import("@/components/CategoryPieChart"), { ssr: false });
-import { WalletIcon, CategoryIcon } from "@/lib/icons";
+import { WalletIcon, CategoryIcon, WALLET_COLORS } from "@/lib/icons";
+import { CATEGORY_COLORS } from "@/lib/categoryColors";
 import { useMemo, useState } from "react";
 import { LazyAddTransactionModal } from "@/components/transactions/LazyAddTransactionModal";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -78,6 +79,35 @@ export default function DashboardPage() {
     [transactions]
   );
 
+  // Minggu berjalan (Senin - Minggu)
+  const weekRange = useMemo(() => {
+    const now = new Date();
+    const day = now.getDay();
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - ((day + 6) % 7));
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    return {
+      start: monday.toISOString().split("T")[0],
+      end: sunday.toISOString().split("T")[0],
+    };
+  }, []);
+
+  const weekTx = useMemo(
+    () => allTx.filter((t) => t.date >= weekRange.start && t.date <= weekRange.end),
+    [allTx, weekRange]
+  );
+
+  const weekIncome = useMemo(
+    () => weekTx.filter((t) => t.type === "IN").reduce((s, t) => s + t.amount, 0),
+    [weekTx]
+  );
+
+  const weekExpense = useMemo(
+    () => weekTx.filter((t) => t.type === "OUT").reduce((s, t) => s + t.amount, 0),
+    [weekTx]
+  );
+
   return (
     <>
       <div className="dashboard">
@@ -87,7 +117,7 @@ export default function DashboardPage() {
             <div className="dashboard-topbar">
               <div>
                 <p className="dashboard-greeting">
-                  Hay, {user?.name?.split(" ")[0] || "Pengguna"} 
+                  Hay, {user?.name?.split(" ")[0] || "Pengguna"}
                 </p>
                 <h1 className="dashboard-title">
                   Welcome Back Sir!
@@ -125,7 +155,7 @@ export default function DashboardPage() {
               <p className="dashboard-balance-amount">
                 {balanceVisible ? formatCurrency(totalBalance) : "Rp ******"}
               </p>
-              {balanceVisible && (
+              {/* {balanceVisible && (
                 <div className="dashboard-balance-trend">
                   {incomeChange >= 0 ? (
                     <TrendingUp size={12} className="dashboard-balance-trend-icon--up" />
@@ -133,8 +163,32 @@ export default function DashboardPage() {
                     <TrendingDown size={12} className="dashboard-balance-trend-icon--down" />
                   )}
                   <span className={`dashboard-balance-trend-text ${incomeChange >= 0 ? "dashboard-balance-trend-text--up" : "dashboard-balance-trend-text--down"}`}>
-                    {incomeChange >= 0 ? "Naik" : "Turun"} {Math.abs(incomeChange).toFixed(1)}% dari bulan lalu
+                    {incomeChange >= 0 ? "+" : ""}
+                    {incomeChange.toFixed(1)}%
+                  dari bulan lalu
                   </span>
+                </div>
+              )} */}
+              {balanceVisible && (
+                <div >
+                  <p className="dashboard-balance-trend-text">
+                    ini sisa uang mu sekarang, jangan lupa untuk menabung yaa
+                  </p>
+                </div>)}
+              {balanceVisible && (
+                <div className="dashboard-balance-weekly">
+                  <div className="dashboard-balance-stat">
+                    <span className="dashboard-balance-stat-label">Pemasukan</span>
+                    <span className="dashboard-balance-stat-value dashboard-balance-stat-value--income">
+                      {formatCurrency(weekIncome)}
+                    </span>
+                  </div>
+                  <div className="dashboard-balance-stat">
+                    <span className="dashboard-balance-stat-label">Pengeluaran</span>
+                    <span className="dashboard-balance-stat-value dashboard-balance-stat-value--expense">
+                      {formatCurrency(weekExpense)}
+                    </span>
+                  </div>
                 </div>
               )}
             </div>
@@ -180,8 +234,11 @@ export default function DashboardPage() {
                   href="/wallets"
                   className="wallet-row"
                 >
-                  <div className="wallet-row-icon">
-                    <WalletIcon icon={wallet.icon} size={20} />
+                  <div
+                    className="wallet-row-icon"
+                    style={{ backgroundColor: `${WALLET_COLORS[wallet.icon ?? ""] || "var(--text-muted)"}1f` }}
+                  >
+                    <WalletIcon icon={wallet.icon} size={20} color={WALLET_COLORS[wallet.icon ?? ""] || "var(--text-muted)"} />
                   </div>
                   <p className="wallet-row-name">{wallet.name}</p>
                   <p className="wallet-row-balance">{formatCurrency(wallet.balance)}</p>
@@ -220,9 +277,13 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
   return (
     <div className="transaction-item">
       <div
-        className={`transaction-icon ${isIncome ? "transaction-icon--income" : "transaction-icon--expense"}`}
+        className="transaction-icon"
+        style={{
+          backgroundColor: `${CATEGORY_COLORS[transaction.category]}1f`,
+          color: CATEGORY_COLORS[transaction.category],
+        }}
       >
-        <CategoryIcon category={transaction.category} size={16} />
+        <CategoryIcon category={transaction.category} size={16} color="currentColor" />
       </div>
       <div className="transaction-info">
         <p className="transaction-desc">

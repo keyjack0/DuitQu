@@ -38,7 +38,7 @@ export default function ExpenseChart({
   return (
     <div className="chart-card">
       <div className="chart-head">
-        <TrendingUp size={14} color="var(--green)" />
+        {/* <TrendingUp size={14} color="var(--green)" /> */}
         <p className="chart-title">Pengeluaran 7 Hari Terakhir</p>
       </div>
       <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">

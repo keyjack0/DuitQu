@@ -46,4 +46,28 @@
   .about-desc {
     @apply text-xs text-muted mt-0.5;
   }
+
+  .changelog-entry {
+    @apply mb-4 last:mb-0;
+  }
+
+  .changelog-header {
+    @apply flex items-center gap-2 mb-2;
+  }
+
+  .changelog-version {
+    @apply text-[13px] font-bold text-fg;
+  }
+
+  .changelog-date {
+    @apply text-[11px] text-muted;
+  }
+
+  .changelog-notes {
+    @apply list-none pl-0 flex flex-col gap-1;
+  }
+
+  .changelog-notes li {
+    @apply text-[12px] text-muted relative pl-3;
+  }
 }

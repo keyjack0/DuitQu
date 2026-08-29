@@ -11,11 +11,11 @@ import {
 } from "lucide-react";
 
 const navItems = [
-  { href: "/dashboard", icon: House, label: "Beranda" },
-  { href: "/transactions", icon: ArrowLeftRight, label: "Transaksi" },
-  { href: "/wallets", icon: Wallet, label: "Dompet" },
-  { href: "/budgets", icon: Target, label: "Budget" },
-  { href: "/ai-assistant", icon: Bot, label: "AI" },
+  { href: "/dashboard", icon: House, label: "" },
+  { href: "/transactions", icon: ArrowLeftRight },
+  { href: "/wallets", icon: Wallet },
+  { href: "/budgets", icon: Target },
+  { href: "/ai-assistant", icon: Bot },
 ];
 
 export function BottomNav() {

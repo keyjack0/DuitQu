@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useAppStore } from "@/lib/store";
 import { formatCurrency } from "@/lib/utils";
 import { Plus, Trash2, Edit3, ArrowLeftRight } from "lucide-react";
-import { WalletIcon, WALLET_ICON_OPTIONS } from "@/lib/icons";
+import { WalletIcon, WALLET_ICON_OPTIONS, WALLET_COLORS } from "@/lib/icons";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { SwipeableRow } from "@/components/ui/SwipeableRow";
 import { TransferModal } from "@/components/wallets/TransferModal";
@@ -152,13 +152,15 @@ export default function WalletsPage() {
                 }
               >
                 <div className="wallet-row-content">
-                  <div className="wallet-icon-box">
-                    <WalletIcon icon={wallet.icon} size={20} />
+                  <div className="wallet-icon-box"
+                    style={{ backgroundColor: `${WALLET_COLORS[wallet.icon ?? ""] || "var(--text-muted)"}1f` }}>
+                    <WalletIcon icon={wallet.icon} size={20} color={WALLET_COLORS[wallet.icon ?? ""] || "var(--text-muted)"} />
                   </div>
                   <div className="wallet-info">
                     <p className="wallet-name">{wallet.name}</p>
+                    </div>
                     <p className="wallet-balance">{formatCurrency(wallet.balance)}</p>
-                  </div>
+                  
                 </div>
               </SwipeableRow>
             ))}

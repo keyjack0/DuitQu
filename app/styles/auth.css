@@ -24,7 +24,7 @@
   }
 
   .auth-card {
-    @apply bg-secondary border border-border rounded-2xl p-6;
+    @apply bg-secondary border-none rounded-[24px] p-6;
   }
 
   .auth-error {
@@ -41,7 +41,7 @@
 
   /* Verify-email screen */
   .auth-confirm-card {
-    @apply max-w-[360px] w-full mx-auto bg-secondary border border-border rounded-2xl px-6 pt-8 pb-8 text-center;
+    @apply max-w-[360px] w-full mx-auto bg-secondary border-none rounded-[24px] px-6 pt-8 pb-8 text-center;
   }
 
   .auth-confirm-title {

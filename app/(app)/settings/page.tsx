@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAppStore } from "@/lib/store";
 import { getSupabaseClient } from "@/lib/supabase";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { APP_VERSION } from "@/lib/version";
+import { APP_VERSION, CHANGELOG_HISTORY } from "@/lib/version";
 import { toast } from "react-toastify";
 import { LogOut, Save } from "lucide-react";
 
@@ -118,6 +118,24 @@ export default function SettingsPage() {
           <p className="section-label mb-3">Tentang</p>
           <p className="about-title">DuitQu</p>
           <p className="about-desc">Manajemen Keuangan Pribadi v{APP_VERSION}</p>
+        </div>
+
+        {/* Riwayat Update */}
+        <div className="card">
+          <p className="section-label mb-3">Riwayat Update</p>
+          {CHANGELOG_HISTORY.map((entry) => (
+            <div key={entry.version} className="changelog-entry">
+              <div className="changelog-header">
+                <span className="changelog-version">v{entry.version}</span>
+                <span className="changelog-date">{entry.date}</span>
+              </div>
+              <ul className="changelog-notes">
+                {entry.notes.map((note, i) => (
+                  <li key={i}>• {note}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       </div>
     </div>
