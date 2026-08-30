@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "node scripts/gen-version.js",
     "start": "next start",
     "lint": "eslint",
     "analyze": "cross-env ANALYZE=1 next build --webpack"

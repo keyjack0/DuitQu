@@ -1,14 +1,14 @@
 export const CATEGORY_COLORS: Record<string, string> = {
-  "Makanan & Minuman": "#E96A6A",
-  "Transportasi": "#5A8FD8",
-  "Hiburan": "#D9AE4A",
-  "Investasi": "#4FA69A",
-  "Belanja": "#8578D1",
-  "Kesehatan": "#E7956D",
-  "Pendidikan": "#8993A3",
-  "Tagihan & Utilitas": "#72AA91",
-  "Tabungan": "#C4C9D1",
-  "Gaji & Penghasilan": "#4675BD",
-  "Hadiah": "#CE6D88",
-  "Lainnya": "#A5A9B1",
+  "Makanan & Minuman": "#F97316",   // Vibrant Orange
+  "Transportasi": "#2563EB",        // Bright Blue
+  "Hiburan": "#A855F7",             // Vivid Purple
+  "Investasi": "#10B981",            // Emerald Green
+  "Belanja": "#EC4899",             // Bright Pink
+  "Kesehatan": "#EF4444",           // Strong Red
+  "Pendidikan": "#06B6D4",          // Cyan
+  "Tagihan & Utilitas": "#EAB308",  // Bright Yellow
+  "Tabungan": "#14B8A6",             // Teal
+  "Gaji & Penghasilan": "#22C55E",  // Green
+  "Hadiah": "#F43F5E",               // Rose
+  "Lainnya": "#64748B",             // Slate
 };

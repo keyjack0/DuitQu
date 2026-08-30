@@ -8,8 +8,13 @@ const withBundleAnalyzer = bundleAnalyzer({
 const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
-  experimental: {
-    // appDir is stable in Next.js 15
+  async headers() {
+    return [
+      {
+        source: "/version.json",
+        headers: [{ key: "Cache-Control", value: "no-store" }],
+      },
+    ];
   },
 };
 

@@ -193,4 +193,37 @@
   .filter-sheet-apply {
     @apply w-full py-3 rounded-xl bg-fg text-on-accent text-[14px] font-semibold cursor-pointer;
   }
+
+  .filter-sheet-daterow {
+    @apply flex gap-3;
+  }
+
+  .filter-sheet-datefield {
+    @apply flex-1 flex flex-col gap-1.5;
+  }
+
+  .filter-sheet-actions {
+    @apply flex items-center justify-between gap-3 mt-4;
+  }
+
+  .filter-sheet-reset {
+    @apply px-4 py-3 rounded-xl bg-hover border-none text-muted text-[14px] font-semibold cursor-pointer;
+  }
+
+  .filter-sheet-reset:active {
+    @apply scale-[0.97];
+  }
+
+  /* ===== Filter Button ===== */
+  .filter-dropdown-btn {
+    @apply flex items-center gap-2 px-3 py-[5px] rounded-full border-none bg-hover text-muted text-xs font-medium cursor-pointer transition-all duration-200;
+  }
+
+  .filter-dropdown-btn:active {
+    @apply scale-[0.95];
+  }
+
+  .filter-dropdown-label {
+    @apply text-xs font-medium;
+  }
 }

@@ -21,7 +21,15 @@
   }
 
   .transaction-category {
-    @apply text-muted text-[11px];
+    @apply inline text-[10px] font-medium px-1.5 py-0.5 rounded-full;
+  }
+
+  .transaction-meta {
+    @apply overflow-hidden whitespace-nowrap text-ellipsis text-[11px] leading-[1.4];
+  }
+
+  .transaction-wallet {
+    @apply inline text-[10px] font-medium px-1.5 py-0.5 rounded-full;
   }
 
   .transaction-date {
@@ -124,7 +132,7 @@
   }
 
   .form-input {
-    @apply w-full bg-secondary border-none rounded-xl py-2.5 px-3.5 text-fg text-sm outline-none;
+    @apply w-full bg-primary border-none rounded-xl py-2.5 px-3.5 text-fg text-sm outline-none;
   }
 
   .form-input--prefix {

@@ -15,6 +15,15 @@ export const WALLET_ICON_MAP: Record<string, LucideIcon> = {
   investment: TrendingUp,
 };
 
+export const WALLET_COLORS: Record<string, string> = {
+  cash: "#EF4444",
+  bank: "#3B82F6",
+  ewallet: "#14B8A6",
+  card: "#8B5CF6",
+  savings: "#F59E0B",
+  investment: "#10B981",
+};
+
 export const CATEGORY_ICON_MAP: Record<string, LucideIcon> = {
   "Makanan & Minuman": UtensilsCrossed,
   "Transportasi": Car,
@@ -45,14 +54,7 @@ export const WALLET_ICON_OPTIONS: IconPickerOption[] = [
   { key: "investment", label: "Investasi", icon: TrendingUp },
 ];
 
-export const WALLET_COLORS: Record<string, string> = {
-  cash: "#D97777",        // Soft Coral
-  bank: "#5B82C4",        // Muted Blue
-  ewallet: "#3F9B8B",     // Soft Teal
-  card: "#7668B3",        // Muted Indigo
-  savings: "#C49A3A",     // Soft Gold
-  investment: "#477A70",  // Deep Sage
-};
+
 
 export function WalletIcon({ icon, size = 20, color, strokeWidth = 2.5 }: { 
   icon: string | null; size?: number; color?: string; strokeWidth?: number 

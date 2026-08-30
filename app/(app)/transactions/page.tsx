@@ -1,17 +1,18 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useAppStore } from "@/lib/store";
 import { formatCurrency, getMonthLabel } from "@/lib/utils";
 import { getSupabaseClient } from "@/lib/supabase";
 import { LazyAddTransactionModal } from "@/components/transactions/LazyAddTransactionModal";
-import { Plus, Search, Trash2, Pencil, Inbox, TrendingUp, TrendingDown, Calendar, X, ChevronDown } from "lucide-react";
-import { CategoryIcon } from "@/lib/icons";
+import { Plus, Search, Trash2, Pencil, Inbox, TrendingUp, TrendingDown, Calendar, X, ChevronDown, SlidersHorizontal } from "lucide-react";
+import { CategoryIcon, WALLET_COLORS } from "@/lib/icons";
 import { CATEGORY_COLORS } from "@/lib/categoryColors";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { SwipeableRow } from "@/components/ui/SwipeableRow";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import type { Transaction } from "@/types";
+import { CATEGORIES } from "@/types";
 
 const PAGE_SIZE = 10;
 
@@ -56,6 +57,7 @@ function isDefaultLastMonth(monthStr: string): boolean {
 export default function TransactionsPage() {
   const user = useAppStore((s) => s.user);
   const transactions = useAppStore((s) => s.transactions);
+  const wallets = useAppStore((s) => s.wallets);
   const monthTransactions = useAppStore((s) => s.monthTransactions);
   const lastMonthTransactions = useAppStore((s) => s.lastMonthTransactions);
   const deleteTransaction = useAppStore((s) => s.deleteTransaction);
@@ -69,6 +71,16 @@ export default function TransactionsPage() {
   const [filterType, setFilterType] = useState("all");
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [typePageTransactions, setTypePageTransactions] = useState<Transaction[]>([]);
+  const offsetRef = useRef(0);
+  const typePageOffsetRef = useRef(0);
+  const [showTypeFilterSheet, setShowTypeFilterSheet] = useState(false);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [tempFilterType, setTempFilterType] = useState("all");
+  const [tempFilterCategory, setTempFilterCategory] = useState("all");
+  const [tempDateFrom, setTempDateFrom] = useState("");
+  const [tempDateTo, setTempDateTo] = useState("");
 
   // Compare card state
   const monthOptions = useMemo(() => generateMonthOptions(), []);
@@ -168,7 +180,49 @@ export default function TransactionsPage() {
       setLoadingCompare(false);
     };
     fetchCompareData();
-  }, [user?.id, selectedMonthA, selectedMonthB, monthTransactions, lastMonthTransactions]);
+  }, [user, selectedMonthA, selectedMonthB, monthTransactions, lastMonthTransactions]);
+
+  // Sync offsetRef with store after DataInitializer loads
+  useEffect(() => {
+    offsetRef.current = useAppStore.getState().transactions.length;
+  }, [transactions.length]);
+
+  useEffect(() => {
+    if (!user || filterType === "all") {
+      return;
+    }
+
+    typePageOffsetRef.current = 0;
+
+    getSupabaseClient()
+      .from("transactions")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("type", filterType)
+      .order("date", { ascending: false })
+      .limit(PAGE_SIZE)
+      .then((result: { data: Transaction[] | null; error: { message: string } | null }) => {
+        const { data, error } = result;
+
+        if (error || !data) {
+          setTypePageTransactions([]);
+          setHasMore(false);
+          setLoadingMore(false);
+          return;
+        }
+
+        const rows = data as Transaction[];
+        setTypePageTransactions(rows);
+        typePageOffsetRef.current = rows.length;
+        setHasMore(rows.length >= PAGE_SIZE);
+        setLoadingMore(false);
+      })
+      .catch(() => {
+        setTypePageTransactions([]);
+        setHasMore(false);
+        setLoadingMore(false);
+      });
+  }, [filterType, user]);
 
   const incomeChange = useMemo(() => {
     if (!compareDataA || !compareDataB) return null;
@@ -186,18 +240,22 @@ export default function TransactionsPage() {
   const prevAmount = compareType === "OUT" ? compareDataA?.expense ?? 0 : compareDataA?.income ?? 0;
   const changePercent = compareType === "OUT" ? expenseChange : incomeChange;
 
+  const currentViewTransactions = filterType === "all" ? transactions : typePageTransactions;
+
   const filtered = useMemo(() => {
-    const result = transactions.filter((t) => {
+    const result = currentViewTransactions.filter((t) => {
       const matchSearch =
         search === "" ||
         t.description.toLowerCase().includes(search.toLowerCase()) ||
         t.category.toLowerCase().includes(search.toLowerCase());
       const matchCat = filterCategory === "all" || t.category === filterCategory;
       const matchType = filterType === "all" || t.type === filterType;
-      return matchSearch && matchCat && matchType;
+      const matchFrom = !dateFrom || t.date >= dateFrom;
+      const matchTo = !dateTo || t.date <= dateTo;
+      return matchSearch && matchCat && matchType && matchFrom && matchTo;
     });
     return result.sort((a, b) => b.date.localeCompare(a.date));
-  }, [transactions, search, filterCategory, filterType]);
+  }, [currentViewTransactions, search, filterCategory, filterType, dateFrom, dateTo]);
 
   const grouped = useMemo(() => {
     const groups: Record<string, typeof filtered> = {};
@@ -211,10 +269,40 @@ export default function TransactionsPage() {
   const loadMore = useCallback(async () => {
     if (!user || loadingMore || !hasMore) return;
     setLoadingMore(true);
-    const result = await fetchMoreTransactions(user.id, transactions.length, PAGE_SIZE);
+
+    if (filterType !== "all") {
+      const { data, error } = await getSupabaseClient()
+        .from("transactions")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("type", filterType)
+        .order("date", { ascending: false })
+        .range(typePageOffsetRef.current, typePageOffsetRef.current + PAGE_SIZE - 1);
+
+      if (error || !data) {
+        setLoadingMore(false);
+        return;
+      }
+
+      const rows = data as Transaction[];
+      if (rows.length === 0) {
+        setHasMore(false);
+        setLoadingMore(false);
+        return;
+      }
+
+      setTypePageTransactions((prev) => [...prev, ...rows]);
+      typePageOffsetRef.current += rows.length;
+      setHasMore(rows.length >= PAGE_SIZE);
+      setLoadingMore(false);
+      return;
+    }
+
+    const result = await fetchMoreTransactions(user.id, offsetRef.current, PAGE_SIZE);
+    offsetRef.current += result.loaded;
     setHasMore(result.hasMore);
     setLoadingMore(false);
-  }, [user, loadingMore, hasMore, fetchMoreTransactions, transactions.length]);
+  }, [user, loadingMore, hasMore, filterType, fetchMoreTransactions]);
 
   const sentinelRef = useInfiniteScroll(loadMore, hasMore && !loadingMore && grouped.length > 0);
 
@@ -335,6 +423,94 @@ export default function TransactionsPage() {
             </div>
           )}
 
+          {/* Type Filter Sheet */}
+          {showTypeFilterSheet && (
+            <div className="sheet-overlay sheet-overlay--fade" onClick={(e) => { if (e.target === e.currentTarget) setShowTypeFilterSheet(false); }}>
+              <div className="sheet-panel sheet-panel--rise">
+                <div className="sheet-head">
+                  <h2 className="sheet-title">Filter</h2>
+                  <button onClick={() => setShowTypeFilterSheet(false)} className="sheet-close"><X size={15} /></button>
+                </div>
+
+                {/* Tipe Transaksi */}
+                <div className="filter-sheet-field">
+                  <label className="filter-sheet-label">Tipe Transaksi</label>
+                  <div className="compare-select-wrap">
+                    <select
+                      value={tempFilterType}
+                      onChange={(e) => setTempFilterType(e.target.value)}
+                      className="compare-select"
+                    >
+                      <option value="all">Semua Transaksi</option>
+                      <option value="IN">Transaksi Masuk</option>
+                      <option value="OUT">Transaksi Keluar</option>
+                    </select>
+                    <ChevronDown size={14} className="compare-select-icon" />
+                  </div>
+                </div>
+
+                {/* Kategori */}
+                <div className="filter-sheet-field">
+                  <label className="filter-sheet-label">Kategori</label>
+                  <div className="compare-select-wrap">
+                    <select value={tempFilterCategory} onChange={(e) => setTempFilterCategory(e.target.value)} className="compare-select">
+                      <option value="all">Semua Kategori</option>
+                      {CATEGORIES.map((cat) => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+                    <ChevronDown size={14} className="compare-select-icon" />
+                  </div>
+                </div>
+
+                {/* Rentang Tanggal */}
+                <div className="filter-sheet-daterow">
+                  <div className="filter-sheet-datefield">
+                    <label className="filter-sheet-label">Dari</label>
+                    <input type="date" value={tempDateFrom} onChange={(e) => setTempDateFrom(e.target.value)} className="form-input" />
+                  </div>
+                  <div className="filter-sheet-datefield">
+                    <label className="filter-sheet-label">Sampai</label>
+                    <input type="date" value={tempDateTo} onChange={(e) => setTempDateTo(e.target.value)} className="form-input" />
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="filter-sheet-actions">
+                  <button
+                    className="filter-sheet-reset"
+                    onClick={() => {
+                      setTempFilterType("all");
+                      setTempFilterCategory("all");
+                      setTempDateFrom("");
+                      setTempDateTo("");
+                    }}
+                  >
+                    Reset
+                  </button>
+                  <button
+                    className="filter-sheet-apply"
+                    onClick={() => {
+                      setFilterType(tempFilterType);
+                      setFilterCategory(tempFilterCategory);
+                      setDateFrom(tempDateFrom);
+                      setDateTo(tempDateTo);
+                      if (tempFilterType !== "all") {
+                        setTypePageTransactions([]);
+                        typePageOffsetRef.current = 0;
+                      }
+                      setHasMore(tempFilterType === "all");
+                      setLoadingMore(false);
+                      setShowTypeFilterSheet(false);
+                    }}
+                  >
+                    Terapkan
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Search */}
           <div className="search-wrap">
             <Search size={14} color="var(--text-muted)" className="absolute left-3 top-1/2 -translate-y-1/2 " />
@@ -346,18 +522,24 @@ export default function TransactionsPage() {
             />
           </div>
 
-          {/* Filters */}
-          <div className="filter-row">
-            {["all", "IN", "OUT"].map((t) => (
-              <button
-                key={t}
-                onClick={() => setFilterType(t)}
-                className={`chip ${filterType === t ? "chip--active" : ""}`}
-              >
-                {t === "all" ? "Semua" : t === "IN" ? "Pemasukan" : "Pengeluaran"}
-              </button>
-            ))}
-          </div>
+          {/* Filter Button */}
+          <button
+            className="filter-dropdown-btn"
+            onClick={() => {
+              setTempFilterType(filterType);
+              setTempFilterCategory(filterCategory);
+              setTempDateFrom(dateFrom);
+              setTempDateTo(dateTo);
+              setShowTypeFilterSheet(true);
+            }}
+          >
+            <SlidersHorizontal size={14} />
+            <span className="filter-dropdown-label">
+              {filterType === "all" && filterCategory === "all" && !dateFrom && !dateTo
+                ? "Filter"
+                : `Filter (${[filterType !== "all" ? 1 : 0, filterCategory !== "all" ? 1 : 0, dateFrom || dateTo ? 1 : 0].reduce((a, b) => a + b, 0)})`}
+            </span>
+          </button>
         </div>
 
         <div className="page-body">
@@ -427,7 +609,30 @@ export default function TransactionsPage() {
                           <p className="transaction-desc">
                             {tx.description}
                           </p>
-                          <p className="transaction-category">{tx.category}</p>
+                          <div className="transaction-meta">
+                            <span
+                              className="transaction-category"
+                              style={{ backgroundColor: `${CATEGORY_COLORS[tx.category]}1f`, color: CATEGORY_COLORS[tx.category] }}
+                            >
+                              {tx.category}
+                            </span>
+                            {tx.wallet_id && (() => {
+                              const wallet = wallets.find((w) => w.id === tx.wallet_id);
+                              if (!wallet) return null;
+                              const walletColor = wallet.color || WALLET_COLORS[wallet.icon || ""] || "#888";
+                              return (
+                                <>
+                                  <span className="text-faint"> &nbsp;</span>
+                                  <span
+                                    className="transaction-wallet"
+                                    style={{ backgroundColor: `${walletColor}1f`, color: walletColor }}
+                                  >
+                                    {wallet.name}
+                                  </span>
+                                </>
+                              );
+                            })()}
+                          </div>
                           <p className="transaction-date">Pukul {new Date(tx.created_at || tx.date).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })} WIB
                           </p>
                         </div>

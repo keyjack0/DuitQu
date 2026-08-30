@@ -34,6 +34,7 @@ interface AppState {
   deleteTransaction: (id: string) => void;
   updateTransaction: (id: string, updates: Partial<Transaction>) => void;
   fetchMoreTransactions: (userId: string, offset: number, limit: number) => Promise<{ loaded: number; hasMore: boolean }>;
+  mergeTransactions: (rows: Transaction[]) => void;
   signOut: () => Promise<void>;
 }
 
@@ -349,6 +350,16 @@ export const useAppStore = create<AppState>()(
           }));
         }
         return { loaded: rows.length, hasMore: rows.length >= limit };
+      },
+
+      mergeTransactions: (rows) => {
+        const existing = new Set(useAppStore.getState().transactions.map((t) => t.id));
+        const newRows = rows.filter((t) => !existing.has(t.id));
+        if (newRows.length > 0) {
+          set((state) => ({
+            transactions: [...state.transactions, ...newRows],
+          }));
+        }
       },
 
       signOut: async () => {
