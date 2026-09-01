@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAppStore } from "@/lib/store";
 import { CATEGORIES, Transaction } from "@/types";
+import { toLocalDateString } from "@/lib/utils";
 import { X, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
 
 export interface AddTransactionModalProps {
@@ -35,7 +36,7 @@ export function AddTransactionModal({ onClose, prefill, editingTransaction }: Ad
       wallets[0]?.id ||
       ""
   );
-  const [date, setDate] = useState(editing?.date || new Date().toISOString().split("T")[0]);
+  const [date, setDate] = useState(editing?.date || toLocalDateString(new Date()));
 
   const handleSubmit = () => {
     if (!amount || !walletId || submitting) return;

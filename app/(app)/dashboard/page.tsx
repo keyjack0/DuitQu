@@ -1,7 +1,7 @@
 "use client";
 
 import { useAppStore } from "@/lib/store";
-import { formatCurrency, isThisMonth, isLastMonth } from "@/lib/utils";
+import { formatCurrency, isThisMonth, isLastMonth, toLocalDateString } from "@/lib/utils";
 import { Transaction } from "@/types";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -64,7 +64,7 @@ export default function DashboardPage() {
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split("T")[0];
+      const dateStr = toLocalDateString(d);
       const dayLabel = d.toLocaleDateString("id-ID", { weekday: "short" });
       const dayExpense = allTx
         .filter((t) => t.date === dateStr && t.type === "OUT")
@@ -88,8 +88,8 @@ export default function DashboardPage() {
     const sunday = new Date(monday);
     sunday.setDate(monday.getDate() + 6);
     return {
-      start: monday.toISOString().split("T")[0],
-      end: sunday.toISOString().split("T")[0],
+      start: toLocalDateString(monday),
+      end: toLocalDateString(sunday),
     };
   }, []);
 
@@ -273,6 +273,7 @@ export default function DashboardPage() {
 
 function TransactionItem({ transaction }: { transaction: Transaction }) {
   const isIncome = transaction.type === "IN";
+  const wallets = useAppStore((s) => s.wallets);
 
   return (
     <div className="transaction-item">
@@ -289,9 +290,30 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
         <p className="transaction-desc">
           {transaction.description}
         </p>
-        <p className="transaction-category">
-          {transaction.category}
-        </p>
+        <div className="transaction-meta">
+          <span
+            className="transaction-category"
+            style={{ backgroundColor: `${CATEGORY_COLORS[transaction.category]}1f`, color: CATEGORY_COLORS[transaction.category] }}
+          >
+            {transaction.category}
+          </span>
+          {transaction.wallet_id && (() => {
+            const wallet = wallets.find((w) => w.id === transaction.wallet_id);
+            if (!wallet) return null;
+            const walletColor = wallet.color || WALLET_COLORS[wallet.icon || ""] || "#888";
+            return (
+              <>
+                <span className="text-faint"> &nbsp;</span>
+                <span
+                  className="transaction-wallet"
+                  style={{ backgroundColor: `${walletColor}1f`, color: walletColor }}
+                >
+                  {wallet.name}
+                </span>
+              </>
+            );
+          })()}
+        </div>
         <p className="transaction-date">
           {new Date(transaction.date).toLocaleDateString("id-ID", {
             weekday: "long",

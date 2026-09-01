@@ -9,7 +9,7 @@ import {
   Tooltip,
 } from "recharts";
 import { formatCurrency } from "@/lib/utils";
-import { PieChartIcon, ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { Transaction } from "@/types";
 import { CATEGORY_COLORS } from "@/lib/categoryColors";
 

@@ -36,7 +36,7 @@ Sempurna untuk individu yang ingin mengontrol keuangan pribadi mereka dengan leb
 
 ### 1. **Dashboard Keuangan Real-time**
 - Ringkasan total saldo yang bisa disembunyikan/ditampilkan
-- Pemasukan dan pengeluaran bulan ini
+- Pemasukan dan pengeluaran mingguan (Senin-Minggu)
 - Grafik pengeluaran 7 hari terakhir (area chart)
 - Pie chart breakdown pengeluaran per kategori
 - Kartu dompet dan daftar transaksi terbaru
@@ -50,10 +50,11 @@ Sempurna untuk individu yang ingin mengontrol keuangan pribadi mereka dengan leb
 ### 3. **Manajemen Transaksi**
 - Catat transaksi pemasukan atau pengeluaran dengan detail lengkap
 - 12 kategori transaksi (makanan, transportasi, hiburan, dll)
-- Cari transaksi dan filter berdasarkan tipe (pemasukan/pengeluaran)
+- Cari transaksi dan filter berdasarkan tipe, kategori, dan rentang tanggal
+- Perbandingan (compare) pemasukan/pengeluaran antar bulan
 - Transaksi dikelompokkan per tanggal beserta jam pencatatan
 - Edit/hapus transaksi dengan gestur swipe
-- Muat lebih banyak transaksi secara bertahap
+- Infinite scroll untuk memuat transaksi lebih banyak secara bertahap
 
 ### 4. **Budget Tracking**
 - Set budget limit per kategori untuk periode bulanan
@@ -83,6 +84,11 @@ Sempurna untuk individu yang ingin mengontrol keuangan pribadi mereka dengan leb
 - Bekerja offline dengan app shell yang ter-cache
 - Icon di home screen seperti aplikasi native
 
+### 9. **Lainnya**
+- Dialog "Apa yang baru?" otomatis muncul setelah update versi
+- Markdown rendering di AI Assistant (teks tebal, miring, daftar)
+- Changelog riwayat versi di halaman Pengaturan
+
 <!-- ## Tampilan Aplikasi
 
 | Dashboard | Transaksi | AI Assistant |
@@ -108,6 +114,7 @@ Sempurna untuk individu yang ingin mengontrol keuangan pribadi mereka dengan leb
 | **Icons** | Lucide React | 1.17.0 |
 | **Notifications** | React Toastify | 11.1.0 |
 | **Utility** | clsx, tailwind-merge | 2.1.1 / 3.6.0 |
+| **Bundle Analyzer** | @next/bundle-analyzer | ^16.3.1 |
 | **Type Checking** | TypeScript | 5 |
 | **Linting** | ESLint | 9 |
 
@@ -200,61 +207,86 @@ Buka http://localhost:3000 di browser. Jika berhasil, Anda akan diarahkan ke hal
 ```
 duitqu/
 ├── app/                          # Next.js App Router
+│   ├── (app)/                    # Route group untuk halaman auth
+│   │   ├── layout.tsx            # App layout (BottomNav + DataInitializer)
+│   │   ├── ai-assistant/         # AI chat interface
+│   │   ├── budgets/              # Budget tracking
+│   │   ├── dashboard/            # Dashboard page
+│   │   ├── settings/             # Pengaturan akun
+│   │   ├── transactions/         # Manajemen transaksi
+│   │   └── wallets/              # Manajemen dompet
 │   ├── api/                      # API Routes
 │   │   └── ai/
-│   │       └── route.ts          # AI Assistant endpoint (Gemini, rate-limited)
+│   │       └── route.ts          # AI Assistant endpoint (Gemini)
 │   ├── login/                    # Halaman login
 │   │   └── page.tsx
 │   ├── register/                 # Halaman register
 │   │   └── page.tsx
-│   ├── dashboard/                # Dashboard page
-│   ├── transactions/             # Manajemen transaksi
-│   ├── wallets/                  # Manajemen dompet
-│   ├── budgets/                  # Budget tracking
-│   ├── ai-assistant/             # AI chat interface
-│   ├── settings/                 # Pengaturan akun
+│   ├── styles/                   # CSS per halaman
+│   │   ├── assistant.css
+│   │   ├── auth.css
+│   │   ├── budgets.css
+│   │   ├── components.css
+│   │   ├── dashboard.css
+│   │   ├── settings.css
+│   │   ├── shell.css
+│   │   ├── tokens.css
+│   │   ├── transactions.css
+│   │   └── wallets.css
+│   ├── favicon.ico
+│   ├── globals.css               # Global styles & CSS variables
 │   ├── layout.tsx                # Root layout
-│   ├── page.tsx                  # Home page (redirect ke dashboard)
-│   └── globals.css               # Global styles & CSS variables tema
+│   ├── loading.tsx               # Global loading state
+│   └── page.tsx                  # Home page (redirect ke dashboard)
 │
 ├── components/                   # Reusable React components
+│   ├── ai/                       # AI components
+│   │   └── MarkdownText.tsx      # Markdown renderer untuk AI response
 │   ├── layout/                   # Layout components
 │   │   ├── AppLayout.tsx         # Main app layout wrapper
-│   │   └── BottomNav.tsx         # Mobile bottom navigation
+│   │   ├── BottomNav.tsx         # Mobile bottom navigation
+│   │   └── Sidebar.tsx           # Desktop sidebar navigation
 │   ├── transactions/             # Transaction components
 │   │   ├── AddTransactionModal.tsx
 │   │   └── LazyAddTransactionModal.tsx
-│   ├── wallets/
-│   │   └── TransferModal.tsx     # Modal transfer antar dompet
 │   ├── ui/                       # Reusable UI components
 │   │   ├── ConfirmDialog.tsx     # Dialog konfirmasi
 │   │   └── SwipeableRow.tsx      # Row dengan gestur swipe
+│   ├── wallets/
+│   │   └── TransferModal.tsx     # Modal transfer antar dompet
 │   ├── DataInitializer.tsx       # Sinkronisasi data dari Supabase
 │   ├── ExpenseChart.tsx          # Grafik pengeluaran 7 hari
 │   ├── CategoryPieChart.tsx      # Pie chart per kategori
 │   ├── ThemeToggle.tsx           # Toggle tema terang/gelap
+│   ├── WhatsNewDialog.tsx        # Dialog "Apa yang baru?"
 │   └── ServiceWorkerRegister.tsx # Registrasi service worker
 │
 ├── hooks/                        # Custom React hooks
-│   └── useMediaQuery.ts
+│   ├── useInfiniteScroll.ts      # Infinite scroll observer hook
+│   └── useMediaQuery.ts          # Responsive media query hook
 │
 ├── lib/                          # Utility functions & libraries
-│   ├── supabase.ts               # Supabase client setup
-│   ├── store.ts                  # Zustand store (state management)
+│   ├── categoryColors.ts         # Warna per kategori transaksi
 │   ├── icons.tsx                 # Icon definitions kategori & dompet
-│   └── utils.ts                  # Utility functions
+│   ├── store.ts                  # Zustand store (state management)
+│   ├── supabase.ts               # Supabase client setup
+│   ├── utils.ts                  # Utility functions
+│   └── version.ts                # Versi app & changelog
 │
 ├── types/                        # TypeScript type definitions
 │   └── index.ts                  # Global type exports
 │
+├── scripts/                      # Build scripts
+│   └── gen-version.js            # Generator version.json
+│
 ├── public/                       # Static assets
 │   ├── manifest.json             # PWA manifest
 │   ├── sw.js                     # Service Worker
-│   ├── icons/                    # App icons
-│   └── screenshots/              # Screenshot aplikasi
+│   ├── version.json              # Versi runtime
+│   └── icons/                    # App icons
 │
-├── proxy.ts                      # Guard autentikasi (pengganti middleware)
 ├── supabase-schema.sql           # Skema database Supabase
+├── CHANGELOG.md                  # Changelog lengkap
 ├── next.config.ts                # Next.js configuration
 ├── tailwind.config.ts            # Tailwind CSS configuration
 ├── tsconfig.json                 # TypeScript configuration

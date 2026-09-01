@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useAppStore } from "@/lib/store";
-import { formatCurrency, getMonthLabel } from "@/lib/utils";
+import { formatCurrency, getMonthLabel, toLocalDateString } from "@/lib/utils";
 import { getSupabaseClient } from "@/lib/supabase";
 import { LazyAddTransactionModal } from "@/components/transactions/LazyAddTransactionModal";
 import { Plus, Search, Trash2, Pencil, Inbox, TrendingUp, TrendingDown, Calendar, X, ChevronDown, SlidersHorizontal } from "lucide-react";
@@ -30,8 +30,8 @@ function generateMonthOptions(): { value: string; label: string }[] {
 
 function getMonthRange(monthStr: string): { start: string; end: string } {
   const [year, month] = monthStr.split("-").map(Number);
-  const start = new Date(year, month - 1, 1).toISOString().split("T")[0];
-  const end = new Date(year, month, 0).toISOString().split("T")[0];
+  const start = toLocalDateString(new Date(year, month - 1, 1));
+  const end = toLocalDateString(new Date(year, month, 0));
   return { start, end };
 }
 

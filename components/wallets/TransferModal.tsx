@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAppStore } from "@/lib/store";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, toLocalDateString } from "@/lib/utils";
 import { X, ArrowLeftRight } from "lucide-react";
 
 interface TransferModalProps {
@@ -14,7 +14,7 @@ export function TransferModal({ onClose }: TransferModalProps) {
   const [fromWallet, setFromWallet] = useState(wallets[0]?.id || "");
   const [toWallet, setToWallet] = useState(wallets[1]?.id || wallets[0]?.id || "");
   const [amount, setAmount] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [date, setDate] = useState(toLocalDateString(new Date()));
   const [submitting, setSubmitting] = useState(false);
 
   const formatAmount = (val: string) => {
