@@ -1,484 +1,288 @@
 # DuitQu
 
-Aplikasi manajemen keuangan pribadi berbasis web (PWA) dengan AI assistant yang cerdas. Kelola dompet, transaksi, budget, dan dapatkan insight keuangan secara real-time, di mana saja dan kapan saja.
+[![Version](https://img.shields.io/badge/version-1.3.0-16a34a)](CHANGELOG.md)
+[![Next.js](https://img.shields.io/badge/Next.js-16.3.5-black)](https://nextjs.org/)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-## Daftar Isi
-- [Tentang Project](#tentang-project)
-- [Fitur Utama](#fitur-utama)
-- [Tampilan Aplikasi](#tampilan-aplikasi)
-- [Tech Stack](#tech-stack)
-- [Persyaratan Sistem](#persyaratan-sistem)
-- [Instalasi](#instalasi)
-- [Setup Environment](#setup-environment)
-- [Struktur Project](#struktur-project)
-- [Penggunaan](#penggunaan)
-- [Development](#development)
-- [Build & Deploy](#build--deploy)
-- [Troubleshooting](#troubleshooting)
-- [Kontribusi](#kontribusi)
-- [License](#license)
+DuitQu adalah aplikasi manajemen keuangan pribadi berbasis web untuk mencatat arus kas, mengelola beberapa dompet, memantau budget dan target, serta menganalisis keuangan bersama Google Gemini.
 
-## Tentang Project
+Versi `1.3.0` menambahkan Financial Goals, Kalender Keuangan, Laporan Bulanan, ekspor PDF/JSON, onboarding, dan desain baru untuk AI Assistant serta Profil.
 
-**DuitQu** adalah aplikasi web modern untuk manajemen keuangan pribadi yang dirancang dengan pengalaman pengguna terbaik. Aplikasi ini dilengkapi dengan:
+## Fitur
 
-- Progressive Web App (PWA) — dapat di-install dan tetap berfungsi saat offline
-- AI Assistant berbasis Google Gemini yang memahami perintah bahasa natural
-- Dashboard analytics dengan visualisasi interaktif
-- Multi-wallet management dengan fitur transfer antar dompet
-- Budget tracking per kategori pengeluaran
-- Mode tampilan terang dan gelap
-- Desain responsif yang bekerja baik di desktop, tablet, maupun mobile
+### Dashboard
 
-Sempurna untuk individu yang ingin mengontrol keuangan pribadi mereka dengan lebih baik dan membuat keputusan finansial yang lebih terinformasi.
+- Total saldo yang dapat disembunyikan.
+- Pemasukan dan pengeluaran minggu berjalan.
+- Grafik pengeluaran untuk periode 7, 14, atau 30 hari.
+- Distribusi pengeluaran bulan berjalan per kategori.
+- Ringkasan dompet dan lima transaksi terbaru.
+- Akses cepat ke Goals, Kalender, Budget, dan Laporan.
 
-## Fitur Utama
+### Dompet dan Transaksi
 
-### 1. **Dashboard Keuangan Real-time**
-- Ringkasan total saldo yang bisa disembunyikan/ditampilkan
-- Pemasukan dan pengeluaran mingguan (Senin-Minggu)
-- Grafik pengeluaran 7 hari terakhir (area chart)
-- Pie chart breakdown pengeluaran per kategori
-- Kartu dompet dan daftar transaksi terbaru
+- Beberapa dompet dengan nama, saldo, ikon, dan warna.
+- Transfer antar-dompet dan perhitungan saldo melalui trigger database.
+- Detail arus kas, distribusi kategori, dan aktivitas terbaru per dompet.
+- Transaksi pemasukan, pengeluaran, dan transfer.
+- Pencarian serta filter tipe, kategori, dan tanggal berbasis server.
+- Perbandingan pemasukan atau pengeluaran dari dua bulan.
+- Riwayat bertahap dengan pagination, loading, empty, dan retry state.
 
-### 2. **Multi-Wallet Management**
-- Kelola multiple wallets/akun dengan nama, saldo, dan ikon
-- Total saldo dan distribusi antar dompet
-- **Transfer antar dompet** secara langsung
-- Edit atau hapus dompet dengan gestur swipe
+Transfer dapat dihapus tetapi tidak dapat diedit. Menghapus dompet tidak menghapus riwayat transaksi; referensi dompet asal menjadi kosong sesuai aturan database.
 
-### 3. **Manajemen Transaksi**
-- Catat transaksi pemasukan atau pengeluaran dengan detail lengkap
-- 12 kategori transaksi (makanan, transportasi, hiburan, dll)
-- Cari transaksi dan filter berdasarkan tipe, kategori, dan rentang tanggal
-- Perbandingan (compare) pemasukan/pengeluaran antar bulan
-- Transaksi dikelompokkan per tanggal beserta jam pencatatan
-- Edit/hapus transaksi dengan gestur swipe
-- Infinite scroll untuk memuat transaksi lebih banyak secara bertahap
+### Perencanaan
 
-### 4. **Budget Tracking**
-- Set budget limit per kategori untuk periode bulanan
-- Monitor pengeluaran vs budget dengan progress bar
-- Status visual: aman, peringatan (>=70%), dan bahaya (>=90%)
-- Banner peringatan otomatis untuk kategori yang melebihi 90% budget
+- Budget bulanan per kategori dengan status aman, peringatan, dan bahaya.
+- Financial Goals dengan target, jumlah terkumpul manual, tenggat, ikon, dan warna.
+- Kalender bulanan dengan indikator transaksi dan detail setiap hari.
+- Laporan bulanan berisi arus kas, savings rate, perbandingan bulan lalu, minggu, dan kategori terbesar.
+- Ekspor laporan bulanan ke PDF langsung dari browser.
 
-### 5. **AI Assistant Cerdas (Gemini)**
-- Catat transaksi menggunakan natural language, contoh: *"beli kopi di kafe 50 ribu"*
-- AI mendeteksi nominal, kategori, dan tipe transaksi secara otomatis
-- Analisis keuangan dan jawaban seputar keuangan pribadi
-- Quick prompts untuk memulai percakapan
-- Riwayat chat tersimpan dan dapat dihapus
+Goals berdiri sendiri dan tidak otomatis memindahkan saldo dari atau ke dompet.
 
-### 6. **Autentikasi Pengguna**
-- Register akun baru dengan nama, email, dan password
-- Login dengan email dan password
-- Verifikasi email untuk keamanan akun
+### DuitQu AI
 
-### 7. **Pengaturan Akun**
-- Ubah nama profil
-- Ganti mode tampilan terang/gelap
-- Keluar dari akun
+- Percakapan keuangan dengan model Gemini 3.1 Flash Lite.
+- Ringkasan kondisi keuangan dan saran prompt yang kontekstual.
+- Deteksi draft transaksi dari bahasa natural.
+- Form review untuk mengubah nominal, kategori, dompet, tipe, deskripsi, dan tanggal sebelum transaksi disimpan.
+- Riwayat percakapan, pagination, retry, stop, dan penghapusan riwayat.
+- Tampilan teks tebal, miring, inline code, dan daftar pada jawaban AI.
 
-### 8. **Progressive Web App (PWA)**
-- Install aplikasi langsung di smartphone/tablet
-- Bekerja offline dengan app shell yang ter-cache
-- Icon di home screen seperti aplikasi native
+Hasil AI dapat keliru dan harus diperiksa sebelum digunakan untuk keputusan atau pencatatan keuangan.
 
-### 9. **Lainnya**
-- Dialog "Apa yang baru?" otomatis muncul setelah update versi
-- Markdown rendering di AI Assistant (teks tebal, miring, daftar)
-- Changelog riwayat versi di halaman Pengaturan
+### Akun dan Profil
 
-<!-- ## Tampilan Aplikasi
+- Registrasi dan login menggunakan Supabase Auth.
+- Konfirmasi email mengikuti konfigurasi Auth pada project Supabase.
+- Ubah nama profil dan kata sandi.
+- Tema sistem, terang, atau gelap.
+- Ekspor profil dan data keuangan ke JSON.
+- Hapus riwayat AI tanpa menghapus transaksi yang sudah disimpan.
+- Riwayat pembaruan dan versi aplikasi.
 
-| Dashboard | Transaksi | AI Assistant |
-|:---:|:---:|:---:|
-| ![Dashboard](public/screenshots/dashboard.png) | ![Transaksi](public/screenshots/transactions.png) | ![AI Assistant](public/screenshots/ai-assistant.png) |
+## Privasi AI
 
-*Screenshot placeholder — tambahkan gambar Anda pada folder `public/screenshots/`.* -->
+Saat pengguna mengirim pesan ke DuitQu AI, aplikasi mengirim data berikut ke Google Gemini:
 
-## Tech Stack
+- Pesan baru dan hingga 50 pesan percakapan yang sedang dimuat.
+- Total saldo dan saldo setiap dompet.
+- Ringkasan pemasukan, pengeluaran, net, dan savings rate bulan berjalan.
+- Budget beserta pemakaian dan sisa nominal.
+- Nama dan progres Financial Goals.
+- Hingga lima transaksi terbaru yang dimuat.
 
-| Aspek | Teknologi | Versi |
-|-------|-----------|-------|
-| **Frontend Framework** | Next.js (App Router) | 16.2.6 |
-| **React Version** | React | 19.2.4 |
-| **Styling** | Tailwind CSS (CSS variables) | 4 |
-| **State Management** | Zustand (+ persist middleware) | 5.0.14 |
-| **Backend/Database** | Supabase (PostgreSQL) | - |
-| **Supabase SSR** | @supabase/ssr | ^0.10.3 |
-| **Supabase Client** | @supabase/supabase-js | ^2.106.2 |
-| **AI Integration** | Google Gemini (Gemini 3.1 Flash Lite) | - |
-| **Charts & Graphs** | Recharts | 3.8.1 |
-| **PWA** | next-pwa | 5.6.0 |
-| **Icons** | Lucide React | 1.17.0 |
-| **Notifications** | React Toastify | 11.1.0 |
-| **Utility** | clsx, tailwind-merge | 2.1.1 / 3.6.0 |
-| **Bundle Analyzer** | @next/bundle-analyzer | ^16.3.1 |
-| **Type Checking** | TypeScript | 5 |
-| **Linting** | ESLint | 9 |
+Aplikasi tidak sengaja memasukkan password, token autentikasi, email, nama pengguna, ID dompet, atau seluruh riwayat transaksi. Teks yang diketik pengguna tetap dapat berisi informasi pribadi. API key Gemini hanya digunakan pada server melalui `app/api/ai/route.ts`.
 
-## Persyaratan Sistem
+Ekspor JSON diproses pada browser dan berisi profil, dompet, transaksi, budget, goals, serta percakapan AI pengguna.
 
-- **Node.js** >= 20.9.0
-- **npm** >= 9.x atau **yarn** >= 3.x
-- **Browser modern** dengan support PWA:
-  - Chrome/Chromium 40+
-  - Firefox 44+
-  - Safari 15.1+
-  - Edge 17+
+## PWA
 
-## Instalasi
+DuitQu memiliki web manifest dan dapat dipasang sebagai aplikasi standalone pada browser yang mendukung. Service worker hanya melakukan runtime caching untuk aset statis dari `/_next/static/`, `/icons/`, `/images/`, dan `manifest.json`.
 
-### 1. Clone Repository
+Navigasi halaman, autentikasi, API, React Server Components, Supabase, data keuangan, dan Gemini tetap membutuhkan koneksi internet. DuitQu tidak menjanjikan penggunaan aplikasi secara penuh saat offline.
+
+## Teknologi
+
+| Area | Teknologi |
+| --- | --- |
+| Framework | Next.js 16.3.5, React 19.2.4, TypeScript 5 |
+| Styling | Tailwind CSS 4, CSS modules global berbasis design tokens |
+| State | Zustand 5 dengan persist middleware |
+| Database dan Auth | Supabase PostgreSQL, `@supabase/ssr`, `@supabase/supabase-js` |
+| AI | Google Gemini 3.1 Flash Lite |
+| Grafik | Recharts 3.8.1 |
+| PDF | jsPDF 4.2.1 |
+| UI | Lucide React, React Toastify |
+| PWA | Web manifest dan service worker kustom |
+
+## Persyaratan
+
+- Node.js 20.9 atau lebih baru.
+- npm dengan dukungan lockfile versi yang digunakan repository.
+- Project Supabase.
+- Google Gemini API key.
+- Browser modern yang masih menerima pembaruan keamanan.
+
+## Instalasi Baru
+
+1. Clone repository dan instal dependency.
+
 ```bash
-git clone <repository-url>
-cd duitqu
+git clone https://github.com/keyjack0/DuitQu.git
+cd DuitQu
+npm ci
 ```
 
-### 2. Install Dependencies
-```bash
-npm install
-# atau jika menggunakan yarn
-yarn install
-```
+2. Buat project Supabase, buka SQL Editor, lalu jalankan `supabase-schema.sql` satu kali pada database kosong.
 
-## Setup Environment
+Schema tersebut membuat tabel berikut:
 
-### 1. Setup Supabase
+- `users`
+- `wallets`
+- `transactions`
+- `budgets`
+- `ai_chats`
+- `financial_goals`
 
-**Step 1: Buat Project Supabase**
-1. Kunjungi [supabase.com](https://supabase.com)
-2. Login atau daftar akun baru
-3. Klik "New Project"
-4. Isi nama project dan password
-5. Tunggu project selesai dibuat
+Schema juga mengaktifkan Row Level Security, membuat policy kepemilikan data, profile trigger, index, dan trigger perhitungan saldo dompet.
 
-**Step 2: Setup Database Schema**
-1. Masuk ke Supabase Dashboard
-2. Buka "SQL Editor"
-3. Buat query baru
-4. Copy-paste isi dari file `supabase-schema.sql`
-5. Jalankan query dengan klik tombol "Run"
+3. Siapkan environment lokal.
 
-File ini akan membuat tabel `users`, `wallets`, `transactions`, `budgets`, dan `ai_chats`, lengkap dengan Row Level Security (RLS), trigger untuk menghitung saldo dompet otomatis, serta trigger pembuatan profil saat signup.
-
-**Step 3: Ambil Credentials**
-1. Buka "Settings" → "API"
-2. Copy "Project URL" dan "anon public" key
-3. Simpan untuk step berikutnya
-
-### 2. Setup Google Gemini API Key
-
-**Step 1: Dapatkan API Key**
-1. Kunjungi [Google AI Studio](https://aistudio.google.com/apikey)
-2. Login dengan akun Google
-3. Klik "Create API Key"
-4. Copy dan simpan API key tersebut
-
-**Step 2: Buat `.env.local`**
 ```bash
 cp .env.example .env.local
 ```
 
-**Isi file `.env.local`:**
-```
-# Supabase Configuration
-# Dapatkan dari: https://app.supabase.com → Settings → API
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-
-# Google Gemini API (server-side, jangan di-prefix NEXT_PUBLIC_)
-# Dapatkan dari: https://aistudio.google.com/apikey
-GEMINI_API_KEY=your_gemini_api_key
+```dotenv
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+GEMINI_API_KEY=your-gemini-api-key-here
 ```
 
-> **Catatan:** `GEMINI_API_KEY` hanya dipakai di server (file `app/api/ai/route.ts`) dan tidak boleh diekspos ke browser. Jangan beri prefix `NEXT_PUBLIC_`.
+`GEMINI_API_KEY` bersifat server-only. Jangan mengganti namanya menjadi `NEXT_PUBLIC_GEMINI_API_KEY`.
 
-### 3. Verifikasi Setup
+4. Jalankan development server.
+
 ```bash
 npm run dev
 ```
 
-Buka http://localhost:3000 di browser. Jika berhasil, Anda akan diarahkan ke halaman login.
+Buka `http://localhost:3000`. Pengguna tanpa sesi akan diarahkan ke `/login`.
 
-## Struktur Project
+## Upgrade ke 1.3.0
 
-```
-duitqu/
-├── app/                          # Next.js App Router
-│   ├── (app)/                    # Route group untuk halaman auth
-│   │   ├── layout.tsx            # App layout (BottomNav + DataInitializer)
-│   │   ├── ai-assistant/         # AI chat interface
-│   │   ├── budgets/              # Budget tracking
-│   │   ├── dashboard/            # Dashboard page
-│   │   ├── settings/             # Pengaturan akun
-│   │   ├── transactions/         # Manajemen transaksi
-│   │   └── wallets/              # Manajemen dompet
-│   ├── api/                      # API Routes
-│   │   └── ai/
-│   │       └── route.ts          # AI Assistant endpoint (Gemini)
-│   ├── login/                    # Halaman login
-│   │   └── page.tsx
-│   ├── register/                 # Halaman register
-│   │   └── page.tsx
-│   ├── styles/                   # CSS per halaman
-│   │   ├── assistant.css
-│   │   ├── auth.css
-│   │   ├── budgets.css
-│   │   ├── components.css
-│   │   ├── dashboard.css
-│   │   ├── settings.css
-│   │   ├── shell.css
-│   │   ├── tokens.css
-│   │   ├── transactions.css
-│   │   └── wallets.css
-│   ├── favicon.ico
-│   ├── globals.css               # Global styles & CSS variables
-│   ├── layout.tsx                # Root layout
-│   ├── loading.tsx               # Global loading state
-│   └── page.tsx                  # Home page (redirect ke dashboard)
-│
-├── components/                   # Reusable React components
-│   ├── ai/                       # AI components
-│   │   └── MarkdownText.tsx      # Markdown renderer untuk AI response
-│   ├── layout/                   # Layout components
-│   │   ├── AppLayout.tsx         # Main app layout wrapper
-│   │   ├── BottomNav.tsx         # Mobile bottom navigation
-│   │   └── Sidebar.tsx           # Desktop sidebar navigation
-│   ├── transactions/             # Transaction components
-│   │   ├── AddTransactionModal.tsx
-│   │   └── LazyAddTransactionModal.tsx
-│   ├── ui/                       # Reusable UI components
-│   │   ├── ConfirmDialog.tsx     # Dialog konfirmasi
-│   │   └── SwipeableRow.tsx      # Row dengan gestur swipe
-│   ├── wallets/
-│   │   └── TransferModal.tsx     # Modal transfer antar dompet
-│   ├── DataInitializer.tsx       # Sinkronisasi data dari Supabase
-│   ├── ExpenseChart.tsx          # Grafik pengeluaran 7 hari
-│   ├── CategoryPieChart.tsx      # Pie chart per kategori
-│   ├── ThemeToggle.tsx           # Toggle tema terang/gelap
-│   ├── WhatsNewDialog.tsx        # Dialog "Apa yang baru?"
-│   └── ServiceWorkerRegister.tsx # Registrasi service worker
-│
-├── hooks/                        # Custom React hooks
-│   ├── useInfiniteScroll.ts      # Infinite scroll observer hook
-│   └── useMediaQuery.ts          # Responsive media query hook
-│
-├── lib/                          # Utility functions & libraries
-│   ├── categoryColors.ts         # Warna per kategori transaksi
-│   ├── icons.tsx                 # Icon definitions kategori & dompet
-│   ├── store.ts                  # Zustand store (state management)
-│   ├── supabase.ts               # Supabase client setup
-│   ├── utils.ts                  # Utility functions
-│   └── version.ts                # Versi app & changelog
-│
-├── types/                        # TypeScript type definitions
-│   └── index.ts                  # Global type exports
-│
-├── scripts/                      # Build scripts
-│   └── gen-version.js            # Generator version.json
-│
-├── public/                       # Static assets
-│   ├── manifest.json             # PWA manifest
-│   ├── sw.js                     # Service Worker
-│   ├── version.json              # Versi runtime
-│   └── icons/                    # App icons
-│
-├── supabase-schema.sql           # Skema database Supabase
-├── CHANGELOG.md                  # Changelog lengkap
-├── next.config.ts                # Next.js configuration
-├── tailwind.config.ts            # Tailwind CSS configuration
-├── tsconfig.json                 # TypeScript configuration
-├── eslint.config.mjs             # ESLint configuration
-├── postcss.config.mjs            # PostCSS configuration
-├── package.json                  # Project dependencies
-└── README.md                     # This file
+Database yang dibuat dengan versi DuitQu sebelumnya harus menjalankan migration berikut sebelum aplikasi `1.3.0` dideploy:
+
+```text
+supabase/migrations/20260920_130_financial_goals.sql
 ```
 
-## Penggunaan
+Migration menambahkan tabel `financial_goals`, RLS policy, index goals, dan composite index untuk pagination riwayat AI. Migration bersifat additive dan tidak menghapus data lama.
 
-### 1. **Akses Aplikasi**
-```bash
-npm run dev
+Jangan menjalankan ulang seluruh `supabase-schema.sql` pada database existing karena beberapa policy pada bootstrap schema tidak dirancang sebagai migration yang dapat diulang.
+
+Urutan upgrade produksi:
+
+1. Buat backup database.
+2. Jalankan migration melalui Supabase SQL Editor.
+3. Verifikasi operasi CRUD Goals menggunakan user terautentikasi.
+4. Deploy aplikasi `1.3.0`.
+5. Jalankan smoke test route utama.
+
+## Route
+
+| Route | Fungsi |
+| --- | --- |
+| `/login` | Login dan onboarding perangkat pertama |
+| `/register` | Registrasi akun |
+| `/dashboard` | Ringkasan saldo, grafik, dan akses cepat |
+| `/transactions` | Riwayat, pencarian, filter, dan perbandingan transaksi |
+| `/wallets` | Dompet, detail, dan transfer |
+| `/budgets` | Budget kategori |
+| `/goals` | Target tabungan manual |
+| `/calendar` | Kalender dan detail transaksi harian |
+| `/report` | Analisis bulanan dan ekspor PDF |
+| `/ai-assistant` | Chat dan draft transaksi berbasis Gemini |
+| `/settings` | Profil, keamanan, tema, data, dan versi |
+| `/api/ai` | Endpoint Gemini terautentikasi |
+| `/version.json` | Metadata versi deployment tanpa cache |
+
+Route aplikasi selain autentikasi dan aset publik dilindungi oleh `proxy.ts`.
+
+## Struktur Utama
+
+```text
+app/
+  (app)/               halaman pengguna terautentikasi
+  api/ai/              integrasi Gemini server-side
+  styles/              style per fitur
+components/
+  ai/                   UI Assistant dan draft transaksi
+  dashboard/            komponen dashboard
+  finance/              primitive UI halaman finansial
+  goals/                form dan opsi Financial Goals
+  onboarding/           onboarding login pertama
+  settings/             komponen Profil dan Pengaturan
+  transactions/         modal transaksi
+  wallets/              transfer dan detail dompet
+hooks/                  media query, pagination, dan data periode
+lib/                    store, Supabase, laporan, ekspor, dan versi
+public/                 manifest, service worker, icon, dan gambar
+scripts/                generator dan pemeriksa metadata versi
+supabase/migrations/    migration untuk database existing
+types/                  type aplikasi
 ```
-Buka http://localhost:3000
 
-### 2. **Buat Akun**
-- Klik "Daftar" untuk membuat akun baru
-- Isi nama, email, dan password (minimal 6 karakter)
-- Verifikasi email melalui link yang dikirim ke email Anda
-- Kembali ke halaman login untuk masuk
-
-### 3. **Setup Dompet**
-- Setelah login, buka menu **Dompet**
-- Tambahkan dompet dengan nama, saldo awal, dan ikon (misal: BCA Tabungan, GoPay)
-- Buat minimal 2 dompet untuk dapat melakukan transfer antar dompet
-
-### 4. **Catat Transaksi**
-- Gunakan tombol "Tambah Transaksi" atau ikon `+` di halaman Transaksi
-- Pilih tipe pemasukan/pengeluaran, isi nominal, deskripsi, kategori, dompet, dan tanggal
-- **Atau lebih cepat:** buka menu **AI** dan ketik natural language, contoh: *"barusan beli kopi 50rb pake QRIS, catat ya"* — AI akan mendeteksi transaksinya dan Anda tinggal konfirmasi
-
-### 5. **Transfer Antar Dompet**
-- Buka menu **Dompet**, klik ikon panah (transfer)
-- Pilih dompet asal, dompet tujuan, nominal, dan tanggal
-- Saldo kedua dompet akan otomatis ter-update
-
-### 6. **Kelola Budget**
-- Buka menu **Budget**, tambahkan budget per kategori
-- Lihat progress bar dan status penggunaan budget Anda
-- Terima peringatan jika ada kategori yang melebihi 90% budget
-
-### 7. **Pantau Keuangan**
-- Dashboard menampilkan total saldo, pemasukan, dan pengeluaran
-- Grafik menunjukkan tren pengeluaran 7 hari dan breakdown per kategori
-- Gunakan AI untuk bertanya: *"Analisa pengeluaranku bulan ini"*
-
-### 8. **Atur Akun**
-- Buka menu Pengaturan (ikon gear di dashboard)
-- Ubah nama profil, ganti tema terang/gelap, atau keluar dari akun
-
-## Development
-
-### Scripts Tersedia
+## Scripts
 
 ```bash
-# Development server (dengan hot reload)
-npm run dev
-
-# Build untuk production
-npm run build
-
-# Jalankan production build
-npm start
-
-# Lint code
-npm run lint
-
-# Analisis bundle size
-npm run analyze
+npm run dev             # Development server
+npm run lint            # ESLint
+npm run typecheck       # TypeScript tanpa emit
+npm run build           # Generate version.json dan production build
+npm start               # Menjalankan production build
+npm run analyze         # Analisis bundle dengan webpack
+npm run version:check   # Memastikan metadata versi sinkron
+npm run release:check   # Lint, typecheck, build, dan version check
 ```
 
-### Development Workflow
+Project belum memiliki automated test suite. Sebelum release, lakukan smoke test autentikasi, CRUD finansial, transfer, filter, Goals, Kalender, Laporan, AI, ekspor, tema, dan PWA pada mobile serta desktop.
 
-1. **Create branch baru untuk fitur**
-   ```bash
-   git checkout -b feature/nama-fitur
-   ```
+## Deployment
 
-2. **Make changes dan commit**
-   ```bash
-   git add .
-   git commit -m "Add: deskripsi fitur"
-   ```
+Vercel adalah target deployment utama karena aplikasi menggunakan route server untuk Gemini dan proxy autentikasi.
 
-3. **Test locally**
-   ```bash
-   npm run dev
-   ```
+1. Terapkan migration database yang dibutuhkan.
+2. Hubungkan repository ke Vercel.
+3. Tambahkan tiga environment variables dari `.env.example`.
+4. Jalankan `npm run release:check`.
+5. Deploy branch atau commit release.
+6. Verifikasi `/version.json`, `/sw.js`, login, Goals, dan API AI di production.
 
-4. **Lint & format code**
-   ```bash
-   npm run lint
-   ```
-
-## Build & Deploy
-
-### Build untuk Production
-```bash
-npm run build
-npm start
-```
-
-### Deploy ke Vercel (Recommended)
-1. Push code ke GitHub
-2. Connect repository ke [Vercel](https://vercel.com)
-3. Set environment variables (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `GEMINI_API_KEY`) di Vercel dashboard
-4. Deploy otomatis saat push ke main branch
-
-### Deploy ke Platform Lain
-- Heroku
-- Railway
-- AWS Amplify
-- Firebase Hosting
-- Docker container
-
-**Docker Example:**
-```dockerfile
-FROM node:20-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-EXPOSE 3000
-CMD ["npm", "start"]
-```
+Hosting statis murni tidak didukung karena `/api/ai` dan autentikasi server memerlukan runtime Next.js.
 
 ## Troubleshooting
 
-### Error: "GEMINI_API_KEY tidak dikonfigurasi"
-- Pastikan `GEMINI_API_KEY` sudah diisi di `.env.local`
-- Gunakan nama variabel yang sama persis tanpa prefix `NEXT_PUBLIC_`
-- Restart dev server: `Ctrl+C` kemudian `npm run dev`
+### `GEMINI_API_KEY tidak dikonfigurasi`
 
-### Error: "Cannot find module '@supabase/supabase-js'"
-```bash
-npm install
-npm run dev
-```
+- Pastikan key tersedia di `.env.local` atau environment production.
+- Gunakan nama `GEMINI_API_KEY` tanpa prefix `NEXT_PUBLIC_`.
+- Restart development server setelah mengubah environment.
 
-### Error: "NEXT_PUBLIC_SUPABASE_URL is not set"
-- Pastikan `.env.local` sudah dibuat
-- Verifikasi value yang benar di Supabase dashboard
-- Restart dev server: `Ctrl+C` kemudian `npm run dev`
+### Goals gagal dimuat atau disimpan
 
-### AI tidak merespons atau "Gagal memanggil Gemini API"
-- Verifikasi API key di [Google AI Studio](https://aistudio.google.com/apikey)
-- Pastikan key masih aktif dan kuota/billing mencukupi
-- Periksa koneksi internet
+- Jalankan migration `20260920_130_financial_goals.sql`.
+- Periksa tabel, RLS, policy, dan user session di Supabase.
 
-### PWA tidak bisa install
-- Gunakan HTTPS (localhost:3000 OK untuk development)
-- Check `public/manifest.json` sudah ter-setup
-- Check `public/sw.js` (Service Worker) valid
+### Saldo dompet tidak berubah
 
-### Database connection error
-- Pastikan internet connection stabil
-- Verifikasi Supabase URL dan anon key
-- Check status Supabase service di status page
+- Pastikan fungsi `recalc_wallet_balance`, `set_wallet_balance`, dan trigger `trigger_update_wallet_balance` tersedia.
+- Periksa error database pada Supabase Logs.
 
-### Error versi Node.js
-- Pastikan menggunakan Node.js >= 20.9.0 (`node -v`)
-- Gunakan Node version manager (nvm) jika perlu
+### PWA tidak dapat dipasang
+
+- Gunakan HTTPS atau localhost.
+- Pastikan `manifest.json`, icon 192/512, dan `/sw.js` dapat diakses.
+- Periksa dukungan instalasi PWA pada browser dan platform yang digunakan.
+
+### Build gagal karena versi
+
+- Samakan `package.json`, `lib/version.ts`, dan entry teratas `CHANGELOG.md`.
+- Jalankan `npm run version:generate` lalu `npm run version:check`.
 
 ## Kontribusi
 
-Kami menyambut kontribusi! Berikut cara berkontribusi:
+1. Fork repository.
+2. Buat branch perubahan.
+3. Ikuti TypeScript dan ESLint project.
+4. Jalankan `npm run release:check`.
+5. Buat pull request dengan penjelasan perubahan dan langkah pengujian.
 
-1. Fork repository
-2. Create branch fitur (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add: AmazingFeature'`)
-4. Push ke branch (`git push origin feature/AmazingFeature`)
-5. Open Pull Request
+Hindari memasukkan `.env`, API key, data keuangan, atau screenshot yang mengandung informasi pribadi.
 
-### Coding Standards
-- Gunakan TypeScript untuk type safety
-- Ikuti ESLint rules
-- Tulis commit message yang bermakna
-- Test fitur sebelum submit PR
+## Lisensi dan Dukungan
 
-## License
+DuitQu dirilis di bawah [MIT License](LICENSE), copyright 2026 keyjack0.
 
-Project ini berada di bawah license [MIT](LICENSE).
-
-## Support & Contact
-
-Untuk pertanyaan atau issues:
-- Buka GitHub Issues di repository ini
-- Email: [your-email@example.com]
-
----
-
-**Made with ❤️ for better personal finance management**
+Gunakan [GitHub Issues](https://github.com/keyjack0/DuitQu/issues) untuk laporan bug dan permintaan fitur.
