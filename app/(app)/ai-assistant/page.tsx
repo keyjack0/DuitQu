@@ -19,7 +19,7 @@ import {
 } from "@/lib/aiAssistant";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useAppStore } from "@/lib/store";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, toLocalDateString } from "@/lib/utils";
 import type { AIMessage, ParsedTransaction, Transaction } from "@/types";
 
 interface ChatRow {
@@ -62,6 +62,12 @@ Kemampuanmu:
 
 Kategori yang tersedia: Makanan & Minuman, Transportasi, Hiburan, Investasi, Belanja, Kesehatan, Pendidikan, Tagihan & Utilitas, Tabungan, Gaji & Penghasilan, Hadiah, Lainnya
 
+Aturan parsing transaksi:
+- Ubah singkatan nominal ke angka penuh. Contoh: 13rb menjadi 13000, 1,5jt menjadi 1500000, dan Rp13.000 menjadi 13000.
+- Field nominal WAJIB berupa JSON number tanpa Rp, pemisah ribuan, atau akhiran rb/jt.
+- Jika user tidak menyebut tanggal, gunakan TANGGAL HARI INI yang diberikan pada konteks.
+- Field wallet hanya boleh memakai nama dompet dari DATA KEUANGAN USER. Jika tidak disebutkan atau tidak yakin, isi string kosong.
+
 2. ANALISIS KEUANGAN: Berikan insight, saran, dan analisis keuangan yang actionable.
 3. JAWAB PERTANYAAN: Jawab pertanyaan seputar keuangan pribadi.
 
@@ -70,7 +76,7 @@ Jika user menyebut transaksi, SELALU sertakan JSON parsed_transaction di awal re
 PENTING: JANGAN gunakan markdown code blocks (triple backticks). Output JSON langsung inline dalam teks biasa.`;
 
 function stripTransactionJson(text: string): { text: string; parsed: ParsedTransaction | null } {
-  let displayText = text.replace(/```json\s*|```/g, "");
+  let displayText = text.replace(/```(?:json)?\s*|```/gi, "");
   let parsed: ParsedTransaction | null = null;
   const jsonMatch = displayText.match(/\{["']?parsed_transaction["']?\s*:/);
 
@@ -78,9 +84,25 @@ function stripTransactionJson(text: string): { text: string; parsed: ParsedTrans
     const jsonStart = jsonMatch.index!;
     let depth = 0;
     let jsonEnd = jsonStart;
+    let inString = false;
+    let escaped = false;
     for (let index = jsonStart; index < displayText.length; index++) {
-      if (displayText[index] === "{") depth++;
-      if (displayText[index] === "}") depth--;
+      const character = displayText[index];
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      if (character === "\\" && inString) {
+        escaped = true;
+        continue;
+      }
+      if (character === '"') {
+        inString = !inString;
+        continue;
+      }
+      if (inString) continue;
+      if (character === "{") depth++;
+      if (character === "}") depth--;
       if (depth === 0) {
         jsonEnd = index + 1;
         break;
@@ -403,7 +425,7 @@ DATA KEUANGAN USER (bulan ini):
             ...historyMessages.slice(-PAGE_SIZE).map((message) => ({ role: message.role, content: message.content })),
             { role: "user", content: userText },
           ],
-          systemPrompt: `${SYSTEM_PROMPT}\n\n${financialContext}`,
+          systemPrompt: `${SYSTEM_PROMPT}\n\nTANGGAL HARI INI: ${toLocalDateString(new Date())}\n\n${financialContext}`,
         }),
       });
       const data = await response.json() as { text?: string; error?: string };
@@ -439,6 +461,9 @@ DATA KEUANGAN USER (bulan ini):
         },
       ]);
       if (error) toast.error("Jawaban tampil, tetapi riwayat chat gagal disimpan.");
+      if (parsed) {
+        setPendingTransaction({ messageId: assistantMessage.id, transaction: parsed });
+      }
     } catch (error) {
       const aborted = error instanceof DOMException && error.name === "AbortError";
       setSendError({

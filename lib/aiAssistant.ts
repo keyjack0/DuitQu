@@ -135,7 +135,7 @@ export function buildAssistantActions(snapshot: AssistantSnapshot, walletCount: 
 export function normalizeParsedTransaction(value: unknown): ParsedTransaction | null {
   if (!value || typeof value !== "object") return null;
   const row = value as Record<string, unknown>;
-  const nominal = typeof row.nominal === "number" ? row.nominal : Number(row.nominal);
+  const nominal = parseIndonesianAmount(row.nominal);
   if (!Number.isFinite(nominal) || nominal <= 0) return null;
   if (row.tipe !== "pemasukan" && row.tipe !== "pengeluaran") return null;
   const category = typeof row.kategori === "string" && CATEGORIES.includes(row.kategori)
@@ -156,4 +156,35 @@ export function normalizeParsedTransaction(value: unknown): ParsedTransaction | 
     status: row.status === "saved" ? "saved" : "draft",
     transactionId: typeof row.transactionId === "string" ? row.transactionId : undefined,
   };
+}
+
+export function parseIndonesianAmount(value: unknown): number {
+  if (typeof value === "number") return value;
+  if (typeof value !== "string") return Number.NaN;
+
+  let amount = value.toLowerCase().trim().replace(/^rp\s*/, "").replace(/\s+/g, "");
+  const suffix = amount.match(/(ribu|rb|k|juta|jt)$/)?.[1];
+  const multiplier = suffix === "ribu" || suffix === "rb" || suffix === "k"
+    ? 1_000
+    : suffix === "juta" || suffix === "jt"
+      ? 1_000_000
+      : 1;
+
+  if (suffix) amount = amount.slice(0, -suffix.length);
+
+  if (multiplier > 1) {
+    if (amount.includes(",") && amount.includes(".")) {
+      const decimalSeparator = amount.lastIndexOf(",") > amount.lastIndexOf(".") ? "," : ".";
+      const groupingSeparator = decimalSeparator === "," ? "." : ",";
+      amount = amount.replaceAll(groupingSeparator, "").replace(decimalSeparator, ".");
+    } else {
+      amount = amount.replace(",", ".");
+    }
+  } else if (/^\d{1,3}(?:[.,]\d{3})+$/.test(amount)) {
+    amount = amount.replace(/[.,]/g, "");
+  } else {
+    amount = amount.replace(",", ".");
+  }
+
+  return Number(amount) * multiplier;
 }
