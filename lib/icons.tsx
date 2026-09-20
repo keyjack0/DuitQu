@@ -1,8 +1,8 @@
+/** Memetakan ikon dan warna yang digunakan untuk dompet serta kategori. */
 import {
   Wallet, Landmark, Smartphone, CreditCard, PiggyBank, TrendingUp,
   UtensilsCrossed, Car, Gamepad2, ShoppingBag, Pill, BookOpen,
-  Zap, Briefcase, Gift, MoreHorizontal, Target, Inbox,
-  ArrowUpCircle, ArrowDownCircle, Hand,
+  Zap, Briefcase, Gift, MoreHorizontal,
   type LucideIcon,
 } from "lucide-react";
 
@@ -53,17 +53,14 @@ export const WALLET_ICON_OPTIONS: IconPickerOption[] = [
   { key: "savings", label: "Tabungan", icon: PiggyBank },
   { key: "investment", label: "Investasi", icon: TrendingUp },
 ];
-
-
-
-export function WalletIcon({ icon, size = 20, color, strokeWidth = 2.5 }: { 
-  icon: string | null; size?: number; color?: string; strokeWidth?: number 
+export function WalletIcon({ icon, size = 20, color, strokeWidth = 2 }: {
+  icon: string | null; size?: number; color?: string; strokeWidth?: number
 }) {
   const Icon = WALLET_ICON_MAP[icon ?? ""] ?? Wallet;
   return <Icon size={size} color={color} strokeWidth={strokeWidth} />;
 }
 
-export function CategoryIcon({ category, size = 20, color, strokeWidth = 3 }: { category: string; size?: number; color?: string; strokeWidth?: number }) {
+export function CategoryIcon({ category, size = 20, color, strokeWidth = 2 }: { category: string; size?: number; color?: string; strokeWidth?: number }) {
   const Icon = CATEGORY_ICON_MAP[category] ?? MoreHorizontal;
   return <Icon size={size} color={color} strokeWidth={strokeWidth} />;
 }

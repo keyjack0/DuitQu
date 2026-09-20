@@ -1,17 +1,33 @@
 "use client";
 
+/** Menampilkan dan mengelola batas anggaran bulanan per kategori. */
 import { useState, useMemo } from "react";
+import { FinancePageHeader } from "@/components/finance/FinancePageHeader";
 import { useAppStore } from "@/lib/store";
 import { formatCurrency, calculatePercentage, getBudgetStatus, isThisMonth } from "@/lib/utils";
-import { Plus, Trash2, AlertTriangle, Target } from "lucide-react";
+import { Plus, Pencil, Trash2, AlertTriangle, Target } from "lucide-react";
 import { CategoryIcon } from "@/lib/icons";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { SwipeableRow } from "@/components/ui/SwipeableRow";
 import { CATEGORIES } from "@/types";
+import type { Budget } from "@/types";
+import { useShallow } from "zustand/react/shallow";
 
 export default function BudgetsPage() {
-  const { user, budgets, monthTransactions, addBudget, deleteBudget } = useAppStore();
+  const { user, budgets, monthTransactions, addBudget, updateBudget, deleteBudget } = useAppStore(
+    useShallow((state) => ({
+      user: state.user,
+      budgets: state.budgets,
+      monthTransactions: state.monthTransactions,
+      addBudget: state.addBudget,
+      updateBudget: state.updateBudget,
+      deleteBudget: state.deleteBudget,
+    }))
+  );
   const [showAdd, setShowAdd] = useState(false);
+  const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [openRowId, setOpenRowId] = useState<string | null>(null);
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [limit, setLimit] = useState("");
 
@@ -34,19 +50,39 @@ export default function BudgetsPage() {
     return num.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   };
 
-  const handleAdd = () => {
-    if (!limit) return;
-    const parsedLimit = parseFloat(limit.replace(/\./g, ""));
-    addBudget({
-      id: crypto.randomUUID(),
-      user_id: user!.id,
-      category,
-      amount_limit: parsedLimit,
-      period: "MONTH",
-    });
+  const closeForm = () => {
     setLimit("");
     setCategory(CATEGORIES[0]);
+    setEditingBudget(null);
     setShowAdd(false);
+  };
+
+  const openEdit = (budget: Budget) => {
+    setEditingBudget(budget);
+    setCategory(budget.category);
+    setLimit(formatAmount(budget.amount_limit.toString()));
+    setOpenRowId(null);
+    setShowAdd(true);
+  };
+
+  const parsedLimit = Number(limit.replace(/\./g, ""));
+  const isValidLimit = Number.isFinite(parsedLimit) && parsedLimit > 0;
+
+  const handleSave = () => {
+    if (!isValidLimit) return;
+    if (editingBudget) {
+      updateBudget(editingBudget.id, { category, amount_limit: parsedLimit });
+    } else {
+      if (!user) return;
+      addBudget({
+        id: crypto.randomUUID(),
+        user_id: user.id,
+        category,
+        amount_limit: parsedLimit,
+        period: "MONTH",
+      });
+    }
+    closeForm();
   };
 
   const dangerCount = budgetsWithSpent.filter((b) => getBudgetStatus(calculatePercentage(b.spent, b.amount_limit)) === "danger").length;
@@ -55,15 +91,23 @@ export default function BudgetsPage() {
     <>
       <div className="page-shell">
         <div className="page-hero pb-6">
-          <div className="page-title-row mb-5">
-            <h1 className="page-title">Budget</h1>
-            <button
-              onClick={() => setShowAdd(true)}
-              className="icon-btn-square icon-btn-square--primary"
-            >
-              <Plus size={18} color="var(--on-accent)" strokeWidth={2.5} />
-            </button>
-          </div>
+          <FinancePageHeader
+            title="Budget"
+            subtitle="Atur batas pengeluaran agar keuangan tetap terkontrol."
+            action={
+              <button
+                onClick={() => {
+                  closeForm();
+                  setOpenRowId(null);
+                  setShowAdd(true);
+                }}
+                aria-label="Tambah budget"
+                className="icon-btn-square icon-btn-square--primary"
+              >
+                <Plus size={24} color="var(--on-accent)" strokeWidth={1.8} />
+              </button>
+            }
+          />
 
           {/* Overview */}
           <div className="card">
@@ -121,45 +165,68 @@ export default function BudgetsPage() {
                 const remaining = budget.amount_limit - budget.spent;
 
                 return (
-                  <div key={budget.id} className={`budget-card ${status === "danger" ? "budget-card--danger" : ""}`}>
-                    <div className="budget-head">
-                      <div className="budget-cat">
-                        <div className={`budget-cat-icon-box ${status === "danger" ? "budget-cat-icon-box--danger" : status === "warning" ? "budget-cat-icon-box--warning" : "budget-cat-icon-box--safe"}`}>
-                          <CategoryIcon category={budget.category} size={16} color="currentColor" />
-                        </div>
-                        <div>
-                          <p className="budget-cat-name">{budget.category}</p>
-                          <p className="budget-cat-sum">
-                            {formatCurrency(budget.spent)} / {formatCurrency(budget.amount_limit)}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="budget-actions">
-                        <span
-                          className={`status-badge ${status === "danger" ? "status-badge--danger" : status === "warning" ? "status-badge--warning" : "status-badge--safe"}`}
-                        >
-                          {Math.round(pct)}%
-                        </span>
+                  <SwipeableRow
+                    key={budget.id}
+                    isOpen={openRowId === budget.id}
+                    onOpenChange={(open) => setOpenRowId(open ? budget.id : null)}
+                    actions={
+                      <>
                         <button
-                          onClick={() => setConfirmDeleteId(budget.id)}
-                          className="mini-icon-btn"
+                          type="button"
+                          onClick={() => openEdit(budget)}
+                          aria-label="Edit budget"
+                          style={{ background: "var(--bg-hover)", color: "var(--text-primary)" }}
                         >
-                          <Trash2 size={12} />
+                          <Pencil size={15} />
                         </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOpenRowId(null);
+                            setConfirmDeleteId(budget.id);
+                          }}
+                          aria-label="Hapus budget"
+                          style={{ background: "var(--red)", color: "#fff" }}
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </>
+                    }
+                  >
+                    <div className="budget-row-content">
+                      <div className="budget-head">
+                        <div className="budget-cat">
+                          <div className={`budget-cat-icon-box ${status === "danger" ? "budget-cat-icon-box--danger" : status === "warning" ? "budget-cat-icon-box--warning" : "budget-cat-icon-box--safe"}`}>
+                            <CategoryIcon category={budget.category} color="currentColor" />
+                          </div>
+                          <div>
+                            <p className="budget-cat-name">{budget.category}</p>
+                            <p className="budget-cat-sum">
+                              {formatCurrency(budget.spent)} / {formatCurrency(budget.amount_limit)}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="budget-actions">
+                          <span
+                            className={`status-badge ${status === "danger" ? "status-badge--danger" : status === "warning" ? "status-badge--warning" : "status-badge--safe"}`}
+                          >
+                            {Math.round(pct)}%
+                          </span>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="progress-track progress-track--thin">
-                      <div
-                        className="progress-fill"
-                        style={{ width: `${pct}%`, background: barColor }}
-                      />
-                    </div>
+                      <div className="progress-track progress-track--thin">
+                        <div
+                          className="progress-fill"
+                          style={{ width: `${pct}%`, background: barColor }}
+                        />
+                      </div>
 
-                    <p className={`budget-remaining ${remaining < 0 ? "budget-remaining--over" : ""}`}>
-                      {remaining >= 0 ? `Sisa ${formatCurrency(remaining)}` : `Melebihi ${formatCurrency(Math.abs(remaining))}`}
-                    </p>
-                  </div>
+                      <p className={`budget-remaining ${remaining < 0 ? "budget-remaining--over" : ""}`}>
+                        {remaining >= 0 ? `Sisa ${formatCurrency(remaining)}` : `Melebihi ${formatCurrency(Math.abs(remaining))}`}
+                      </p>
+                    </div>
+                  </SwipeableRow>
                 );
               })}
             </div>
@@ -170,14 +237,14 @@ export default function BudgetsPage() {
       {showAdd && (
         <div
           className="sheet-overlay"
-          onClick={(e) => e.target === e.currentTarget && setShowAdd(false)}
+          onClick={(e) => e.target === e.currentTarget && closeForm()}
         >
           <div className="sheet-panel">
-            <h2 className="sheet-title mb-5">Tambah Budget</h2>
+            <h2 className="sheet-title mb-5">{editingBudget ? "Edit Budget" : "Tambah Budget"}</h2>
 
             <div className="form-field">
-              <label className="form-label">Kategori</label>
-              <select value={category} onChange={(e) => setCategory(e.target.value)} className="form-input">
+              <label htmlFor="budget-category" className="form-label">Kategori</label>
+              <select id="budget-category" value={category} onChange={(e) => setCategory(e.target.value)} className="form-input">
                 {CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
@@ -185,16 +252,19 @@ export default function BudgetsPage() {
             </div>
 
             <div className="form-field form-field--spaced">
-              <label className="form-label">Limit per Bulan</label>
+              <label htmlFor="budget-limit" className="form-label">Limit per Bulan</label>
               <div className="relative">
                 <span className="input-prefix">Rp</span>
-                <input type="text" inputMode="numeric" placeholder="0" value={limit} onChange={(e) => setLimit(formatAmount(e.target.value))} className="form-input form-input--prefix" />
+                <input id="budget-limit" type="text" inputMode="numeric" placeholder="0" value={limit} onChange={(e) => setLimit(formatAmount(e.target.value))} className="form-input form-input--prefix" />
               </div>
             </div>
 
-            <button onClick={handleAdd} className="btn-primary">
-              Simpan Budget
-            </button>
+            <div className="dialog-actions">
+              <button onClick={closeForm} className="btn-secondary">Batal</button>
+              <button onClick={handleSave} disabled={!isValidLimit} className="btn-primary">
+                {editingBudget ? "Simpan Perubahan" : "Simpan Budget"}
+              </button>
+            </div>
           </div>
         </div>
       )}

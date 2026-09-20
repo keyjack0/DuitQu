@@ -220,3 +220,25 @@ CREATE POLICY "Users can manage own chats" ON public.ai_chats
 
 CREATE INDEX IF NOT EXISTS idx_ai_chats_user_id ON public.ai_chats(user_id);
 CREATE INDEX IF NOT EXISTS idx_ai_chats_created_at ON public.ai_chats(created_at);
+CREATE INDEX IF NOT EXISTS idx_ai_chats_user_created_id
+  ON public.ai_chats(user_id, created_at DESC, id DESC);
+
+-- Financial Goals table
+CREATE TABLE IF NOT EXISTS public.financial_goals (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  target_amount DECIMAL(15,2) NOT NULL CHECK (target_amount > 0),
+  current_amount DECIMAL(15,2) NOT NULL DEFAULT 0,
+  deadline DATE,
+  icon TEXT DEFAULT 'target',
+  color TEXT DEFAULT '#22c55e',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.financial_goals ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can manage own goals" ON public.financial_goals
+  FOR ALL USING (auth.uid() = user_id);
+
+CREATE INDEX IF NOT EXISTS idx_financial_goals_user_id ON public.financial_goals(user_id);

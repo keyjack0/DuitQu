@@ -1,26 +1,29 @@
+/* Menata kerangka aplikasi, navigasi bawah, dan indikator pemuatan umum. */
 @layer components {
   /* ===== App shell ===== */
   .app-shell {
-    @apply min-h-screen bg-primary pb-20;
+    @apply min-h-screen bg-primary;
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
   }
 
   /* ===== Bottom navigation ===== */
   .bottom-nav {
-    @apply fixed bottom-0 inset-x-0 bg-nav-bg backdrop-blur-[20px] shadow-[0_-4px_12px_rgba(0,0,0,0.06)] flex justify-around items-center pt-2 px-2 pb-2 z-[100];
+    @apply fixed bottom-0 inset-x-0 bg-nav-bg backdrop-blur-[20px] shadow-[0_-4px_12px_rgba(0,0,0,0.06)] flex justify-around items-center pt-2 px-2 z-[100];
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
   }
 
   .bottom-nav-item {
-    @apply flex flex-col items-center gap-1 px-4 py-2 rounded-[10px] text-[11px] no-underline transition-all duration-200 text-muted font-normal relative;
+    @apply flex flex-col items-center gap-0 px-4 py-1 rounded-[10px] text-[11px] no-underline transition-all duration-200 text-muted font-normal relative;
   }
 
   .bottom-nav-item--active {
-    @apply text-green font-semibold;
+    @apply text-green font-bold;
   }
 
-  .bottom-nav-item--active::after {
+  /* .bottom-nav-item--active::after {
     content: "";
     @apply absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-green;
-  }
+  } */
 
   /* ===== Loading skeleton ===== */
   .sk-page {
@@ -112,5 +115,19 @@
     background: linear-gradient(90deg, var(--skeleton) 25%, var(--border-light) 50%, var(--skeleton) 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sk-pill-sm,
+    .sk-title,
+    .sk-avatar,
+    .sk-hero-label,
+    .sk-hero-amount,
+    .sk-stat,
+    .sk-thumb,
+    .sk-line-a,
+    .sk-line-b {
+      animation: none;
+    }
   }
 }

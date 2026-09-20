@@ -1,3 +1,4 @@
+/* Menata ringkasan, grafik, aksi, dan state pemuatan dashboard. */
 @layer components {
   .dashboard {
     @apply pb-8 max-[560px]:pb-7;
@@ -24,7 +25,7 @@
   }
 
   .dashboard-greeting {
-    @apply text-muted text-[13px] leading-[1.3] mb-1.5;
+    @apply text-soft text-[13px] leading-[1.3] mb-1.5;
   }
 
   .dashboard-title {
@@ -119,12 +120,42 @@
     @apply border-none text-fg font-medium whitespace-nowrap;
   }
 
+  .dashboard-feature-card {
+    @apply bg-card rounded-[24px] p-4 mb-5;
+  }
+
+  .dashboard-feature-nav {
+    @apply grid grid-cols-4 gap-2.5;
+  }
+
+  @media (max-width: 400px) {
+    .dashboard-feature-nav {
+      @apply grid-cols-4;
+    }
+  }
+
+  .dashboard-feature-item {
+    @apply flex flex-col items-center gap-1.5 py-2.5 rounded-xl text-fg border-none no-underline cursor-pointer transition-all duration-200;
+  }
+
+  .dashboard-feature-item:active {
+    @apply scale-[0.97];
+  }
+
+  .dashboard-feature-icon {
+    @apply size-11 shrink-0 rounded-full bg-green-dim p-3 text-green;
+  }
+
+  .dashboard-feature-label {
+    @apply text-[10px] font-medium text-soft;
+  }
+
   .dashboard-section-head {
     @apply flex items-center justify-between gap-3 mb-3;
   }
 
   .dashboard-section-title {
-    @apply text-muted text-[13px] font-semibold capitalize tracking-[0.05em];
+    @apply text-soft text-[13px] font-semibold capitalize tracking-[0.05em];
   }
 
   .dashboard-section-link {
@@ -173,6 +204,34 @@
   @apply grid grid-cols-[2fr_1fr] gap-4 items-center max-[360px]:grid-cols-1;
 }
 
+/* Scoped to the dashboard expense chart. */
+.expense-week-card { min-width: 0; background: var(--bg-card); }
+.expense-week-card:hover { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); }
+.expense-week-card .chart-head { justify-content: space-between; margin-bottom: 2px; }
+.expense-week-card .chart-title { letter-spacing: 0; }
+.expense-period-trigger { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; border-radius: 14px; color: var(--text-secondary); background: var(--bg-primary); font-size: 12px; font-weight: 600; cursor: pointer; }
+.expense-period-trigger:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.expense-period-range { font-size: 11px; line-height: 0.5; margin-bottom: -16px; color: var(--text-secondary); }
+.expense-period-options { display: grid; gap: 8px; }
+.expense-period-options > button { display: flex; align-items: center; justify-content: space-between; min-height: 52px; padding: 14px 16px; border-radius: 14px; background: var(--bg-primary); color: var(--text-primary); font-size: 14px; cursor: pointer; }
+.expense-period-options > button[aria-pressed="true"] { background: var(--green-dim); color: var(--green); font-weight: 600; }
+.expense-chart-layout { position: relative; padding-left: 48px; }
+.expense-chart-scale { position: absolute; inset: 0 auto 0 0; width: 42px; color: var(--text-secondary); font-size: 10px; font-variant-numeric: tabular-nums; }
+.expense-chart-scale > span { position: absolute; right: 0; transform: translateY(-50%); white-space: nowrap; }
+.expense-chart-guides { position: absolute; inset: 0; pointer-events: none; }
+.expense-chart-guides > span { position: absolute; left: 0; right: 0; height: 1px; background: var(--overlay); }
+.expense-week-chart { position: relative; min-width: 0; padding-bottom: 20px; }
+.expense-week-bar { transition: fill 0.18s ease; }
+.expense-week-days { position: absolute; inset: 48px 0 0; display: grid; }
+.expense-week-day { min-width: 0; border-radius: 8px; background: transparent; cursor: pointer; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
+.expense-chart-labels { position: absolute; left: 0; right: 0; bottom: 6px; height: 26px; pointer-events: none; color: var(--text-secondary); font-size: 10px; }
+.expense-chart-labels > span { position: absolute; display: grid; place-items: center; min-height: 26px; padding: 0 3px; border-radius: 8px; white-space: nowrap; }
+.expense-chart-labels > .expense-chart-label--active { color: var(--green);  font-weight: 700; }
+.expense-week-day:focus-visible { outline: 2px solid var(--green); outline-offset: -2px; }
+.expense-week-tooltip { position: absolute; display: flex; align-items: center; justify-content: center; height: 32px; border-radius: 11px; background: var(--bg-hover); color: var(--text-primary); font-size: 12px; font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06); pointer-events: none; }
+.expense-week-tooltip > i { position: absolute; bottom: -4px; width: 8px; height: 8px; background: inherit; transform: translateX(-50%) rotate(45deg); border-bottom-right-radius: 2px; }
+@media (prefers-reduced-motion: reduce) { .expense-week-bar { transition: none; } }
+
 .expense-info {
   @apply flex flex-col;
 }
@@ -182,7 +241,7 @@
 }
 
 .expense-date-range {
-  @apply text-[12px] text-muted mb-1;
+  @apply text-[12px] text-soft mb-1;
 }
 
 .expense-total {
@@ -210,7 +269,7 @@
 }
 
 .chart-empty {
-  @apply text-center text-faint text-[13px] py-5;
+  @apply text-center text-soft text-[13px] py-5;
 }
 
 .pie-legend {
@@ -230,7 +289,7 @@
 }
 
 .pie-legend-pct {
-  @apply text-[11px] text-faint w-9 text-right;
+  @apply text-[11px] text-soft w-9 text-right;
 }
 
 .pie-legend-val {
@@ -238,7 +297,7 @@
 }
 
 .pie-legend-more {
-  @apply text-[11px] text-muted mt-1;
+  @apply text-[11px] text-soft mt-1;
 }
 
 .expense-category-full {
@@ -266,7 +325,7 @@
 }
 
 .expense-category-pct {
-  @apply text-[11px] text-muted w-10 text-right;
+  @apply text-[11px] text-soft w-10 text-right;
 }
 
 .expense-category-val {
@@ -282,5 +341,86 @@
 }
 
 .chart-tooltip-note {
-  @apply text-muted mt-0.5;
+  @apply text-soft mt-0.5;
+}
+
+/* Dashboard loading state keeps the final layout dimensions stable. */
+.dashboard-skeleton-line,
+.dashboard-skeleton-circle,
+.dashboard-skeleton-balance,
+.dashboard-skeleton-actions > span,
+.dashboard-skeleton-chart > span,
+.dashboard-skeleton-square,
+.dashboard-skeleton-row {
+  background-image: linear-gradient(90deg, var(--skeleton) 25%, var(--border-light) 50%, var(--skeleton) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.dashboard-skeleton-topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.dashboard-skeleton-line { border-radius: 999px; }
+.dashboard-skeleton-line--greeting { width: 92px; height: 12px; margin-bottom: 10px; }
+.dashboard-skeleton-line--title { width: 180px; height: 28px; }
+.dashboard-skeleton-circle { width: 40px; height: 40px; border-radius: 999px; }
+.dashboard-skeleton-balance { min-height: 132px; padding: 24px; border-radius: 24px; }
+.dashboard-skeleton-line--balance-label { width: 84px; height: 12px; margin-bottom: 16px; background-color: rgba(5, 46, 22, 0.16); }
+.dashboard-skeleton-line--balance { width: min(260px, 70%); height: 34px; background-color: rgba(5, 46, 22, 0.2); }
+
+.dashboard-skeleton-actions {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  margin: 0 0 22px;
+}
+
+.dashboard-skeleton-actions > span { height: 46px; border-radius: 12px; }
+.dashboard-skeleton-actions > span:last-child { width: 104px; }
+.dashboard-chart-skeleton { min-height: 292px; }
+.dashboard-skeleton-line--chart-title { width: 96px; height: 14px; }
+
+.dashboard-skeleton-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 205px;
+  padding: 34px 8px 0;
+}
+
+.dashboard-skeleton-chart > span {
+  flex: 1;
+  min-width: 0;
+  border-radius: 8px 8px 3px 3px;
+}
+
+.dashboard-skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 66px;
+  margin-bottom: 10px;
+  padding: 13px 14px;
+  border-radius: 24px;
+}
+
+.dashboard-skeleton-square { width: 40px; height: 40px; flex: none; border-radius: 12px; }
+.dashboard-skeleton-row-copy { flex: 1; }
+.dashboard-skeleton-line--row-main { width: 52%; height: 12px; margin-bottom: 8px; }
+.dashboard-skeleton-line--row-sub { width: 32%; height: 10px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-skeleton-line,
+  .dashboard-skeleton-circle,
+  .dashboard-skeleton-balance,
+  .dashboard-skeleton-actions > span,
+  .dashboard-skeleton-chart > span,
+  .dashboard-skeleton-square,
+  .dashboard-skeleton-row {
+    animation: none;
+  }
 }

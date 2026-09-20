@@ -1,3 +1,4 @@
+/* Menata komponen antarmuka bersama seperti transaksi, formulir, dan dialog. */
 @layer components {
   /* ===== Transaction item ===== */
   .transaction-item {
@@ -13,7 +14,7 @@
   }
 
   .transaction-icon {
-    @apply size-9 rounded-xl flex items-center justify-center shrink-0;
+    @apply size-10 rounded-xl flex items-center justify-center shrink-0;
   }
 
   .transaction-desc {
@@ -33,7 +34,7 @@
   }
 
   .transaction-date {
-    @apply text-faint text-[10px] mt-0.5;
+    @apply text-soft text-[10px] mt-0.5;
   }
 
   .transaction-amount {
@@ -42,6 +43,14 @@
 
   .transaction-amount--income {
     @apply text-green;
+  }
+
+  .transaction-amount--transfer {
+    @apply text-soft;
+  }
+
+  .transaction-transfer-route {
+    @apply ml-1.5 text-[10px] font-medium text-soft;
   }
 
   /* ===== Centered dialog (ConfirmDialog) ===== */
@@ -85,6 +94,11 @@
     @apply scale-[0.97];
   }
 
+  .btn-secondary:focus-visible,
+  .btn-danger:focus-visible {
+    @apply outline-2 outline-offset-2 outline-green;
+  }
+
   /* ===== Bottom sheet ===== */
   .sheet-overlay {
     @apply fixed inset-0 bg-[rgba(0,0,0,0.8)] backdrop-blur-[8px] flex items-end z-[200];
@@ -111,7 +125,7 @@
   }
 
   .sheet-close {
-    @apply size-8 rounded-full bg-hover border-none flex items-center justify-center cursor-pointer text-soft shrink-0;
+    @apply size-10 rounded-full bg-hover border-none flex items-center justify-center cursor-pointer text-soft shrink-0;
   }
 
   /* ===== Form controls ===== */
@@ -210,7 +224,7 @@
   }
 
   .icon-btn-square {
-    @apply size-9 rounded-[10px] flex items-center justify-center cursor-pointer;
+    @apply size-10 shrink-0 rounded-full flex items-center justify-center cursor-pointer;
   }
 
   .icon-btn-square--primary {

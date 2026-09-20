@@ -1,5 +1,6 @@
 "use client";
 
+/** Memvisualisasikan proporsi pengeluaran bulanan berdasarkan kategori. */
 import { useMemo, useState } from "react";
 import {
   PieChart,
@@ -14,8 +15,6 @@ import { Transaction } from "@/types";
 import { CATEGORY_COLORS } from "@/lib/categoryColors";
 
 const DEFAULT_COLOR = "var(--text-muted)";
-
-const COLLAPSED_MAX = 3;
 
 type CategoryTooltipItem = {
   payload?: {
@@ -98,14 +97,10 @@ export default function CategoryPieChart({
   );
 
   const dateRange = getMonthDateRange();
-  const visibleData = data.slice(0, COLLAPSED_MAX);
-  const hiddenCount = data.length - COLLAPSED_MAX;
-
   return (
     <div className="chart-card chart-card--expense">
       <div className="expense-info">
         <div className="expense-info-head">
-          {/* <PieChartIcon size={14} color="var(--green)" /> */}
           <p className="chart-title">Pengeluaran Bulan Ini</p>
         </div>
         <p className="expense-date-range">

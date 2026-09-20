@@ -1,73 +1,323 @@
+/*
+ * Visual halaman profil: identitas akun, kelompok pengaturan, dialog form,
+ * state loading, dan layout responsif mobile/desktop.
+ */
 @layer components {
-  .settings-list {
-    @apply px-5 flex flex-col gap-5;
+  .profile-page {
+    @apply min-h-full bg-primary px-5 pt-5 pb-8;
+    padding-top: max(20px, env(safe-area-inset-top));
   }
 
-  .card--row {
-    @apply flex items-center justify-between gap-3;
+  .profile-container {
+    @apply w-full max-w-[960px] mx-auto;
   }
 
-  .profile-row {
-    @apply flex items-center gap-3.5 mb-5;
+  .profile-header {
+    @apply mb-6;
   }
 
-  .avatar-circle {
-    @apply size-[52px] rounded-full bg-linear-to-br from-green to-green-dark text-on-accent flex items-center justify-center text-xl font-extrabold shrink-0;
+  .profile-eyebrow {
+    @apply mb-1.5 text-[10px] uppercase tracking-[0.14em] font-bold text-green;
   }
 
-  .profile-info {
+  .profile-header h1 {
+    @apply text-[26px] leading-tight font-bold text-fg;
+  }
+
+  .profile-header > p:last-child {
+    @apply mt-2 max-w-[560px] text-[13px] leading-relaxed text-soft;
+  }
+
+  .profile-layout {
+    @apply grid grid-cols-1 gap-6;
+  }
+
+  .profile-sidebar {
+    @apply min-w-0;
+  }
+
+  .profile-card {
+    @apply overflow-hidden rounded-[24px] bg-linear-to-br from-card to-card-2 border border-border p-5 shadow-[0_8px_28px_rgba(0,0,0,0.08)];
+  }
+
+  .profile-card-top {
+    @apply flex items-start justify-between gap-4;
+  }
+
+  .profile-avatar {
+    @apply size-16 rounded-[20px] bg-green text-on-accent flex items-center justify-center text-[26px] font-bold;
+  }
+
+  .profile-edit-button {
+    @apply min-h-11 rounded-full border border-green-border bg-green-dim px-3.5 flex items-center justify-center gap-1.5 text-xs font-semibold text-green cursor-pointer;
+  }
+
+  .profile-identity {
+    @apply mt-5 min-w-0;
+  }
+
+  .profile-identity h2 {
+    @apply truncate text-xl font-bold text-fg;
+  }
+
+  .profile-identity p {
+    @apply mt-1 truncate text-[13px] text-muted;
+  }
+
+  .profile-joined {
+    @apply mt-5 pt-4 border-t border-border flex items-center gap-2 text-[11px] text-soft;
+  }
+
+  .profile-settings {
+    @apply min-w-0 flex flex-col gap-5;
+  }
+
+  .settings-section-title {
+    @apply mb-2.5 px-1 text-[10px] uppercase tracking-[0.13em] font-bold text-muted;
+  }
+
+  .settings-section-card {
+    @apply overflow-hidden rounded-[20px] bg-card border border-border;
+  }
+
+  .settings-row {
+    @apply min-h-[66px] w-full border-none border-b border-border last:border-b-0 bg-transparent px-4 py-3 flex items-center gap-3 text-left text-fg no-underline;
+  }
+
+  button.settings-row {
+    @apply cursor-pointer transition-colors;
+  }
+
+  button.settings-row:hover:not(:disabled) {
+    @apply bg-hover;
+  }
+
+  button.settings-row:disabled {
+    @apply opacity-60 cursor-not-allowed;
+  }
+
+  .settings-row-icon {
+    @apply w-5 shrink-0 text-green flex items-center justify-center;
+  }
+
+  .settings-row-icon--danger {
+    @apply text-red;
+  }
+
+  .settings-row-copy {
     @apply flex-1 min-w-0;
   }
 
-  .profile-name {
-    @apply text-[15px] font-bold text-fg;
+  .settings-row-copy strong,
+  .settings-custom-copy strong {
+    @apply block text-[13px] font-semibold text-fg;
   }
 
-  .profile-email {
-    @apply text-[13px] text-muted;
+  .settings-row-copy small,
+  .settings-custom-copy small {
+    @apply block mt-0.5 text-[10px] leading-relaxed text-muted;
   }
 
-  .profile-footer {
-    @apply flex items-center justify-between gap-3 mt-5;
+  .settings-row-label--danger {
+    @apply text-red!;
   }
 
-  .meta-label {
-    @apply text-[11px] text-muted mb-0.5;
+  .settings-row-value {
+    @apply shrink-0 max-w-[42%] truncate text-[11px] font-medium text-soft;
   }
 
-  .meta-value {
-    @apply text-[13px] text-fg font-semibold;
+  .settings-row-chevron {
+    @apply shrink-0 text-faint;
   }
 
-  .about-title {
-    @apply text-sm font-semibold text-fg;
+  .settings-badge {
+    @apply inline-flex rounded-full bg-amber-dim px-2 py-1 text-[9px] font-bold text-amber;
   }
 
-  .about-desc {
-    @apply text-xs text-muted mt-0.5;
+  .settings-badge--success {
+    @apply bg-green-dim text-green;
+  }
+
+  .settings-custom-row {
+    @apply p-4;
+  }
+
+  .settings-custom-copy {
+    @apply flex items-start gap-3;
+  }
+
+  .settings-custom-copy > span:last-child {
+    @apply flex-1 min-w-0;
+  }
+
+  .theme-selector {
+    @apply mt-4 grid grid-cols-3 gap-2 border-0;
+  }
+
+  .theme-option {
+    @apply min-h-11 rounded-[12px] border border-border bg-secondary px-2 flex items-center justify-center gap-1.5 text-[11px] font-semibold text-soft cursor-pointer transition-colors;
+  }
+
+  .theme-option:hover {
+    @apply bg-hover text-fg;
+  }
+
+  .theme-option--active {
+    @apply border-green-border bg-green-dim text-green;
+  }
+
+  .settings-form-input {
+    @apply min-h-12 border border-border bg-primary text-base;
+  }
+
+  .settings-form-input:focus {
+    @apply border-green-border ring-2 ring-green/10;
+  }
+
+  .settings-field-meta {
+    @apply mt-1.5 flex justify-between gap-3 text-[10px] text-muted;
+  }
+
+  .settings-form-error {
+    @apply mt-2 rounded-[10px] bg-red-dim px-3 py-2 text-xs text-red;
+  }
+
+  .settings-changelog {
+    @apply flex flex-col gap-5;
   }
 
   .changelog-entry {
-    @apply mb-4 last:mb-0;
+    @apply pb-5 border-b border-border last:border-b-0 last:pb-0;
   }
 
   .changelog-header {
-    @apply flex items-center gap-2 mb-2;
+    @apply flex items-center justify-between gap-3 mb-2.5;
   }
 
   .changelog-version {
-    @apply text-[13px] font-bold text-fg;
+    @apply rounded-full bg-green-dim px-2.5 py-1 text-[11px] font-bold text-green;
   }
 
   .changelog-date {
-    @apply text-[11px] text-muted;
+    @apply text-[10px] text-muted;
   }
 
   .changelog-notes {
-    @apply list-none pl-0 flex flex-col gap-1;
+    @apply pl-5 flex flex-col gap-1.5 list-disc;
   }
 
   .changelog-notes li {
-    @apply text-[12px] text-muted relative pl-3;
+    @apply text-[12px] leading-relaxed text-soft;
   }
+
+  .profile-skeleton {
+    background: linear-gradient(90deg, var(--bg-card) 25%, var(--border) 50%, var(--bg-card) 75%);
+    background-size: 200% 100%;
+    animation: profileShimmer 1.4s ease-in-out infinite;
+  }
+
+  .profile-skeleton--header {
+    @apply w-52 h-16 rounded-[18px] mb-6;
+  }
+
+  .profile-skeleton--identity {
+    @apply h-60 rounded-[24px];
+  }
+
+  .profile-skeleton-stack {
+    @apply flex flex-col gap-5;
+  }
+
+  .profile-skeleton--section {
+    @apply h-40 rounded-[20px];
+  }
+
+  .profile-unavailable {
+    @apply min-h-[60dvh] flex flex-col items-center justify-center text-center;
+  }
+
+  .profile-unavailable h1 {
+    @apply text-xl font-bold text-fg;
+  }
+
+  .profile-unavailable p {
+    @apply mt-2 mb-5 max-w-[360px] text-sm leading-relaxed text-muted;
+  }
+
+  .profile-unavailable .btn-primary {
+    @apply w-auto min-w-36;
+  }
+
+  .profile-page button:focus-visible,
+  .profile-page a:focus-visible {
+    @apply outline-2 outline-offset-2 outline-green;
+  }
+
+  @media (min-width: 760px) {
+    .profile-page {
+      @apply pt-7 pb-10;
+    }
+
+    .profile-layout {
+      @apply grid-cols-[300px_minmax(0,1fr)] items-start gap-7;
+    }
+
+    .profile-sidebar {
+      @apply sticky top-7;
+    }
+
+    .profile-card {
+      @apply p-6;
+    }
+
+    .settings-custom-row {
+      @apply flex items-center justify-between gap-6;
+    }
+
+    .settings-custom-copy {
+      @apply flex-1;
+    }
+
+    .theme-selector {
+      @apply mt-0 w-[270px] shrink-0;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .profile-page {
+      @apply px-3;
+    }
+
+    .profile-edit-button {
+      @apply px-3;
+    }
+
+    .theme-option {
+      @apply flex-col gap-1 py-2;
+    }
+
+    .settings-row {
+      @apply px-3;
+    }
+
+    .settings-row-value {
+      @apply max-w-[36%];
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .profile-skeleton {
+      animation: none;
+    }
+
+    .settings-row,
+    .theme-option {
+      transition: none;
+    }
+  }
+}
+
+@keyframes profileShimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
 }

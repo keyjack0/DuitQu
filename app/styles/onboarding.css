@@ -1,0 +1,280 @@
+/* Menata alur onboarding, ilustrasi, navigasi, dan transisi antarlangkah. */
+@layer components {
+  .onboarding-page {
+    min-height: 100svh;
+    background: var(--bg-primary);
+    display: flex;
+    justify-content: center;
+    padding: max(16px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+    letter-spacing: 0;
+  }
+
+  .onboarding-shell {
+    width: 100%;
+    max-width: 420px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .onboarding-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 44px;
+  }
+
+  .onboarding-brand {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 19px;
+    font-weight: 700;
+  }
+
+  .onboarding-logo {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    background: var(--green);
+    color: var(--on-accent);
+    border-radius: 9px;
+    font-size: 19px;
+  }
+
+  .onboarding-skip {
+    min-height: 44px;
+    padding: 0 8px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+
+  .onboarding-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 24px 0 20px;
+    touch-action: pan-y pinch-zoom;
+  }
+
+  .onboarding-slide {
+    width: 100%;
+    min-width: 0;
+    animation: onboarding-enter 240ms ease-out both;
+  }
+
+  .onboarding-slide[data-direction="backward"] {
+    --onboarding-offset: -12px;
+  }
+
+  .onboarding-visual {
+    position: relative;
+    isolation: isolate;
+    width: 100%;
+    height: clamp(200px, 40svh, 350px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    user-select: none;
+    pointer-events: none;
+  }
+
+  .onboarding-visual::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    width: min(100%, 320px);
+    height: 90%;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(195, 217, 191, 0.28), transparent 72%);
+  }
+
+  .onboarding-illustration {
+    display: block;
+    width: auto;
+    height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+  }
+
+  /* The checklist artwork has a taller canvas and its own surrounding glow. */
+  .onboarding-visual[data-visual="budget"]::before {
+    opacity: 0.45;
+  }
+
+  .onboarding-copy {
+    text-align: center;
+    min-height: 168px;
+  }
+
+  .onboarding-copy h1 {
+    max-width: 350px;
+    margin: 0 auto 16px;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-wrap: balance;
+    overflow-wrap: break-word;
+  }
+
+  .onboarding-copy p {
+    max-width: 340px;
+    margin: 0 auto;
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+  }
+
+  .onboarding-footer {
+    padding-top: 8px;
+  }
+
+  .onboarding-pagination {
+    display: flex;
+    justify-content: center;
+  }
+
+  .onboarding-dot {
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+
+  .onboarding-dot span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--border-light);
+    transition: background-color 180ms ease;
+  }
+
+  .onboarding-dot[aria-current="step"] span {
+    background: var(--green);
+    width: 22px;
+    border-radius: 8px;
+  }
+
+  .onboarding-action {
+    display: flex;
+    justify-content: flex-end;
+    min-height: 72px;
+    padding-top: 16px;
+  }
+
+  .onboarding-next {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--green);
+    color: var(--on-accent);
+    cursor: pointer;
+    transition: background-color 180ms ease;
+  }
+
+  .onboarding-next--finish {
+    width: 100%;
+    border-radius: 16px;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 0 16px;
+  }
+
+  .onboarding-next:hover {
+    background: var(--green-dark);
+  }
+
+  .onboarding-skip:hover {
+    color: var(--text-primary);
+  }
+
+  .onboarding-page button:focus-visible {
+    outline: 2px solid var(--green);
+    outline-offset: 4px;
+  }
+
+  .onboarding-loading {
+    align-items: center;
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+
+  @media (min-width: 640px) {
+    .onboarding-page {
+      align-items: center;
+      padding-top: max(32px, env(safe-area-inset-top));
+      padding-bottom: max(32px, env(safe-area-inset-bottom));
+    }
+
+    .onboarding-shell {
+      min-height: min(740px, calc(100svh - 64px));
+    }
+  }
+
+  @media (max-width: 359px) {
+    .onboarding-copy {
+      min-height: 176px;
+    }
+
+    .onboarding-copy h1 {
+      font-size: 25px;
+    }
+
+    .onboarding-copy p {
+      font-size: 14px;
+    }
+  }
+
+  @media (max-height: 700px) {
+    .onboarding-content {
+      padding-top: 12px;
+      padding-bottom: 0;
+    }
+
+    .onboarding-visual {
+      height: clamp(140px, calc(100svh - 410px), 280px);
+      margin-bottom: 12px;
+    }
+
+    .onboarding-copy h1 {
+      margin-bottom: 12px;
+    }
+
+    .onboarding-action {
+      padding-top: 8px;
+      min-height: 64px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .onboarding-slide {
+      animation: none;
+    }
+
+    .onboarding-page button,
+    .onboarding-dot span {
+      transition: none;
+    }
+  }
+}
+
+@keyframes onboarding-enter {
+  from {
+    opacity: 0;
+    transform: translateX(var(--onboarding-offset, 12px));
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

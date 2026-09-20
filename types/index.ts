@@ -1,3 +1,4 @@
+/** Mendefinisikan model data dan konstanta domain utama DuitQu. */
 export type TransactionType = "IN" | "OUT" | "TRANSFER";
 
 export interface User {
@@ -41,10 +42,26 @@ export interface Budget {
   spent?: number;
 }
 
+export interface FinancialGoal {
+  id: string;
+  user_id: string;
+  name: string;
+  target_amount: number;
+  current_amount: number;
+  deadline: string | null;
+  icon: string;
+  color: string;
+  created_at: string;
+}
+
+export type AITransactionStatus = "draft" | "saved";
+
 export interface AIMessage {
+  id: string;
   role: "user" | "assistant";
   content: string;
-  timestamp: Date;
+  parsedTransaction?: ParsedTransaction;
+  createdAt?: string;
 }
 
 export interface ParsedTransaction {
@@ -52,9 +69,16 @@ export interface ParsedTransaction {
   kategori: string;
   deskripsi: string;
   wallet: string;
+  walletId?: string;
   tipe: "pemasukan" | "pengeluaran";
   tanggal?: string;
+  status?: AITransactionStatus;
+  transactionId?: string;
 }
+
+export type AssistantAction =
+  | { kind: "prompt"; label: string; prompt: string }
+  | { kind: "link"; label: string; href: string };
 
 export const CATEGORIES = [
   "Makanan & Minuman",

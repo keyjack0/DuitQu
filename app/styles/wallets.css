@@ -1,7 +1,32 @@
+/* Menata ringkasan, daftar, rincian, dan dialog pengelolaan dompet. */
 @layer components {
+  .wallets-page {
+    @apply max-w-[960px] mx-auto px-5 pt-5 pb-8;
+  }
+
+  .wallet-page-header {
+    @apply mb-6;
+  }
+
+  .wallet-page-subtitle {
+    @apply text-[13px] leading-relaxed text-muted mt-1.5;
+  }
+
+  .wallet-page-grid {
+    @apply grid gap-5;
+  }
+
+  .wallet-overview-column {
+    @apply flex flex-col gap-5 min-w-0;
+  }
+
   /* ===== Total card ===== */
   .wallet-total-card {
-    @apply bg-linear-to-br from-card to-card-2 border-none rounded-[24px] p-5 shadow-[0_4px_12px_rgba(0,0,0,0.06)];
+    @apply bg-linear-to-br from-card to-card-2 rounded-[24px] p-5 shadow-[0_8px_24px_rgba(0,0,0,0.08)] overflow-hidden relative;
+  }
+
+  .wallet-total-head {
+    @apply flex items-start justify-between gap-4 relative z-[1];
   }
 
   .total-label {
@@ -9,52 +34,109 @@
   }
 
   .total-value {
-    @apply text-[28px] font-bold text-fg;
+    @apply text-[28px] leading-tight font-bold text-fg tracking-[-0.03em] break-all;
   }
 
-  .total-sub {
-    @apply text-xs text-muted mt-1.5;
+  .wallet-total-stats {
+    @apply grid grid-cols-2 gap-3 mt-5 pt-4 border-t border-border relative z-[1];
   }
 
-  /* ===== Distribution bar ===== */
-  .dist-wrap {
-    @apply mb-6;
+  .wallet-total-stats div {
+    @apply min-w-0;
   }
 
+  .wallet-total-stats span {
+    @apply block text-[10px] uppercase tracking-[0.06em] text-muted mb-1;
+  }
+
+  .wallet-total-stats strong {
+    @apply block text-[13px] font-semibold text-fg truncate;
+  }
+
+  .wallet-quick-actions {
+    @apply grid grid-cols-2 gap-2.5 mt-5 relative z-[1];
+  }
+
+  .wallet-action {
+    @apply min-h-11 rounded-xl border-none flex items-center justify-center gap-2 text-[13px] font-semibold cursor-pointer transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  .wallet-action:not(:disabled):active {
+    @apply scale-[0.97];
+  }
+
+  .wallet-action--primary {
+    @apply bg-green text-on-accent;
+  }
+
+  .wallet-action--secondary {
+    @apply bg-hover text-fg;
+  }
+
+  /* ===== Section scaffolding ===== */
+  .wallet-distribution-card {
+    @apply bg-card rounded-[24px] p-5 min-w-0;
+  }
+
+  .wallet-list-section {
+    @apply min-w-0;
+  }
+
+  .wallet-section-head {
+    @apply flex items-center justify-between gap-3 mb-4;
+  }
+
+  .wallet-section-eyebrow {
+    @apply text-[10px] uppercase tracking-[0.08em] text-muted mb-0.5;
+  }
+
+  .wallet-section-title {
+    @apply text-[16px] font-bold text-fg;
+  }
+
+  .wallet-section-count {
+    @apply text-[10px] text-muted bg-primary rounded-full px-2.5 py-1 whitespace-nowrap;
+  }
+
+  /* ===== Distribution ===== */
   .dist-bar {
-    @apply flex rounded-md overflow-hidden h-1.5 gap-0.5;
+    @apply flex rounded-full overflow-hidden h-2 gap-0.5 bg-primary;
   }
 
   .dist-seg {
-    @apply rounded-[3px];
+    @apply min-w-[2px] first:rounded-l-full last:rounded-r-full;
   }
 
-  .dist-seg--c0 {
-    @apply bg-green;
-  }
-
-  .dist-seg--c1 {
-    @apply bg-[#a3a3a3];
-  }
-
-  .dist-seg--c2 {
-    @apply bg-[#525252];
+  .dist-empty {
+    @apply rounded-xl bg-primary px-3 py-3 text-xs text-muted;
   }
 
   .dist-legend {
-    @apply flex flex-wrap gap-2 mt-2;
+    @apply flex flex-col gap-1 mt-4;
   }
 
   .legend-item {
-    @apply flex items-center gap-[5px];
+    @apply grid grid-cols-[8px_minmax(0,1fr)_auto] items-center gap-2.5 py-2;
   }
 
   .legend-dot {
     @apply size-2 rounded-full;
   }
 
-  .legend-text {
-    @apply text-[11px] text-muted;
+  .legend-copy {
+    @apply min-w-0 flex items-center justify-between gap-3;
+  }
+
+  .legend-name {
+    @apply text-xs font-medium text-fg truncate;
+  }
+
+  .legend-value {
+    @apply text-[11px] text-soft whitespace-nowrap;
+  }
+
+  .legend-percent {
+    @apply min-w-10 text-right text-[11px] font-semibold text-muted;
   }
 
   /* ===== Wallet list ===== */
@@ -62,46 +144,110 @@
     @apply flex flex-col gap-2.5;
   }
 
+  .wallet-list-item {
+    @apply min-w-0;
+  }
+
+  .wallet-list-section .wallet-section-count {
+    @apply bg-card;
+  }
+
+  .wallet-mobile-hint {
+    @apply text-[10px] text-muted -mt-1 mb-3;
+  }
+
   .wallet-row-content {
-    @apply flex-1 min-w-0 flex items-center gap-3.5;
+    @apply flex-1 min-w-0 flex items-center gap-3;
   }
 
   .wallet-icon-box {
-    @apply size-11 rounded-xl bg-primary border-none flex items-center justify-center shrink-0;
+    @apply size-10 rounded-xl flex items-center justify-center shrink-0;
   }
 
   .wallet-info {
-    @apply flex-1;
+    @apply flex-1 min-w-0;
   }
 
   .wallet-name {
-    @apply text-sm font-semibold text-fg mb-0.5;
+    @apply text-sm font-semibold text-fg truncate;
+  }
+
+  .wallet-share {
+    @apply text-[10px] text-muted mt-0.5 truncate;
+  }
+
+  .wallet-row-end {
+    @apply flex items-center gap-2 shrink-0;
   }
 
   .wallet-balance {
-    @apply text-base font-bold text-fg;
+    @apply text-[13px] font-bold text-fg whitespace-nowrap;
+  }
+
+  .wallet-balance--negative {
+    @apply text-red;
+  }
+
+  .wallet-detail-toggle {
+    @apply size-8 rounded-full border-none bg-primary text-muted flex items-center justify-center cursor-pointer transition-all duration-200;
+  }
+
+  .wallet-detail-toggle svg {
+    @apply transition-transform duration-200;
+  }
+
+  .wallet-detail-toggle--open {
+    @apply bg-green-dim text-green;
+  }
+
+  .wallet-detail-toggle--open svg {
+    @apply rotate-180;
+  }
+
+  .wallet-detail-panel {
+    @apply animate-[fadeIn_0.2s_ease];
+  }
+
+  .wallet-empty-state {
+    @apply min-h-72 rounded-[24px] bg-card flex flex-col items-center justify-center text-center p-6 shadow-[0_4px_12px_rgba(0,0,0,0.06)];
+  }
+
+  .wallet-empty-icon {
+    @apply size-14 rounded-2xl bg-green-dim text-green flex items-center justify-center mb-4;
+  }
+
+  .wallet-empty-state h3 {
+    @apply text-base font-bold text-fg mb-1.5;
+  }
+
+  .wallet-empty-state p {
+    @apply max-w-72 text-xs leading-relaxed text-muted mb-5;
   }
 
   /* ===== Icon picker ===== */
+  .wallet-icon-fieldset {
+    @apply min-w-0 border-none;
+  }
+
   .icon-picker {
-    @apply flex gap-2 flex-wrap;
+    @apply grid grid-cols-6 gap-2;
   }
 
   .icon-option {
-    @apply px-3 py-2 rounded-lg border-none bg-card cursor-pointer flex items-center justify-center;
+    @apply min-h-10 rounded-xl border border-transparent bg-primary text-soft cursor-pointer flex items-center justify-center transition-all duration-200;
   }
 
   .icon-option--active {
-    @apply bg-[rgba(34,197,94,0.12)];
+    @apply bg-green-dim text-green border-green-border;
   }
 
-  /* ===== SwipeableRow ===== */
+  /* ===== Swipeable row ===== */
   .swipe-desktop {
-    @apply flex items-center gap-2.5 bg-card border-none rounded-[24px] px-3.5 py-3 transition-all duration-200;
+    @apply flex items-center gap-2.5 bg-primary rounded-[18px] px-3.5 py-3 transition-all duration-200;
   }
 
   .swipe-desktop:active {
-    @apply scale-[0.98];
+    @apply scale-[0.99];
   }
 
   .swipe-content {
@@ -113,7 +259,7 @@
   }
 
   .swipe-mobile {
-    @apply relative overflow-hidden rounded-[24px] bg-card border-none;
+    @apply relative overflow-hidden rounded-[18px] bg-primary;
   }
 
   .swipe-actions-layer {
@@ -121,6 +267,196 @@
   }
 
   .swipe-drag {
-    @apply bg-card [touch-action:pan-y] px-3.5 py-3 flex items-center overflow-hidden relative z-[1];
+    @apply bg-primary [touch-action:pan-y] px-3.5 py-3 flex items-center overflow-hidden relative z-[1];
+  }
+
+  .wallet-list-section .swipe-desktop,
+  .wallet-list-section .swipe-mobile,
+  .wallet-list-section .swipe-drag {
+    @apply bg-card;
+  }
+
+  .wallet-list-section .swipe-desktop,
+  .wallet-list-section .swipe-mobile {
+    @apply rounded-[24px] shadow-[0_4px_12px_rgba(0,0,0,0.06)];
+  }
+
+  /* ===== Wallet detail ===== */
+  .wallet-detail {
+    @apply mt-2 p-4 bg-primary rounded-[18px];
+  }
+
+  .wallet-list-section .wallet-detail {
+    @apply bg-card rounded-[24px] shadow-[0_4px_12px_rgba(0,0,0,0.06)];
+  }
+
+  .wallet-list-section .wallet-detail-summary-card {
+    @apply bg-primary;
+  }
+
+  .wallet-detail-summary {
+    @apply grid grid-cols-2 gap-2 mb-4;
+  }
+
+  .wallet-detail-summary-card {
+    @apply rounded-xl bg-card px-3 py-2.5 min-w-0;
+  }
+
+  .wallet-detail-summary-label {
+    @apply block text-[9px] text-muted uppercase tracking-[0.06em] mb-1;
+  }
+
+  .wallet-detail-summary-value {
+    @apply block text-xs font-semibold text-fg truncate;
+  }
+
+  .wallet-detail-summary-value--income {
+    @apply text-green;
+  }
+
+  .wallet-detail-summary-value--expense {
+    @apply text-red;
+  }
+
+  .wallet-detail-section {
+    @apply mt-4 first:mt-0;
+  }
+
+  .wallet-detail-title {
+    @apply text-[10px] font-semibold text-muted uppercase tracking-wider mb-2;
+  }
+
+  .wallet-detail-empty {
+    @apply text-center text-muted text-xs py-3;
+  }
+
+  .wallet-detail-categories {
+    @apply flex flex-col gap-1;
+  }
+
+  .wallet-detail-cat-row {
+    @apply flex items-center justify-between gap-3 py-1.5;
+  }
+
+  .wallet-detail-cat-left {
+    @apply flex items-center gap-2 min-w-0;
+  }
+
+  .wallet-detail-cat-dot {
+    @apply size-2 rounded-full shrink-0;
+  }
+
+  .wallet-detail-cat-name {
+    @apply text-[11px] text-fg truncate;
+  }
+
+  .wallet-detail-cat-right {
+    @apply flex items-center gap-2 shrink-0;
+  }
+
+  .wallet-detail-cat-bar-wrap {
+    @apply hidden sm:block w-16 h-1 rounded-full bg-border overflow-hidden;
+  }
+
+  .wallet-detail-cat-bar {
+    @apply h-full rounded-full;
+  }
+
+  .wallet-detail-cat-value {
+    @apply text-[11px] font-semibold text-fg min-w-16 text-right;
+  }
+
+  .wallet-detail-tx-list {
+    @apply flex flex-col gap-1;
+  }
+
+  .wallet-detail-tx {
+    @apply flex items-center gap-2.5 py-1.5;
+  }
+
+  .wallet-detail-tx-icon {
+    @apply size-7 rounded-lg flex items-center justify-center shrink-0 text-[10px] font-bold;
+  }
+
+  .wallet-detail-tx-info {
+    @apply flex-1 min-w-0;
+  }
+
+  .wallet-detail-tx-desc {
+    @apply text-[11px] font-medium text-fg truncate;
+  }
+
+  .wallet-detail-tx-date {
+    @apply text-[9px] text-muted;
+  }
+
+  .wallet-detail-tx-amount {
+    @apply text-[11px] font-semibold text-fg shrink-0;
+  }
+
+  .wallet-detail-tx-amount--income {
+    @apply text-green;
+  }
+
+  .wallet-detail-tx-amount--transfer {
+    @apply text-soft;
+  }
+
+  /* ===== Wallet sheets ===== */
+  .wallet-sheet-panel {
+    @apply max-h-[90vh] overflow-y-auto;
+  }
+
+  @media (min-width: 768px) {
+    .wallets-page {
+      @apply pt-8 pb-10;
+    }
+
+    .wallet-page-header {
+      @apply mb-7;
+    }
+
+    .wallet-page-grid {
+      @apply grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] items-start;
+    }
+
+    .wallet-mobile-hint {
+      @apply hidden;
+    }
+
+    .wallet-sheet-overlay {
+      @apply items-center justify-center p-5;
+    }
+
+    .wallet-sheet-panel {
+      @apply max-w-[480px] rounded-[24px] pb-7;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .wallets-page {
+      @apply px-4;
+    }
+
+    .wallet-total-card,
+    .wallet-distribution-card {
+      @apply p-4;
+    }
+
+    .wallet-quick-actions {
+      @apply grid-cols-1;
+    }
+
+    .wallet-balance {
+      @apply text-xs;
+    }
+
+    .wallet-detail-toggle {
+      @apply size-7;
+    }
+
+    .icon-picker {
+      @apply grid-cols-3;
+    }
   }
 }

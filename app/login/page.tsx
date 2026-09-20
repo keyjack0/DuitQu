@@ -1,12 +1,16 @@
 "use client";
 
+/** Menyediakan onboarding awal dan autentikasi masuk pengguna DuitQu. */
 import { useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
-import { LogIn, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
+import { LoginOnboarding } from "@/components/onboarding/LoginOnboarding";
+import { completeOnboarding, useOnboardingStatus } from "@/components/onboarding/useOnboardingStatus";
 
 export default function LoginPage() {
   const router = useRouter();
+  const onboardingSeen = useOnboardingStatus();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -40,6 +44,18 @@ export default function LoginPage() {
     router.push("/dashboard");
     router.refresh();
   };
+
+  if (onboardingSeen === null) {
+    return (
+      <div className="onboarding-page onboarding-loading" role="status" aria-label="Memuat DuitQu">
+        <span className="onboarding-brand"><span className="onboarding-logo">D</span>DuitQu</span>
+      </div>
+    );
+  }
+
+  if (!onboardingSeen) {
+    return <LoginOnboarding onComplete={completeOnboarding} />;
+  }
 
   return (
     <div className="auth-page">
@@ -95,7 +111,6 @@ export default function LoginPage() {
               <span>Memproses...</span>
             ) : (
               <>
-                <LogIn size={16} />
                 Masuk
               </>
             )}

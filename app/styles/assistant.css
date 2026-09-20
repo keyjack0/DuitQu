@@ -1,83 +1,327 @@
+/* Menata halaman percakapan, ringkasan, pesan, dan kontrol asisten AI. */
 @layer components {
-  /* ===== AI Assistant page ===== */
   .ai-shell {
-    @apply flex flex-col h-[calc(100dvh-80px)];
+    @apply flex flex-col w-full bg-primary;
+    height: calc(100dvh - 80px - env(safe-area-inset-bottom, 0px));
+    min-height: 520px;
   }
 
   .ai-head {
-    @apply px-5 py-4 bg-secondary border-b border-border shrink-0;
+    @apply shrink-0 bg-secondary border-b border-border;
   }
 
   .ai-head-row {
-    @apply flex items-center gap-3;
+    @apply flex items-center gap-3 w-full max-w-[1080px] mx-auto px-5 py-3.5;
   }
 
   .ai-logo {
-    @apply size-10 rounded-xl bg-green-dim border-none flex items-center justify-center;
+    @apply size-10 rounded-[14px] bg-green-dim border border-green-border text-green flex items-center justify-center;
   }
 
   .ai-name {
-    @apply text-[17px] font-bold text-fg;
+    @apply text-[17px] leading-tight font-bold text-fg;
   }
 
   .ai-status {
-    @apply text-[11px] text-green;
+    @apply mt-0.5 text-[11px] text-muted;
   }
 
-  .ai-clear-btn {
-    @apply ml-auto size-8 rounded-lg border-none bg-hover flex items-center justify-center cursor-pointer text-faint;
+  .ai-menu-wrap {
+    @apply relative ml-auto shrink-0;
+  }
+
+  .ai-menu-btn {
+    @apply size-11 rounded-full border-none bg-transparent flex items-center justify-center cursor-pointer text-soft transition-colors;
+  }
+
+  .ai-menu-btn:hover {
+    @apply bg-hover;
+  }
+
+  .ai-menu {
+    @apply absolute right-0 top-full mt-2 z-20 w-max max-w-[calc(100vw-40px)] p-1 rounded-xl bg-card border border-border shadow-lg;
+  }
+
+  .ai-menu-item {
+    @apply flex items-center gap-2 w-full px-3 py-2.5 rounded-lg border-none bg-transparent text-sm text-soft cursor-pointer;
+  }
+
+  .ai-menu-item:hover:not(:disabled) {
+    @apply bg-hover;
+  }
+
+  .ai-menu-item:disabled,
+  .ai-prompt-chip:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+
+  .ai-layout {
+    @apply flex-1 min-h-0 w-full max-w-[1080px] mx-auto;
+  }
+
+  .ai-sidebar {
+    @apply hidden;
+  }
+
+  .ai-chat-panel {
+    @apply h-full min-h-0 flex flex-col bg-primary;
   }
 
   .ai-messages {
-    @apply flex-1 min-h-0 overflow-y-auto px-5 py-4 flex flex-col gap-3;
+    @apply flex-1 min-h-0 overflow-y-auto px-4 py-4 flex flex-col gap-4;
+    overscroll-behavior: contain;
+  }
+
+  .ai-history-loading {
+    @apply sticky top-0 z-10 self-center rounded-full bg-card border border-border px-3 py-1.5 text-[11px] text-muted shadow-sm;
+  }
+
+  .ai-welcome {
+    @apply flex flex-col gap-4;
+  }
+
+  .ai-mobile-welcome {
+    @apply w-full;
+  }
+
+  .ai-welcome-hero {
+    @apply flex gap-3.5 p-4 rounded-[22px] bg-linear-to-br from-card to-card-2 border border-border;
+  }
+
+  .ai-welcome-icon {
+    @apply size-11 shrink-0 rounded-[15px] bg-green-dim border border-green-border text-green flex items-center justify-center;
+  }
+
+  .ai-welcome-hero h2 {
+    @apply mt-1 text-[20px] leading-tight font-bold text-fg;
+  }
+
+  .ai-welcome-hero > div > p:last-child {
+    @apply mt-2 text-[13px] leading-relaxed text-soft;
+  }
+
+  .ai-eyebrow {
+    @apply flex items-center gap-1.5 text-[10px] uppercase tracking-[0.12em] font-bold text-green;
+  }
+
+  .ai-snapshot {
+    @apply p-4 rounded-[22px] bg-card border border-border;
+  }
+
+  .ai-section-head {
+    @apply flex items-start justify-between gap-3 mb-3.5;
+  }
+
+  .ai-section-title {
+    @apply mt-1 text-[15px] font-bold text-fg;
+  }
+
+  .ai-health-badge {
+    @apply rounded-full px-2.5 py-1 text-[9px] leading-tight font-bold whitespace-nowrap;
+  }
+
+  .ai-health-badge--safe {
+    @apply bg-green-dim text-green;
+  }
+
+  .ai-health-badge--danger {
+    @apply bg-red-dim text-red;
+  }
+
+  .ai-health-badge--neutral {
+    @apply bg-hover text-muted;
+  }
+
+  .ai-balance-card {
+    @apply relative overflow-hidden rounded-[18px] bg-green p-4 text-on-accent;
+  }
+
+  .ai-balance-card > p {
+    @apply text-[11px] font-semibold opacity-70;
+  }
+
+  .ai-balance-card > strong {
+    @apply block mt-1 text-[25px] leading-tight font-bold tracking-[-0.03em];
+  }
+
+  .ai-balance-card > span:last-child {
+    @apply block mt-2 text-[10px] font-semibold opacity-80;
+  }
+
+  .ai-metric-grid {
+    @apply grid grid-cols-2 gap-2.5 mt-2.5;
+  }
+
+  .ai-metric-card {
+    @apply min-w-0 rounded-[16px] bg-secondary p-3 border border-border;
+  }
+
+  .ai-metric-card > span:nth-child(2) {
+    @apply block mt-2 text-[10px] text-muted;
+  }
+
+  .ai-metric-card strong {
+    @apply block mt-0.5 truncate text-[13px] text-fg;
+  }
+
+  .ai-metric-card em {
+    @apply block mt-1 not-italic text-[8px] text-muted;
+  }
+
+  .ai-metric-icon {
+    @apply size-7 rounded-full flex items-center justify-center;
+  }
+
+  .ai-metric-icon--income {
+    @apply bg-green-dim text-green;
+  }
+
+  .ai-metric-icon--expense {
+    @apply bg-red-dim text-red;
+  }
+
+  .ai-progress-card {
+    @apply mt-2.5 p-3 rounded-[16px] bg-secondary border border-border;
+  }
+
+  .ai-progress-copy {
+    @apply flex items-center justify-between gap-3 mb-2;
+  }
+
+  .ai-progress-copy span {
+    @apply flex items-center gap-1.5 text-[11px] text-soft;
+  }
+
+  .ai-progress-copy strong {
+    @apply text-xs text-fg;
+  }
+
+  .ai-progress {
+    @apply block w-full h-1.5 overflow-hidden rounded-full border-none bg-border;
+    appearance: none;
+  }
+
+  .ai-progress::-webkit-progress-bar {
+    background: var(--border);
+    border-radius: 999px;
+  }
+
+  .ai-progress::-webkit-progress-value,
+  .ai-progress::-moz-progress-bar {
+    background: var(--green);
+    border-radius: 999px;
+  }
+
+  .ai-budget-note,
+  .ai-goal-note {
+    @apply mt-2.5 flex items-center justify-between gap-3 rounded-[14px] px-3 py-2.5;
+  }
+
+  .ai-budget-note > div,
+  .ai-goal-note > div {
+    @apply min-w-0;
+  }
+
+  .ai-budget-note span,
+  .ai-goal-note span {
+    @apply block text-[9px] opacity-75;
+  }
+
+  .ai-budget-note strong,
+  .ai-goal-note strong {
+    @apply block truncate text-[11px];
+  }
+
+  .ai-budget-note b,
+  .ai-goal-note b {
+    @apply text-xs;
+  }
+
+  .ai-budget-note--safe,
+  .ai-goal-note {
+    @apply bg-green-dim text-green;
+  }
+
+  .ai-budget-note--warning {
+    @apply bg-amber-dim text-amber;
+  }
+
+  .ai-budget-note--danger {
+    @apply bg-red-dim text-red;
+  }
+
+  .ai-actions {
+    @apply p-4 rounded-[22px] bg-card border border-border;
+  }
+
+  .ai-actions-title-row {
+    @apply flex items-center gap-2 mb-3 text-soft;
+  }
+
+  .ai-actions-title-row h2 {
+    @apply text-[13px] font-semibold;
+  }
+
+  .ai-action-grid {
+    @apply grid grid-cols-1 gap-2;
+  }
+
+  .ai-action-card {
+    @apply min-h-11 w-full flex items-center justify-between gap-3 rounded-[14px] bg-secondary border border-border px-3.5 py-2.5 text-left text-[12px] font-medium text-fg no-underline cursor-pointer transition-colors;
+  }
+
+  .ai-action-card:hover {
+    @apply bg-hover;
+  }
+
+  .ai-action-card svg {
+    @apply shrink-0 text-green;
+  }
+
+  .ai-desktop-empty {
+    @apply hidden;
   }
 
   .ai-msg {
-    @apply flex gap-2.5 animate-[slideUp_0.3s_ease];
+    @apply flex items-start gap-2.5 animate-[slideUp_0.3s_ease];
   }
 
   .ai-msg--user {
     @apply justify-end;
   }
 
-  .ai-loading-row {
-    @apply flex gap-2.5 animate-[fadeIn_0.3s_ease];
-  }
-
   .ai-avatar {
-    @apply size-7 rounded-full flex items-center justify-center shrink-0;
+    @apply size-7 rounded-full flex items-center justify-center shrink-0 mt-1;
   }
 
-  .ai-avatar--bot {
-    @apply bg-green-dim border-none mt-1;
-  }
-
+  .ai-avatar--bot,
   .ai-avatar--bot-loading {
-    @apply bg-green-dim border-none;
+    @apply bg-green-dim text-green;
   }
 
   .ai-avatar--user {
-    @apply bg-hover border-none mt-1;
+    @apply bg-hover text-soft;
   }
 
   .ai-bubble-wrap {
-    @apply max-w-[80%] flex flex-col gap-1.5 items-start;
+    @apply w-full flex flex-col gap-2 items-start;
+    max-width: calc(100% - 38px);
   }
 
   .ai-bubble-wrap--user {
-    @apply items-end;
+    @apply w-auto max-w-[80%] items-end;
   }
 
   .ai-bubble {
-    @apply px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap break-words;
+    @apply text-sm leading-relaxed whitespace-pre-wrap break-words;
   }
 
   .ai-bubble--user {
-    @apply bg-green text-on-accent rounded-[16px_16px_4px_16px];
+    @apply bg-green text-on-accent rounded-[16px_16px_4px_16px] px-3.5 py-2.5;
   }
 
   .ai-bubble--bot {
-    @apply bg-card text-fg border-none rounded-[16px_16px_16px_4px];
+    @apply w-full text-fg py-1;
   }
 
   .ai-md-list {
@@ -89,54 +333,272 @@
   }
 
   .ai-md-code {
-    @apply px-1 py-0.5 rounded bg-hover border-none text-xs font-mono;
+    @apply px-1 py-0.5 rounded bg-hover text-xs font-mono;
   }
 
-  .ai-tx-chip {
-    @apply bg-[rgba(34,197,94,0.08)] border-none rounded-[10px] px-3 py-2.5 text-xs;
+  .ai-transaction-card {
+    @apply w-full overflow-hidden rounded-[18px] bg-card border border-border p-3.5 shadow-[0_8px_24px_rgba(0,0,0,0.08)];
   }
 
-  .ai-tx-chip-label {
-    @apply text-green font-semibold mb-1;
+  .ai-transaction-card--saved {
+    @apply border-green-border;
   }
 
-  .ai-tx-chip-line {
-    @apply text-soft;
+  .ai-transaction-head {
+    @apply flex items-center gap-2.5;
   }
 
-  .ai-tx-chip-desc {
-    @apply text-muted mb-2;
+  .ai-transaction-icon {
+    @apply size-9 rounded-[12px] bg-green-dim text-green flex items-center justify-center;
+  }
+
+  .ai-transaction-head p {
+    @apply text-xs font-bold text-fg;
+  }
+
+  .ai-transaction-head div span {
+    @apply text-[10px] text-muted;
+  }
+
+  .ai-transaction-amount {
+    @apply mt-3 text-[24px] leading-tight font-bold tracking-[-0.03em];
+  }
+
+  .ai-transaction-amount--pemasukan {
+    @apply text-green;
+  }
+
+  .ai-transaction-amount--pengeluaran {
+    @apply text-red;
+  }
+
+  .ai-transaction-description {
+    @apply mt-1 text-[13px] font-medium text-fg;
+  }
+
+  .ai-transaction-meta {
+    @apply mt-2 flex flex-wrap gap-1.5;
+  }
+
+  .ai-transaction-meta span {
+    @apply rounded-full bg-hover px-2 py-1 text-[9px] text-soft;
+  }
+
+  .ai-transaction-action {
+    @apply mt-3 min-h-11 w-full rounded-[12px] border-none bg-green text-on-accent px-3 py-2 flex items-center justify-center gap-1.5 text-xs font-bold cursor-pointer;
+  }
+
+  .ai-loading-row {
+    @apply flex items-start gap-2.5 animate-[fadeIn_0.3s_ease];
   }
 
   .ai-typing {
-    @apply bg-card border-none rounded-[16px_16px_16px_4px] px-3.5 py-2.5 flex items-center gap-1.5;
+    @apply min-h-10 rounded-[15px] bg-card border border-border px-3.5 py-2.5 flex items-center gap-2;
+  }
+
+  .ai-typing-dot {
+    @apply size-1.5 rounded-full bg-green animate-pulse;
   }
 
   .ai-typing-text {
-    @apply text-[13px] text-muted;
+    @apply text-[12px] text-muted;
+  }
+
+  .ai-state-card,
+  .ai-error-card {
+    @apply self-center w-full max-w-[420px] rounded-[16px] border px-4 py-3 text-center text-xs;
+  }
+
+  .ai-state-card {
+    @apply bg-card border-border text-soft;
+  }
+
+  .ai-error-card {
+    @apply bg-red-dim border-red-border text-red;
+  }
+
+  .ai-state-card button,
+  .ai-error-card button {
+    @apply mx-auto mt-2 min-h-10 rounded-[10px] border-none bg-hover px-3 flex items-center justify-center gap-1.5 text-xs font-semibold text-fg cursor-pointer;
   }
 
   .ai-prompts {
-    @apply px-5 pb-3 flex gap-2 overflow-x-auto shrink-0;
+    @apply px-4 py-2.5 flex gap-2 overflow-x-auto shrink-0 border-t border-border bg-primary;
+    scrollbar-width: none;
+  }
+
+  .ai-prompts::-webkit-scrollbar {
+    display: none;
   }
 
   .ai-prompt-chip {
-    @apply py-[7px] px-3 bg-card border-none rounded-[20px] text-soft text-xs cursor-pointer whitespace-nowrap transition-colors duration-200;
+    @apply min-h-10 px-3.5 bg-card border border-border rounded-full text-soft text-[11px] cursor-pointer whitespace-nowrap transition-colors inline-flex items-center no-underline;
+  }
+
+  .ai-prompt-chip:hover:not(:disabled) {
+    @apply bg-hover text-fg;
   }
 
   .ai-input-bar {
-    @apply px-5 py-3 bg-primary shrink-0 flex gap-2.5   ;
+    @apply shrink-0 flex items-end gap-2.5 px-4 pt-3 bg-primary border-t border-border;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
   }
 
   .ai-input {
-    @apply flex-1 bg-secondary border-none rounded-[10px] px-3.5 py-2.5 text-sm text-fg placeholder:text-muted outline-none focus:ring-1 focus:ring-green/30 transition-colors;
+    @apply flex-1 min-h-11 max-h-[104px] resize-none overflow-y-auto rounded-[15px] bg-secondary border border-border px-3.5 py-[11px] text-sm leading-[1.4] text-fg placeholder:text-muted outline-none transition-colors;
+  }
+
+  .ai-input:focus {
+    @apply border-green-border ring-2 ring-green/10;
+  }
+
+  .ai-input:disabled {
+    @apply opacity-60 cursor-not-allowed;
   }
 
   .ai-send-btn {
-    @apply size-10 rounded-[10px] border-none flex items-center justify-center shrink-0 bg-border cursor-not-allowed;
+    @apply size-11 shrink-0 rounded-[14px] border-none bg-border text-faint flex items-center justify-center cursor-not-allowed transition-all;
   }
 
   .ai-send-btn--on {
-    @apply bg-green cursor-pointer;
+    @apply bg-green text-on-accent cursor-pointer;
   }
+
+  .ai-send-btn--on:active,
+  .ai-action-card:active,
+  .ai-transaction-action:active {
+    @apply scale-[0.97];
+  }
+
+  .ai-skeleton {
+    @apply flex flex-col gap-3 w-full;
+  }
+
+  .ai-skeleton-grid {
+    @apply grid grid-cols-2 gap-2.5;
+  }
+
+  .ai-skeleton-card {
+    @apply h-20 rounded-[18px];
+    background: linear-gradient(90deg, var(--bg-card) 25%, var(--border) 50%, var(--bg-card) 75%);
+    background-size: 200% 100%;
+    animation: aiShimmer 1.4s ease-in-out infinite;
+  }
+
+  .ai-skeleton-card--hero {
+    @apply h-36;
+  }
+
+  .ai-skeleton-card--line {
+    @apply h-14;
+  }
+
+  .ai-menu-btn:focus-visible,
+  .ai-menu-item:focus-visible,
+  .ai-action-card:focus-visible,
+  .ai-transaction-action:focus-visible,
+  .ai-prompt-chip:focus-visible,
+  .ai-send-btn:focus-visible,
+  .ai-state-card button:focus-visible,
+  .ai-error-card button:focus-visible {
+    @apply outline-2 outline-offset-2 outline-green;
+  }
+
+  @media (min-width: 900px) {
+    .ai-shell {
+      @apply px-5;
+    }
+
+    .ai-head {
+      @apply -mx-5;
+    }
+
+    .ai-layout {
+      @apply grid grid-cols-[320px_minmax(0,1fr)] gap-5 py-5;
+    }
+
+    .ai-sidebar {
+      @apply block min-h-0 overflow-y-auto pr-1;
+    }
+
+    .ai-chat-panel {
+      @apply overflow-hidden rounded-[24px] bg-secondary border border-border shadow-[0_10px_32px_rgba(0,0,0,0.08)];
+    }
+
+    .ai-messages {
+      @apply px-6 py-5;
+    }
+
+    .ai-mobile-welcome {
+      @apply hidden;
+    }
+
+    .ai-desktop-empty {
+      @apply flex flex-1 flex-col items-center justify-center text-center px-8 text-muted;
+    }
+
+    .ai-desktop-empty > span {
+      @apply size-12 rounded-[16px] bg-green-dim text-green flex items-center justify-center mb-3;
+    }
+
+    .ai-desktop-empty h2 {
+      @apply text-base font-bold text-fg;
+    }
+
+    .ai-desktop-empty p {
+      @apply mt-1 max-w-[300px] text-xs leading-relaxed;
+    }
+
+    .ai-bubble-wrap {
+      @apply max-w-[680px];
+    }
+
+    .ai-bubble-wrap--user {
+      @apply max-w-[72%];
+    }
+
+    .ai-prompts,
+    .ai-input-bar {
+      @apply px-5;
+    }
+
+    .ai-input-bar {
+      @apply pb-4;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .ai-head-row,
+    .ai-messages,
+    .ai-prompts,
+    .ai-input-bar {
+      @apply px-3;
+    }
+
+    .ai-health-badge {
+      @apply hidden;
+    }
+
+    .ai-balance-card > strong {
+      @apply text-[22px];
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ai-msg,
+    .ai-loading-row,
+    .ai-skeleton-card {
+      animation: none;
+    }
+
+    .ai-send-btn,
+    .ai-action-card {
+      transition: none;
+    }
+  }
+}
+
+@keyframes aiShimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
 }

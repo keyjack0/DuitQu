@@ -1,9 +1,11 @@
 "use client";
 
+/** Memuat data awal pengguna dan menangani perubahan sesi autentikasi. */
 import { useEffect, useRef } from "react";
 import { useAppStore } from "@/lib/store";
 import { getSupabaseClient } from "@/lib/supabase";
 import type { UserRow, WalletRow, TransactionRow, BudgetRow } from "@/lib/supabase";
+import type { FinancialGoal } from "@/types";
 import { getStartOfMonth, getStartOfLastMonth } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
@@ -20,13 +22,16 @@ export function DataInitializer() {
     } = getSupabaseClient().auth.onAuthStateChange((event: string) => {
       if (event === "SIGNED_OUT") {
         const s = useAppStore.getState();
-        s.setUser(null);
-        s.setWallets([]);
-        s.setTransactions([]);
-        s.setMonthTransactions([]);
-        s.setLastMonthTransactions([]);
-        s.setBudgets([]);
-        s.setSyncMeta(null);
+        s.applyInitialData({
+          user: null,
+          wallets: [],
+          transactions: [],
+          monthTransactions: [],
+          lastMonthTransactions: [],
+          budgets: [],
+          financialGoals: [],
+          syncMeta: null,
+        });
         router.push("/login");
       }
     });
@@ -41,6 +46,7 @@ export function DataInitializer() {
     initRanRef.current = true;
 
     const init = async () => {
+      useAppStore.getState().setLoading(true);
       const supabase = getSupabaseClient();
       const { data: { session } } = await supabase.auth.getSession();
 
@@ -76,9 +82,7 @@ export function DataInitializer() {
         return;
       }
 
-      useAppStore.getState().setLoading(true);
-
-      const [userResult, walletsResult, txResult, monthResult, lastMonthResult, budgetResult] =
+      const [userResult, walletsResult, txResult, monthResult, lastMonthResult, budgetResult, goalResult] =
         await Promise.allSettled([
           supabase.from("users").select("*").eq("id", userId).single(),
           supabase.from("wallets").select("*").eq("user_id", userId),
@@ -87,62 +91,75 @@ export function DataInitializer() {
             .select("*")
             .eq("user_id", userId)
             .order("date", { ascending: false })
+            .order("created_at", { ascending: false })
+            .order("id", { ascending: false })
             .limit(TRANSACTIONS_PAGE_SIZE),
           supabase
             .from("transactions")
             .select("*")
             .eq("user_id", userId)
             .gte("date", getStartOfMonth())
-            .order("date", { ascending: false }),
+            .order("date", { ascending: false })
+            .order("created_at", { ascending: false })
+            .order("id", { ascending: false }),
           supabase
             .from("transactions")
             .select("*")
             .eq("user_id", userId)
             .gte("date", getStartOfLastMonth())
             .lt("date", getStartOfMonth())
-            .order("date", { ascending: false }),
+            .order("date", { ascending: false })
+            .order("created_at", { ascending: false })
+            .order("id", { ascending: false }),
           supabase.from("budgets").select("*").eq("user_id", userId),
+          supabase.from("financial_goals").select("*").eq("user_id", userId),
         ]);
 
       const st = useAppStore.getState();
-
+      const initialData: Parameters<typeof st.applyInitialData>[0] = {};
       if (userResult.status === "fulfilled") {
         const userData = userResult.value.data as UserRow | null;
         if (userData) {
-          st.setUser({
+          initialData.user = {
             id: userData.id,
             email: userData.email,
             name: userData.name,
             created_at: userData.created_at,
-          });
+          };
         }
       }
 
       if (walletsResult.status === "fulfilled" && walletsResult.value.data) {
-        st.setWallets(walletsResult.value.data as WalletRow[]);
+        initialData.wallets = walletsResult.value.data as WalletRow[];
       }
 
       if (txResult.status === "fulfilled" && txResult.value.data) {
-        st.setTransactions(txResult.value.data as TransactionRow[]);
+        initialData.transactions = txResult.value.data as TransactionRow[];
       }
 
       if (monthResult.status === "fulfilled" && monthResult.value.data) {
-        st.setMonthTransactions(monthResult.value.data as TransactionRow[]);
+        initialData.monthTransactions = monthResult.value.data as TransactionRow[];
       }
 
       if (lastMonthResult.status === "fulfilled" && lastMonthResult.value.data) {
-        st.setLastMonthTransactions(lastMonthResult.value.data as TransactionRow[]);
+        initialData.lastMonthTransactions = lastMonthResult.value.data as TransactionRow[];
       }
 
       if (budgetResult.status === "fulfilled" && budgetResult.value.data) {
-        st.setBudgets(budgetResult.value.data as BudgetRow[]);
+        initialData.budgets = budgetResult.value.data as BudgetRow[];
       }
 
-      st.setSyncMeta({ userId, at: Date.now() });
-      st.setLoading(false);
+      if (goalResult.status === "fulfilled" && goalResult.value.data) {
+        initialData.financialGoals = goalResult.value.data as FinancialGoal[];
+      }
+
+      initialData.syncMeta = { userId, at: Date.now() };
+      st.applyInitialData(initialData);
     };
 
-    init();
+    void init()
+      .catch((error) => console.error("Gagal menginisialisasi data aplikasi", error))
+      .finally(() => useAppStore.getState().setLoading(false));
   }, [router]);
 
   return null;

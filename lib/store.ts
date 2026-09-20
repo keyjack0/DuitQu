@@ -1,9 +1,24 @@
+/**
+ * Menyimpan state utama DuitQu dan menyediakan mutasi optimistis yang
+ * disinkronkan dengan database Supabase.
+ */
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { Transaction, Wallet, Budget, User } from "@/types";
+import { Transaction, Wallet, Budget, User, FinancialGoal } from "@/types";
 import { getSupabaseClient } from "./supabase";
 import { isThisMonth, isLastMonth } from "./utils";
 import { toast } from "react-toastify";
+
+type InitialData = Partial<{
+  user: User | null;
+  wallets: Wallet[];
+  transactions: Transaction[];
+  monthTransactions: Transaction[];
+  lastMonthTransactions: Transaction[];
+  budgets: Budget[];
+  financialGoals: FinancialGoal[];
+  syncMeta: { userId: string; at: number } | null;
+}>;
 
 interface AppState {
   user: User | null;
@@ -12,6 +27,8 @@ interface AppState {
   monthTransactions: Transaction[];
   lastMonthTransactions: Transaction[];
   budgets: Budget[];
+  financialGoals: FinancialGoal[];
+  transactionRevision: number;
   isLoading: boolean;
   syncMeta: { userId: string; at: number } | null;
 
@@ -21,31 +38,37 @@ interface AppState {
   setMonthTransactions: (transactions: Transaction[]) => void;
   setLastMonthTransactions: (transactions: Transaction[]) => void;
   setBudgets: (budgets: Budget[]) => void;
+  setFinancialGoals: (goals: FinancialGoal[]) => void;
   setLoading: (loading: boolean) => void;
   setSyncMeta: (meta: { userId: string; at: number } | null) => void;
+  applyInitialData: (data: InitialData) => void;
 
-  addTransaction: (transaction: Transaction) => void;
+  addTransaction: (transaction: Transaction) => Promise<boolean>;
   addWallet: (wallet: Wallet) => void;
   updateWallet: (id: string, updates: Partial<Wallet>) => void;
   deleteWallet: (id: string) => void;
   addBudget: (budget: Budget) => void;
   updateBudget: (id: string, updates: Partial<Budget>) => void;
   deleteBudget: (id: string) => void;
-  deleteTransaction: (id: string) => void;
-  updateTransaction: (id: string, updates: Partial<Transaction>) => void;
+  addFinancialGoal: (goal: FinancialGoal) => Promise<boolean>;
+  updateFinancialGoal: (id: string, updates: Partial<FinancialGoal>) => Promise<boolean>;
+  deleteFinancialGoal: (id: string) => Promise<boolean>;
+  deleteTransaction: (id: string) => Promise<boolean>;
+  updateTransaction: (id: string, updates: Partial<Transaction>) => Promise<boolean>;
   fetchMoreTransactions: (userId: string, offset: number, limit: number) => Promise<{ loaded: number; hasMore: boolean }>;
   mergeTransactions: (rows: Transaction[]) => void;
-  signOut: () => Promise<void>;
+  signOut: () => Promise<boolean>;
 }
 
 export const useAppStore = create<AppState>()(
-  persist<AppState>(
+  persist<AppState, [], [], Pick<AppState, "user" | "syncMeta">>(
     (set) => {
       const refreshWallets = async (userId: string) => {
-        const { data } = await getSupabaseClient()
+        const { data, error } = await getSupabaseClient()
           .from("wallets")
           .select("*")
           .eq("user_id", userId);
+        if (error) return;
         if (data) set({ wallets: data as Wallet[] });
       };
 
@@ -65,7 +88,9 @@ export const useAppStore = create<AppState>()(
       monthTransactions: [],
       lastMonthTransactions: [],
       budgets: [],
-      isLoading: false,
+      financialGoals: [],
+      transactionRevision: 0,
+      isLoading: true,
       syncMeta: null,
 
       setUser: (user) => set({ user }),
@@ -74,10 +99,12 @@ export const useAppStore = create<AppState>()(
       setMonthTransactions: (monthTransactions) => set({ monthTransactions }),
       setLastMonthTransactions: (lastMonthTransactions) => set({ lastMonthTransactions }),
       setBudgets: (budgets) => set({ budgets }),
+      setFinancialGoals: (financialGoals) => set({ financialGoals }),
       setLoading: (isLoading) => set({ isLoading }),
       setSyncMeta: (syncMeta) => set({ syncMeta }),
+      applyInitialData: (data) => set(data),
 
-      addTransaction: (transaction) => {
+      addTransaction: async (transaction) => {
         const txWithTimestamp = { ...transaction, created_at: transaction.created_at || new Date().toISOString() };
         set((state) => ({
           transactions: [txWithTimestamp, ...state.transactions],
@@ -88,8 +115,7 @@ export const useAppStore = create<AppState>()(
             ? [txWithTimestamp, ...state.lastMonthTransactions]
             : state.lastMonthTransactions,
         }));
-        toast.success("Transaksi berhasil ditambahkan");
-        getSupabaseClient()
+        const { error } = await getSupabaseClient()
           .from("transactions")
           .insert({
             id: transaction.id,
@@ -101,17 +127,27 @@ export const useAppStore = create<AppState>()(
             description: transaction.description,
             date: transaction.date,
             to_wallet_id: transaction.to_wallet_id ?? null,
-          })
-          .then(({ error }: { error: any }) => {
-            if (error) {
-              set((state) => ({
-                transactions: state.transactions.filter((t) => t.id !== transaction.id),
-              }));
-              toast.error("Gagal menambah transaksi");
-            } else if (transaction.wallet_id) {
-              updateWalletBalanceLocal(transaction.user_id, transaction.wallet_id, transaction.type === "OUT" ? -transaction.amount : transaction.amount);
-            }
           });
+        if (error) {
+          set((state) => ({
+            transactions: state.transactions.filter((t) => t.id !== transaction.id),
+            monthTransactions: state.monthTransactions.filter((t) => t.id !== transaction.id),
+            lastMonthTransactions: state.lastMonthTransactions.filter((t) => t.id !== transaction.id),
+          }));
+          toast.error("Gagal menambah transaksi");
+          return false;
+        }
+        if (transaction.type === "TRANSFER") {
+          void refreshWallets(transaction.user_id);
+          toast.success("Transfer berhasil");
+        } else {
+          if (transaction.wallet_id) {
+            updateWalletBalanceLocal(transaction.user_id, transaction.wallet_id, transaction.type === "OUT" ? -transaction.amount : transaction.amount);
+          }
+          toast.success("Transaksi berhasil ditambahkan");
+        }
+        set((state) => ({ transactionRevision: state.transactionRevision + 1 }));
+        return true;
       },
 
       addWallet: (wallet) => {
@@ -130,7 +166,7 @@ export const useAppStore = create<AppState>()(
             icon: wallet.icon ?? null,
             color: wallet.color ?? null,
           })
-          .then(({ error }: { error: any }) => {
+          .then(({ error }: { error: unknown }) => {
             if (error) {
               set((state) => ({
                 wallets: state.wallets.filter((w) => w.id !== wallet.id),
@@ -192,7 +228,7 @@ export const useAppStore = create<AppState>()(
           .from("wallets")
           .delete()
           .eq("id", id)
-          .then(({ error }: { error: any }) => {
+          .then(({ error }: { error: unknown }) => {
             if (error) {
               set({ wallets: prev });
               toast.error("Gagal menghapus dompet");
@@ -214,7 +250,7 @@ export const useAppStore = create<AppState>()(
             amount_limit: budget.amount_limit,
             period: budget.period,
           })
-          .then(({ error }: { error: any }) => {
+          .then(({ error }: { error: unknown }) => {
             if (error) {
               set((state) => ({
                 budgets: state.budgets.filter((b) => b.id !== budget.id),
@@ -233,7 +269,7 @@ export const useAppStore = create<AppState>()(
           .from("budgets")
           .update(updates)
           .eq("id", id)
-          .then(({ error }: { error: any }) => {
+          .then(({ error }: { error: unknown }) => {
             if (error) {
               toast.error("Gagal memperbarui budget");
               getSupabaseClient()
@@ -241,8 +277,8 @@ export const useAppStore = create<AppState>()(
                 .select("*")
                 .eq("id", id)
                 .single()
-                .then(({ data }: { data: any }) => {
-                  if (data) set((state) => ({ budgets: state.budgets.map((b) => (b.id === id ? { ...b, ...data as any } : b)) }));
+                .then(({ data }: { data: Budget | null }) => {
+                  if (data) set((state) => ({ budgets: state.budgets.map((b) => (b.id === id ? { ...b, ...data } : b)) }));
                 });
             }
           });
@@ -258,7 +294,7 @@ export const useAppStore = create<AppState>()(
           .from("budgets")
           .delete()
           .eq("id", id)
-          .then(({ error }: { error: any }) => {
+          .then(({ error }: { error: unknown }) => {
             if (error) {
               set({ budgets: prev });
               toast.error("Gagal menghapus budget");
@@ -266,40 +302,132 @@ export const useAppStore = create<AppState>()(
           });
       },
 
-      deleteTransaction: (id) => {
+      addFinancialGoal: async (goal) => {
+        set((state) => ({
+          financialGoals: [...state.financialGoals, goal],
+        }));
+        const { error } = await getSupabaseClient()
+          .from("financial_goals")
+          .insert({
+            id: goal.id,
+            user_id: goal.user_id,
+            name: goal.name,
+            target_amount: goal.target_amount,
+            current_amount: goal.current_amount,
+            deadline: goal.deadline,
+            icon: goal.icon,
+            color: goal.color,
+          });
+        if (error) {
+          set((state) => ({
+            financialGoals: state.financialGoals.filter((g) => g.id !== goal.id),
+          }));
+          toast.error("Gagal menambah goal");
+          return false;
+        }
+        toast.success("Goal berhasil ditambahkan");
+        return true;
+      },
+
+      updateFinancialGoal: async (id, updates) => {
+        const prev = useAppStore.getState().financialGoals;
+        const userId = useAppStore.getState().user?.id;
+        set((state) => ({
+          financialGoals: state.financialGoals.map((g) =>
+            g.id === id ? { ...g, ...updates } : g
+          ),
+        }));
+        let query = getSupabaseClient()
+          .from("financial_goals")
+          .update(updates, { count: "exact" })
+          .eq("id", id);
+        if (userId) query = query.eq("user_id", userId);
+        const { error, count } = await query;
+        if (error || !count) {
+          set({ financialGoals: prev });
+          toast.error("Gagal memperbarui goal");
+          return false;
+        }
+        toast.success("Goal berhasil diperbarui");
+        return true;
+      },
+
+      deleteFinancialGoal: async (id) => {
+        const prev = useAppStore.getState().financialGoals;
+        const userId = useAppStore.getState().user?.id;
+        set((state) => ({
+          financialGoals: state.financialGoals.filter((g) => g.id !== id),
+        }));
+        let query = getSupabaseClient()
+          .from("financial_goals")
+          .delete({ count: "exact" })
+          .eq("id", id);
+        if (userId) query = query.eq("user_id", userId);
+        const { error, count } = await query;
+        if (error || !count) {
+          set({ financialGoals: prev });
+          toast.error("Gagal menghapus goal");
+          return false;
+        }
+        toast.success("Goal berhasil dihapus");
+        return true;
+      },
+
+      deleteTransaction: async (id) => {
         const prev = useAppStore.getState().transactions;
         const prevMonth = useAppStore.getState().monthTransactions;
+        const prevLastMonth = useAppStore.getState().lastMonthTransactions;
         const userId = useAppStore.getState().user?.id;
-        const tx = useAppStore.getState().transactions.find((t) => t.id === id);
         set((state) => ({
           transactions: state.transactions.filter((t) => t.id !== id),
           monthTransactions: state.monthTransactions.filter((t) => t.id !== id),
           lastMonthTransactions: state.lastMonthTransactions.filter((t) => t.id !== id),
         }));
-        toast.success("Transaksi berhasil dihapus");
-        getSupabaseClient()
+        const { error } = await getSupabaseClient()
           .from("transactions")
           .delete()
-          .eq("id", id)
-          .then(({ error }: { error: any }) => {
-            if (error) {
-              set({ transactions: prev, monthTransactions: prevMonth });
-              toast.error("Gagal menghapus transaksi");
-            } else if (userId && tx?.wallet_id) {
-              updateWalletBalanceLocal(userId, tx.wallet_id, tx.type === "OUT" ? tx.amount : -tx.amount);
-            }
+          .eq("id", id);
+        if (error) {
+          set({
+            transactions: prev,
+            monthTransactions: prevMonth,
+            lastMonthTransactions: prevLastMonth,
           });
+          toast.error("Gagal menghapus transaksi");
+          return false;
+        }
+        set((state) => ({ transactionRevision: state.transactionRevision + 1 }));
+        toast.success("Transaksi berhasil dihapus");
+        if (userId) void refreshWallets(userId);
+        return true;
       },
 
-      updateTransaction: (id, updates) => {
+      updateTransaction: async (id, updates) => {
         const userId = useAppStore.getState().user?.id;
-        set((state) => ({
-          transactions: state.transactions.map((t) => (t.id === id ? { ...t, ...updates } : t)),
-          monthTransactions: state.monthTransactions.map((t) => (t.id === id ? { ...t, ...updates } : t)),
-          lastMonthTransactions: state.lastMonthTransactions.map((t) => (t.id === id ? { ...t, ...updates } : t)),
-        }));
-        toast.success("Transaksi berhasil diperbarui");
-        getSupabaseClient()
+        const previousState = useAppStore.getState();
+        const previousTransactions = previousState.transactions;
+        const previousMonthTransactions = previousState.monthTransactions;
+        const previousLastMonthTransactions = previousState.lastMonthTransactions;
+        const existingTransaction = previousTransactions.find((transaction) => transaction.id === id);
+        const updatedTransaction = existingTransaction ? { ...existingTransaction, ...updates } : null;
+
+        set((state) => {
+          const monthWithoutTransaction = state.monthTransactions.filter((transaction) => transaction.id !== id);
+          const lastMonthWithoutTransaction = state.lastMonthTransactions.filter((transaction) => transaction.id !== id);
+
+          return {
+            transactions: state.transactions.map((transaction) =>
+              transaction.id === id ? { ...transaction, ...updates } : transaction
+            ),
+            monthTransactions: updatedTransaction && isThisMonth(updatedTransaction.date)
+              ? [updatedTransaction, ...monthWithoutTransaction]
+              : monthWithoutTransaction,
+            lastMonthTransactions: updatedTransaction && isLastMonth(updatedTransaction.date)
+              ? [updatedTransaction, ...lastMonthWithoutTransaction]
+              : lastMonthWithoutTransaction,
+          };
+        });
+        const { error } = await getSupabaseClient()
           .from("transactions")
           .update({
             type: updates.type,
@@ -310,26 +438,20 @@ export const useAppStore = create<AppState>()(
             wallet_id: updates.wallet_id,
             to_wallet_id: updates.to_wallet_id ?? null,
           })
-          .eq("id", id)
-          .then(({ error }: { error: { message: string } | null }) => {
-            if (error) {
-              toast.error("Gagal memperbarui transaksi");
-              getSupabaseClient()
-                .from("transactions")
-                .select("*")
-                .eq("id", id)
-                .single()
-                .then(({ data }: { data: Transaction | null }) => {
-                  if (data) {
-                    set((state) => ({
-                      transactions: state.transactions.map((t) => (t.id === id ? { ...t, ...data } : t)),
-                    }));
-                  }
-                });
-            } else if (userId) {
-              refreshWallets(userId);
-            }
+          .eq("id", id);
+        if (error) {
+          toast.error("Gagal memperbarui transaksi");
+          set({
+            transactions: previousTransactions,
+            monthTransactions: previousMonthTransactions,
+            lastMonthTransactions: previousLastMonthTransactions,
           });
+          return false;
+        }
+        toast.success("Transaksi berhasil diperbarui");
+        set((state) => ({ transactionRevision: state.transactionRevision + 1 }));
+        if (userId) void refreshWallets(userId);
+        return true;
       },
 
       fetchMoreTransactions: async (userId, offset, limit) => {
@@ -338,6 +460,8 @@ export const useAppStore = create<AppState>()(
           .select("*")
           .eq("user_id", userId)
           .order("date", { ascending: false })
+          .order("created_at", { ascending: false })
+          .order("id", { ascending: false })
           .range(offset, offset + limit - 1);
         if (error || !data) return { loaded: 0, hasMore: false };
         const rows = data as Transaction[];
@@ -363,8 +487,21 @@ export const useAppStore = create<AppState>()(
       },
 
       signOut: async () => {
-        await getSupabaseClient().auth.signOut();
+        const { error } = await getSupabaseClient().auth.signOut();
+        if (error) return false;
+        set({
+          user: null,
+          wallets: [],
+          transactions: [],
+          monthTransactions: [],
+          lastMonthTransactions: [],
+          budgets: [],
+          financialGoals: [],
+          transactionRevision: 0,
+          syncMeta: null,
+        });
         useAppStore.persist.clearStorage();
+        return true;
       },
       };
     },
@@ -374,6 +511,6 @@ export const useAppStore = create<AppState>()(
         user: state.user,
         syncMeta: state.syncMeta,
       }),
-    } as any
+    }
   )
 );

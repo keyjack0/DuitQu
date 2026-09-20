@@ -1,16 +1,24 @@
 "use client";
 
+/** Menyediakan formulir transfer saldo antar dompet pengguna. */
 import { useState } from "react";
 import { useAppStore } from "@/lib/store";
 import { formatCurrency, toLocalDateString } from "@/lib/utils";
 import { X, ArrowLeftRight } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 
-interface TransferModalProps {
+export interface TransferModalProps {
   onClose: () => void;
 }
 
 export function TransferModal({ onClose }: TransferModalProps) {
-  const { user, wallets, addTransaction } = useAppStore();
+  const { user, wallets, addTransaction } = useAppStore(
+    useShallow((state) => ({
+      user: state.user,
+      wallets: state.wallets,
+      addTransaction: state.addTransaction,
+    }))
+  );
   const [fromWallet, setFromWallet] = useState(wallets[0]?.id || "");
   const [toWallet, setToWallet] = useState(wallets[1]?.id || wallets[0]?.id || "");
   const [amount, setAmount] = useState("");
@@ -22,15 +30,15 @@ export function TransferModal({ onClose }: TransferModalProps) {
     return num.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   };
 
-  const handleSubmit = () => {
-    if (!amount || !fromWallet || !toWallet || fromWallet === toWallet || submitting) return;
-    setSubmitting(true);
+  const handleSubmit = async () => {
+    if (!user || !amount || !fromWallet || !toWallet || fromWallet === toWallet || submitting) return;
     const parsedAmount = parseFloat(amount.replace(/\./g, ""));
     if (isNaN(parsedAmount) || parsedAmount <= 0) return;
+    setSubmitting(true);
 
-    addTransaction({
+    const saved = await addTransaction({
       id: crypto.randomUUID(),
-      user_id: user!.id,
+      user_id: user.id,
       wallet_id: fromWallet,
       type: "TRANSFER",
       amount: parsedAmount,
@@ -40,20 +48,26 @@ export function TransferModal({ onClose }: TransferModalProps) {
       to_wallet_id: toWallet,
     });
 
-    onClose();
+    if (saved) onClose();
+    else setSubmitting(false);
   };
 
-  const canSubmit = amount && fromWallet && toWallet && fromWallet !== toWallet && !submitting;
+  const canSubmit = Boolean(user && amount && fromWallet && toWallet && fromWallet !== toWallet && !submitting);
 
   return (
     <div
-      className="sheet-overlay sheet-overlay--fade"
+      className="sheet-overlay sheet-overlay--fade wallet-sheet-overlay"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="sheet-panel sheet-panel--rise">
+      <div
+        className="sheet-panel sheet-panel--rise wallet-sheet-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="transfer-dialog-title"
+      >
         <div className="sheet-head">
-          <h2 className="sheet-title">Transfer Antar Dompet</h2>
-          <button onClick={onClose} className="sheet-close">
+          <h2 id="transfer-dialog-title" className="sheet-title">Transfer Antar Dompet</h2>
+          <button type="button" onClick={onClose} className="sheet-close" aria-label="Tutup transfer">
             <X size={15} />
           </button>
         </div>

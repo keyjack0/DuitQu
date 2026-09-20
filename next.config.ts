@@ -1,3 +1,4 @@
+/** Mengonfigurasi optimasi, header respons, dan analisis bundel Next.js. */
 import type { NextConfig } from "next";
 import bundleAnalyzer from "@next/bundle-analyzer";
 
@@ -13,6 +14,13 @@ const nextConfig: NextConfig = {
       {
         source: "/version.json",
         headers: [{ key: "Cache-Control", value: "no-store" }],
+      },
+      {
+        source: "/sw.js",
+        headers: [
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+        ],
       },
     ];
   },

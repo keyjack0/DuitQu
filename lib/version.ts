@@ -1,15 +1,13 @@
-export const APP_VERSION = "0.3.0";
+/** Metadata rilis yang ditampilkan pada UI dan dialog pembaruan DuitQu. */
+export const APP_VERSION = "1.3.0";
 
 export const RELEASE_NOTES = [
-  "Desain ulang UI lebih minimalis & modern",
-  "Ikon transaksi & dompet kini berwarna sesuai kategori",
-  "Background ikon dompet mengikuti warna ikon",
-  "Shadow & rounded corner seragam di seluruh halaman",
-  "Bottom navigation tanpa border, pakai shadow",
-  "Skeleton loading dengan shimmer animation",
-  "Icon strokeWidth lebih tebal (3px)",
-  "Optimasi loading halaman transaksi",
-  "Perbaikan bug & konsistensi CSS",
+  "Target tabungan, kalender keuangan, dan laporan bulanan baru",
+  "Laporan dapat diekspor ke PDF langsung dari browser",
+  "DuitQu AI kini memiliki ringkasan keuangan dan review transaksi",
+  "Riwayat transaksi mendukung pencarian, filter, dan pagination",
+  "Profil baru dengan tema sistem, keamanan, dan ekspor data",
+  "Detail dompet, onboarding, aksesibilitas, dan tampilan responsif ditingkatkan",
 ];
 
 export interface ChangelogEntry {
@@ -19,6 +17,11 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG_HISTORY: ChangelogEntry[] = [
+  {
+    version: "1.3.0",
+    date: "2026-09-20",
+    notes: RELEASE_NOTES,
+  },
   {
     version: "0.3.0",
     date: "2026-08-29",
@@ -48,10 +51,10 @@ export const CHANGELOG_HISTORY: ChangelogEntry[] = [
     version: "0.1.0",
     date: "2026-08-01",
     notes: [
-      "Dashboard keuangan real-time dengan grafik",
+      "Dashboard keuangan dengan grafik",
       "Manajemen multi-dompet & transfer antar dompet",
       "Pencatatan transaksi, budget per kategori, AI Assistant (Gemini)",
-      "Progressive Web App (PWA) — bisa dipasang & berjalan offline",
+      "Progressive Web App (PWA) yang dapat dipasang pada perangkat yang mendukung",
     ],
   },
 ];

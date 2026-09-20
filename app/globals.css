@@ -1,14 +1,20 @@
+/* Mengimpor modul gaya dan mendefinisikan fondasi visual global DuitQu. */
 @import "tailwindcss";
 @import "./styles/tokens.css";
 @import "./styles/components.css";
 @import "./styles/dashboard.css";
 @import "./styles/shell.css";
 @import "./styles/auth.css";
+@import "./styles/onboarding.css";
 @import "./styles/settings.css";
 @import "./styles/budgets.css";
 @import "./styles/wallets.css";
 @import "./styles/transactions.css";
 @import "./styles/assistant.css";
+@import "./styles/finance-pages.css";
+@import "./styles/goals.css";
+@import "./styles/calendar.css";
+@import "./styles/report.css";
 
 @layer base {
   :root {

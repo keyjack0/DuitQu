@@ -1,22 +1,41 @@
 "use client";
 
+/** Menyajikan ringkasan saldo, arus kas, dan transaksi terbaru pengguna. */
 import { useAppStore } from "@/lib/store";
-import { formatCurrency, isThisMonth, isLastMonth, toLocalDateString } from "@/lib/utils";
+import { formatCurrency, isThisMonth, toLocalDateString } from "@/lib/utils";
 import { Transaction } from "@/types";
+import { buildExpenseChartData } from "@/lib/expenseChart";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { ArrowUpRight, ArrowDownRight, Plus, Bot, Settings, Eye, EyeOff, TrendingUp, TrendingDown } from "lucide-react";
-
-const ExpenseChart = dynamic(() => import("@/components/ExpenseChart"), { ssr: false });
-const CategoryPieChart = dynamic(() => import("@/components/CategoryPieChart"), { ssr: false });
+import { Plus, Bot, Eye, EyeOff, Target, Calendar, BarChart3, PieChart, ArrowLeftRight } from "lucide-react";
 import { WalletIcon, CategoryIcon, WALLET_COLORS } from "@/lib/icons";
 import { CATEGORY_COLORS } from "@/lib/categoryColors";
 import { useMemo, useState } from "react";
 import { LazyAddTransactionModal } from "@/components/transactions/LazyAddTransactionModal";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { ChartSkeleton, DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
+import { useShallow } from "zustand/react/shallow";
+
+const ExpenseChart = dynamic(() => import("@/components/ExpenseChart"), {
+  ssr: false,
+  loading: () => <ChartSkeleton />,
+});
+const CategoryPieChart = dynamic(() => import("@/components/CategoryPieChart"), {
+  ssr: false,
+  loading: () => <ChartSkeleton />,
+});
 
 export default function DashboardPage() {
-  const { user, wallets, transactions, monthTransactions } = useAppStore();
+  const { user, wallets, transactions, monthTransactions, lastMonthTransactions, isLoading } = useAppStore(
+    useShallow((state) => ({
+      user: state.user,
+      wallets: state.wallets,
+      transactions: state.transactions,
+      monthTransactions: state.monthTransactions,
+      lastMonthTransactions: state.lastMonthTransactions,
+      isLoading: state.isLoading,
+    }))
+  );
   const [showAddModal, setShowAddModal] = useState(false);
   const [balanceVisible, setBalanceVisible] = useState(false);
 
@@ -43,39 +62,20 @@ export default function DashboardPage() {
     [allTx]
   );
 
-  const totalIncome = useMemo(
-    () => thisMonthTx.filter((t) => t.type === "IN").reduce((s, t) => s + t.amount, 0),
-    [thisMonthTx]
+  // Include the previous month only for this chart's rolling date range.
+  const chartData = useMemo(
+    () => buildExpenseChartData([...allTx, ...lastMonthTransactions]),
+    [allTx, lastMonthTransactions]
   );
-
-  const lastMonthIncome = useMemo(
-    () => allTx.filter((t) => t.type === "IN" && isLastMonth(t.date)).reduce((s, t) => s + t.amount, 0),
-    [allTx]
-  );
-
-  const incomeChange = useMemo(() => {
-    if (lastMonthIncome === 0) return totalIncome > 0 ? 100 : 0;
-    return ((totalIncome - lastMonthIncome) / lastMonthIncome) * 100;
-  }, [totalIncome, lastMonthIncome]);
-
-  // Build last 7 days chart data
-  const chartData = useMemo(() => {
-    const days = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const dateStr = toLocalDateString(d);
-      const dayLabel = d.toLocaleDateString("id-ID", { weekday: "short" });
-      const dayExpense = allTx
-        .filter((t) => t.date === dateStr && t.type === "OUT")
-        .reduce((s, t) => s + t.amount, 0);
-      days.push({ day: dayLabel, amount: dayExpense });
-    }
-    return days;
-  }, [allTx]);
 
   const recentTransactions = useMemo(() =>
-    [...transactions].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5),
+    [...transactions]
+      .sort((a, b) =>
+        b.date.localeCompare(a.date) ||
+        (b.created_at ?? "").localeCompare(a.created_at ?? "") ||
+        b.id.localeCompare(a.id)
+      )
+      .slice(0, 5),
     [transactions]
   );
 
@@ -108,6 +108,10 @@ export default function DashboardPage() {
     [weekTx]
   );
 
+  if (isLoading && wallets.length === 0 && transactions.length === 0) {
+    return <DashboardSkeleton />;
+  }
+
   return (
     <>
       <div className="dashboard">
@@ -125,14 +129,6 @@ export default function DashboardPage() {
               </div>
               <div className="dashboard-header-actions">
                 <ThemeToggle />
-                <Link
-                  href="/settings"
-                  aria-label="Pengaturan"
-                  title="Pengaturan"
-                  className="dashboard-icon-button"
-                >
-                  <Settings size={18} />
-                </Link>
               </div>
             </div>
 
@@ -149,7 +145,7 @@ export default function DashboardPage() {
                   title={balanceVisible ? "Sembunyikan saldo" : "Tampilkan saldo"}
                   className="dashboard-balance-toggle"
                 >
-                  {balanceVisible ? <EyeOff size={14} /> : <Eye size={14} />}
+                  {balanceVisible ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
               <p className="dashboard-balance-amount">
@@ -218,6 +214,35 @@ export default function DashboardPage() {
               <CategoryPieChart transactions={thisMonthTx} />
             </div>
 
+            {/* Menu Lanjutan */}
+            <div className="dashboard-section-head">
+              <p className="dashboard-section-title">Menu Lanjutan</p>
+            </div>
+            <div className="dashboard-feature-card">
+              <div className="dashboard-feature-nav">
+                <Link href="/goals" className="dashboard-feature-item">
+                  <PieChart size={20} className="dashboard-feature-icon" />
+                  <span className="dashboard-feature-label">Goals</span>
+                </Link>
+                <Link href="/calendar" className="dashboard-feature-item">
+                  <Calendar size={20} className="dashboard-feature-icon" />
+                  <span className="dashboard-feature-label">Kalender</span>
+                </Link>
+                <Link href="/budgets" className="dashboard-feature-item">
+                  <Target size={20} className="dashboard-feature-icon" />
+                  <span className="dashboard-feature-label">Budget</span>
+                </Link>
+                {/* <Link href="/ai-assistant" className="dashboard-feature-item">
+                  <Bot size={20} className="dashboard-feature-icon" />
+                  <span className="dashboard-feature-label">AI</span>
+                </Link> */}
+                <Link href="/report" className="dashboard-feature-item">
+                  <BarChart3 size={20} className="dashboard-feature-icon" />
+                  <span className="dashboard-feature-label">Laporan</span>
+                </Link>
+              </div>
+            </div>
+
             {/* Wallets */}
             <div className="dashboard-section-head">
               <p className="dashboard-section-title">
@@ -273,18 +298,27 @@ export default function DashboardPage() {
 
 function TransactionItem({ transaction }: { transaction: Transaction }) {
   const isIncome = transaction.type === "IN";
+  const isTransfer = transaction.type === "TRANSFER";
   const wallets = useAppStore((s) => s.wallets);
+  const sourceWallet = wallets.find((wallet) => wallet.id === transaction.wallet_id);
+  const destinationWallet = wallets.find((wallet) => wallet.id === transaction.to_wallet_id);
+  const categoryColor = CATEGORY_COLORS[transaction.category] || "#888888";
 
   return (
     <div className="transaction-item">
       <div
         className="transaction-icon"
-        style={{
-          backgroundColor: `${CATEGORY_COLORS[transaction.category]}1f`,
-          color: CATEGORY_COLORS[transaction.category],
+        style={isTransfer ? {
+          backgroundColor: "var(--overlay)",
+          color: "var(--text-secondary)",
+        } : {
+          backgroundColor: `${categoryColor}1f`,
+          color: categoryColor,
         }}
       >
-        <CategoryIcon category={transaction.category} size={16} color="currentColor" />
+        {isTransfer
+          ? <ArrowLeftRight size={20} />
+          : <CategoryIcon category={transaction.category} color="currentColor" />}
       </div>
       <div className="transaction-info">
         <p className="transaction-desc">
@@ -293,14 +327,22 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
         <div className="transaction-meta">
           <span
             className="transaction-category"
-            style={{ backgroundColor: `${CATEGORY_COLORS[transaction.category]}1f`, color: CATEGORY_COLORS[transaction.category] }}
+            style={isTransfer ? {
+              backgroundColor: "var(--overlay)",
+              color: "var(--text-secondary)",
+            } : {
+              backgroundColor: `${categoryColor}1f`,
+              color: categoryColor,
+            }}
           >
             {transaction.category}
           </span>
-          {transaction.wallet_id && (() => {
-            const wallet = wallets.find((w) => w.id === transaction.wallet_id);
-            if (!wallet) return null;
-            const walletColor = wallet.color || WALLET_COLORS[wallet.icon || ""] || "#888";
+          {isTransfer ? (
+            <span className="transaction-transfer-route">
+              {sourceWallet?.name || "Dompet asal"} &rarr; {destinationWallet?.name || "Dompet tujuan"}
+            </span>
+          ) : sourceWallet && (() => {
+            const walletColor = sourceWallet.color || WALLET_COLORS[sourceWallet.icon || ""] || "#888";
             return (
               <>
                 <span className="text-faint"> &nbsp;</span>
@@ -308,7 +350,7 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
                   className="transaction-wallet"
                   style={{ backgroundColor: `${walletColor}1f`, color: walletColor }}
                 >
-                  {wallet.name}
+                  {sourceWallet.name}
                 </span>
               </>
             );
@@ -323,8 +365,8 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
           })}
         </p>
       </div>
-      <p className={`transaction-amount ${isIncome ? "transaction-amount--income" : ""}`}>
-        {isIncome ? "+" : "-"}{formatCurrency(transaction.amount)}
+      <p className={`transaction-amount ${isIncome ? "transaction-amount--income" : ""} ${isTransfer ? "transaction-amount--transfer" : ""}`}>
+        {isTransfer ? "" : isIncome ? "+" : "-"}{formatCurrency(transaction.amount)}
       </p>
     </div>
   );

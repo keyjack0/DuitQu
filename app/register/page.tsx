@@ -1,9 +1,10 @@
 "use client";
 
+/** Menyediakan formulir pendaftaran dan konfirmasi akun pengguna baru. */
 import { useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
-import { UserPlus, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -135,7 +136,6 @@ export default function RegisterPage() {
               <span>Memproses...</span>
             ) : (
               <>
-                <UserPlus size={16} />
                 Daftar
               </>
             )}

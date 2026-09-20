@@ -1,0 +1,230 @@
+/* Menata kalender transaksi dan rincian keuangan per tanggal. */
+@layer components {
+  .calendar-layout {
+    display: grid;
+    align-items: start;
+    gap: 20px;
+  }
+
+  .calendar-panel {
+    min-width: 0;
+    padding: 16px;
+    border-radius: 24px;
+    background: var(--bg-card);
+  }
+
+  .calendar-panel .finance-month-nav {
+    margin-bottom: 22px;
+    padding: 0;
+  }
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 6px 4px;
+  }
+
+  .calendar-day-header {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    padding: 0 0 12px;
+  }
+
+  .calendar-day {
+    min-width: 0;
+    height: 58px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    color: var(--text-primary);
+    cursor: pointer;
+  }
+
+  .calendar-day:hover {
+    background: var(--bg-hover);
+  }
+
+  .calendar-day--empty {
+    pointer-events: none;
+  }
+
+  .calendar-day-number {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  .calendar-day-number {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+  }
+
+  .calendar-day--today .calendar-day-number {
+    color: var(--green);
+    font-weight: 700;
+    background: var(--green-dim);
+  }
+
+  .calendar-day--selected {
+    background: var(--bg-primary);
+  }
+
+  .calendar-day--selected .calendar-day-number {
+    background: var(--green);
+    color: var(--on-accent);
+    font-weight: 700;
+  }
+
+  .calendar-day--selected:hover {
+    background: var(--bg-primary);
+  }
+
+  .calendar-day-marks {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    height: 5px;
+  }
+
+  .calendar-day-marks i,
+  .calendar-legend i {
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .calendar-mark--income {
+    background: var(--green);
+  }
+
+  .calendar-mark--expense {
+    background: var(--red);
+  }
+
+  .calendar-mark--transfer {
+    background: var(--text-secondary);
+  }
+
+  .calendar-legend {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    color: var(--text-muted);
+    font-size: 10px;
+    margin: 18px 0 2px;
+  }
+
+  .calendar-legend>span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .calendar-detail {
+    min-width: 0;
+  }
+
+  .calendar-detail .finance-section-head {
+    align-items: baseline;
+    flex-wrap: wrap;
+  }
+
+  .calendar-detail .finance-section-head>span {
+    white-space: nowrap;
+  }
+
+  .calendar-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+    background: var(--bg-card);
+    border-radius: 24px;
+  }
+
+  .calendar-summary dt {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+  }
+
+  .calendar-summary dd {
+    font-size: 15px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .calendar-summary .calendar-summary-net {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .calendar-summary-net dd {
+    text-align: right;
+  }
+
+  .calendar-tx-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .calendar-tx-item {
+    min-width: 0;
+  }
+
+  .calendar-tx-icon {
+    background: color-mix(in srgb, currentColor 12%, transparent);
+  }
+
+  .calendar-tx-amount {
+    white-space: nowrap;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .calendar-empty {
+    padding: 26px 16px;
+  }
+
+  @media (min-width: 480px) {
+    .calendar-day {
+      height: 68px;
+    }
+  }
+
+  @media (min-width: 840px) {
+    .calendar-layout {
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    }
+  }
+
+  @media (max-width: 359px) {
+    .calendar-panel {
+      padding: 12px;
+    }
+
+    .calendar-grid {
+      gap: 4px 0;
+    }
+  }
+}

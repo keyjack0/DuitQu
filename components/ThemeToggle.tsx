@@ -1,75 +1,93 @@
 "use client";
 
+/**
+ * Menyediakan state tema global DuitQu dan tombol ringkas untuk mengganti
+ * tema. Preferensi "system" mengikuti perubahan tema perangkat secara live.
+ */
 import { useSyncExternalStore } from "react";
-import { Sun, Moon } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 
-type Theme = "dark" | "light";
+export type Theme = "dark" | "light";
+export type ThemePreference = Theme | "system";
 
 const STORAGE_KEY = "duitqu-theme";
-
 const listeners = new Set<() => void>();
-let currentTheme: Theme = "dark";
+let currentPreference: ThemePreference = "system";
+let resolvedTheme: Theme = "dark";
 let initialized = false;
 
 function emit() {
   listeners.forEach((listener) => listener());
 }
 
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
+function resolveSystemTheme(): Theme {
+  return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+}
+
+function applyTheme(preference: ThemePreference) {
+  resolvedTheme = preference === "system" ? resolveSystemTheme() : preference;
+  document.documentElement.setAttribute("data-theme", resolvedTheme);
 }
 
 function ensureInitialized() {
   if (initialized || typeof window === "undefined") return;
   initialized = true;
-  const attr = document.documentElement.getAttribute("data-theme");
-  if (attr === "light" || attr === "dark") {
-    currentTheme = attr;
-    return;
-  }
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored === "light" || stored === "dark") {
-    currentTheme = stored;
-    return;
-  }
-  currentTheme = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+  let stored: string | null = null;
+  try {
+    stored = localStorage.getItem(STORAGE_KEY);
+  } catch {}
+  currentPreference = stored === "light" || stored === "dark" || stored === "system" ? stored : "system";
+  applyTheme(currentPreference);
+  const media = window.matchMedia("(prefers-color-scheme: light)");
+  media.addEventListener("change", () => {
+    if (currentPreference !== "system") return;
+    applyTheme("system");
+    emit();
+  });
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
 }
 
 function getSnapshot() {
   ensureInitialized();
-  return currentTheme;
+  return `${currentPreference}:${resolvedTheme}`;
 }
 
 function getServerSnapshot() {
-  return "dark" as Theme;
+  return "system:dark";
 }
 
-function toggleTheme() {
-  const next: Theme = currentTheme === "light" ? "dark" : "light";
-  currentTheme = next;
+export function setThemePreference(preference: ThemePreference) {
+  ensureInitialized();
+  currentPreference = preference;
   try {
-    localStorage.setItem(STORAGE_KEY, next);
+    localStorage.setItem(STORAGE_KEY, preference);
   } catch {}
-  document.documentElement.setAttribute("data-theme", next);
+  applyTheme(preference);
   emit();
 }
 
-export function ThemeToggle() {
-  const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-  const isLight = theme === "light";
+export function useThemePreference() {
+  const snapshot = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const [preference, theme] = snapshot.split(":") as [ThemePreference, Theme];
+  return { preference, theme, setPreference: setThemePreference };
+}
 
+export function ThemeToggle() {
+  const { theme, setPreference } = useThemePreference();
+  const isLight = theme === "light";
   return (
     <button
       type="button"
-      onClick={toggleTheme}
+      onClick={() => setPreference(isLight ? "dark" : "light")}
       aria-label={isLight ? "Aktifkan mode gelap" : "Aktifkan mode terang"}
       title={isLight ? "Mode gelap" : "Mode terang"}
       className="icon-btn-round"
     >
-      {isLight ? <Moon size={16} /> : <Sun size={16} />}
+      {isLight ? <Moon size={20} strokeWidth={2} aria-hidden="true" /> : <Sun size={20} strokeWidth={2} aria-hidden="true" />}
     </button>
   );
 }

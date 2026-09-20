@@ -1,3 +1,4 @@
+/* Menata ringkasan, daftar, status, dan formulir anggaran. */
 @layer components {
   /* ===== Overview card ===== */
   .ov-row {
@@ -25,16 +26,8 @@
   }
 
   /* ===== Budget item ===== */
-  .budget-card {
-    @apply bg-card border-none rounded-[24px] p-4 transition-all duration-200;
-  }
-
-  .budget-card:active {
-    @apply scale-[0.98];
-  }
-
-  .budget-card--danger {
-    @apply border-[rgba(239,68,68,0.2)];
+  .budget-row-content {
+    @apply flex-1 min-w-0;
   }
 
   .budget-cat-icon-box {
