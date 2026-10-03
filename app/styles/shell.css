@@ -1,9 +1,69 @@
-/* Menata kerangka aplikasi, navigasi bawah, dan indikator pemuatan umum. */
+/* Menata kerangka aplikasi, navigasi global, dan indikator pemuatan umum. */
 @layer components {
   /* ===== App shell ===== */
   .app-shell {
     @apply min-h-screen bg-primary;
     padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .app-shell-main {
+    @apply min-w-0;
+  }
+
+  /* ===== Desktop sidebar ===== */
+  .desktop-sidebar {
+    @apply fixed inset-y-0 left-0 z-40 hidden w-[248px] overflow-y-auto border-r border-border bg-secondary px-4 py-5;
+  }
+
+  .desktop-sidebar-brand {
+    @apply flex items-center gap-3 rounded-2xl px-2 py-1.5 text-fg no-underline;
+  }
+
+  .desktop-sidebar-logo {
+    @apply flex size-10 shrink-0 items-center justify-center rounded-[14px] bg-green text-[13px] font-bold tracking-[-0.02em] text-on-accent;
+  }
+
+  .desktop-sidebar-brand-copy {
+    @apply flex min-w-0 flex-col;
+  }
+
+  .desktop-sidebar-brand-copy strong {
+    @apply text-[17px] leading-tight font-bold tracking-[-0.02em];
+  }
+
+  .desktop-sidebar-brand-copy small {
+    @apply mt-0.5 truncate text-[10px] leading-tight font-normal text-muted;
+  }
+
+  .desktop-sidebar-nav {
+    @apply mt-8 flex flex-col gap-6;
+  }
+
+  .desktop-sidebar-group-label {
+    @apply mb-2 px-3 text-[10px] font-semibold tracking-[0.12em] text-faint uppercase;
+  }
+
+  .desktop-sidebar-links {
+    @apply flex flex-col gap-1;
+  }
+
+  .desktop-sidebar-link {
+    @apply flex min-h-10 items-center gap-3 rounded-xl px-3 text-[13px] font-medium text-soft no-underline transition-colors duration-200;
+  }
+
+  .desktop-sidebar-link:hover {
+    @apply bg-hover text-fg;
+  }
+
+  .desktop-sidebar-link--active {
+    @apply bg-green-dim font-semibold text-green;
+  }
+
+  .desktop-sidebar-brand:focus-visible,
+  .desktop-sidebar-link:focus-visible,
+  .bottom-nav-item:focus-visible {
+    outline: 2px solid var(--green);
+    outline-offset: 2px;
   }
 
   /* ===== Bottom navigation ===== */
@@ -13,19 +73,26 @@
   }
 
   .bottom-nav-item {
-    @apply flex flex-col items-center gap-0 px-4 py-1 rounded-[10px] text-[11px] no-underline transition-all duration-200 text-muted font-normal relative;
+    @apply relative flex min-w-0 flex-1 flex-col items-center gap-0 rounded-[10px] px-1 py-1 text-[11px] font-normal text-muted no-underline transition-all duration-200;
   }
 
   .bottom-nav-item--active {
     @apply text-green font-bold;
   }
 
-  /* .bottom-nav-item--active::after {
-    content: "";
-    @apply absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-green;
-  } */
+  .bottom-nav-label {
+    @apply max-w-full truncate;
+  }
 
   /* ===== Loading skeleton ===== */
+  .sk-shell {
+    @apply min-h-screen bg-primary;
+  }
+
+  .sk-sidebar {
+    @apply hidden;
+  }
+
   .sk-page {
     @apply min-h-screen bg-primary text-fg px-5 pt-[20px] pb-24;
   }
@@ -36,6 +103,11 @@
 
   .sk-top {
     @apply flex justify-between items-center;
+  }
+
+  .sk-content-grid,
+  .sk-rows {
+    @apply flex flex-col gap-[18px];
   }
 
   .sk-pill-sm {
@@ -117,6 +189,96 @@
     animation: shimmer 1.5s ease-in-out infinite;
   }
 
+  @media (min-width: 1024px) {
+    .app-shell {
+      padding-bottom: 0;
+    }
+
+    .app-shell-main {
+      min-height: 100vh;
+      margin-left: 248px;
+    }
+
+    .desktop-sidebar {
+      @apply flex flex-col;
+    }
+
+    .bottom-nav {
+      @apply hidden;
+    }
+
+    .app-shell-main .ai-shell {
+      height: 100dvh;
+    }
+
+    .sk-sidebar {
+      @apply fixed inset-y-0 left-0 flex w-[248px] flex-col gap-7 border-r border-border bg-secondary px-6 py-[26px];
+    }
+
+    .sk-sidebar-brand {
+      @apply flex items-center gap-3;
+    }
+
+    .sk-sidebar-logo {
+      @apply size-10 shrink-0 rounded-[14px];
+    }
+
+    .sk-sidebar-brand-lines {
+      @apply flex flex-1 flex-col gap-2;
+    }
+
+    .sk-sidebar-brand-title,
+    .sk-sidebar-brand-caption,
+    .sk-sidebar-label,
+    .sk-sidebar-link,
+    .sk-sidebar-logo {
+      background: linear-gradient(90deg, var(--bg-hover) 25%, var(--border) 50%, var(--bg-hover) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s ease-in-out infinite;
+    }
+
+    .sk-sidebar-brand-title {
+      @apply h-3.5 w-16 rounded-full;
+    }
+
+    .sk-sidebar-brand-caption {
+      @apply h-2.5 w-28 rounded-full;
+    }
+
+    .sk-sidebar-group {
+      @apply flex flex-col gap-2;
+    }
+
+    .sk-sidebar-label {
+      @apply mb-1 h-2 w-14 rounded-full;
+    }
+
+    .sk-sidebar-link {
+      @apply h-10 rounded-xl;
+    }
+
+    .sk-page {
+      margin-left: 248px;
+      padding: 32px clamp(32px, 5vw, 72px);
+    }
+
+    .sk-wrap {
+      @apply max-w-[1180px] gap-6;
+    }
+
+    .sk-content-grid {
+      @apply grid grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] gap-6;
+    }
+
+    .sk-hero {
+      @apply min-h-[310px];
+    }
+
+    .sk-rows {
+      @apply gap-3;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .sk-pill-sm,
     .sk-title,
@@ -126,7 +288,12 @@
     .sk-stat,
     .sk-thumb,
     .sk-line-a,
-    .sk-line-b {
+    .sk-line-b,
+    .sk-sidebar-brand-title,
+    .sk-sidebar-brand-caption,
+    .sk-sidebar-label,
+    .sk-sidebar-link,
+    .sk-sidebar-logo {
       animation: none;
     }
   }

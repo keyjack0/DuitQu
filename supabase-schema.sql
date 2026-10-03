@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS public.transactions (
   category TEXT NOT NULL,
   description TEXT DEFAULT '',
   date DATE NOT NULL DEFAULT CURRENT_DATE,
-  to_wallet_id UUID REFERENCES public.wallets(id),
+  to_wallet_id UUID REFERENCES public.wallets(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -75,6 +75,7 @@ CREATE INDEX IF NOT EXISTS idx_transactions_date ON public.transactions(date);
 CREATE INDEX IF NOT EXISTS idx_transactions_wallet_id ON public.transactions(wallet_id);
 CREATE INDEX IF NOT EXISTS idx_wallets_user_id ON public.wallets(user_id);
 CREATE INDEX IF NOT EXISTS idx_budgets_user_id ON public.budgets(user_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_to_wallet_id ON public.transactions(to_wallet_id);
 
 -- Function: Create profile on signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()

@@ -192,7 +192,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="dashboard-container dashboard-content">
-          <div className="dashboard-column">
+          <div className="dashboard-column dashboard-main-grid">
             {/* Quick Actions */}
             <div className="dashboard-quick-actions">
               <button
@@ -209,81 +209,85 @@ export default function DashboardPage() {
             </div>
 
             {/* Charts Data */}
-            <div className="dashboard-column">
+            <div className="dashboard-chart-grid">
               <ExpenseChart data={chartData} />
               <CategoryPieChart transactions={thisMonthTx} />
             </div>
 
             {/* Menu Lanjutan */}
-            <div className="dashboard-section-head">
-              <p className="dashboard-section-title">Menu Lanjutan</p>
-            </div>
-            <div className="dashboard-feature-card">
-              <div className="dashboard-feature-nav">
-                <Link href="/goals" className="dashboard-feature-item">
-                  <PieChart size={20} className="dashboard-feature-icon" />
-                  <span className="dashboard-feature-label">Goals</span>
-                </Link>
-                <Link href="/calendar" className="dashboard-feature-item">
-                  <Calendar size={20} className="dashboard-feature-icon" />
-                  <span className="dashboard-feature-label">Kalender</span>
-                </Link>
-                <Link href="/budgets" className="dashboard-feature-item">
-                  <Target size={20} className="dashboard-feature-icon" />
-                  <span className="dashboard-feature-label">Budget</span>
-                </Link>
-                {/* <Link href="/ai-assistant" className="dashboard-feature-item">
-                  <Bot size={20} className="dashboard-feature-icon" />
-                  <span className="dashboard-feature-label">AI</span>
-                </Link> */}
-                <Link href="/report" className="dashboard-feature-item">
-                  <BarChart3 size={20} className="dashboard-feature-icon" />
-                  <span className="dashboard-feature-label">Laporan</span>
-                </Link>
+            <section className="dashboard-advanced">
+              <div className="dashboard-section-head">
+                <p className="dashboard-section-title">Menu Lanjutan</p>
               </div>
-            </div>
+              <div className="dashboard-feature-card">
+                <div className="dashboard-feature-nav">
+                  <Link href="/goals" className="dashboard-feature-item">
+                    <PieChart size={20} className="dashboard-feature-icon" />
+                    <span className="dashboard-feature-label">Goals</span>
+                  </Link>
+                  <Link href="/calendar" className="dashboard-feature-item">
+                    <Calendar size={20} className="dashboard-feature-icon" />
+                    <span className="dashboard-feature-label">Kalender</span>
+                  </Link>
+                  <Link href="/budgets" className="dashboard-feature-item">
+                    <Target size={20} className="dashboard-feature-icon" />
+                    <span className="dashboard-feature-label">Budget</span>
+                  </Link>
+                  <Link href="/report" className="dashboard-feature-item">
+                    <BarChart3 size={20} className="dashboard-feature-icon" />
+                    <span className="dashboard-feature-label">Laporan</span>
+                  </Link>
+                </div>
+              </div>
+            </section>
 
-            {/* Wallets */}
-            <div className="dashboard-section-head">
-              <p className="dashboard-section-title">
-                Dompet Saya
-              </p>
-              <Link href="/wallets" className="dashboard-section-link">
-                Lihat semua
-              </Link>
-            </div>
-            <div className="dashboard-wallet-list">
-              {wallets.map((wallet) => (
-                <Link
-                  key={wallet.id}
-                  href="/wallets"
-                  className="wallet-row"
-                >
-                  <div
-                    className="wallet-row-icon"
-                    style={{ backgroundColor: `${WALLET_COLORS[wallet.icon ?? ""] || "var(--text-muted)"}1f` }}
-                  >
-                    <WalletIcon icon={wallet.icon} size={20} color={WALLET_COLORS[wallet.icon ?? ""] || "var(--text-muted)"} />
-                  </div>
-                  <p className="wallet-row-name">{wallet.name}</p>
-                  <p className="wallet-row-balance">{formatCurrency(wallet.balance)}</p>
-                </Link>
-              ))}
-            </div>
+            <div className="dashboard-lists-grid">
+              {/* Wallets */}
+              <section className="dashboard-list-panel">
+                <div className="dashboard-section-head">
+                  <p className="dashboard-section-title">
+                    Dompet Saya
+                  </p>
+                  <Link href="/wallets" className="dashboard-section-link">
+                    Lihat semua
+                  </Link>
+                </div>
+                <div className="dashboard-wallet-list">
+                  {wallets.map((wallet) => (
+                    <Link
+                      key={wallet.id}
+                      href="/wallets"
+                      className="wallet-row"
+                    >
+                      <div
+                        className="wallet-row-icon"
+                        style={{ backgroundColor: `${WALLET_COLORS[wallet.icon ?? ""] || "var(--text-muted)"}1f` }}
+                      >
+                        <WalletIcon icon={wallet.icon} size={20} color={WALLET_COLORS[wallet.icon ?? ""] || "var(--text-muted)"} />
+                      </div>
+                      <p className="wallet-row-name">{wallet.name}</p>
+                      <p className="wallet-row-balance">{formatCurrency(wallet.balance)}</p>
+                    </Link>
+                  ))}
+                </div>
+              </section>
 
-            {/* Recent Transactions */}
-            <div className="dashboard-section-head">
-              <p className="dashboard-section-title">
-                Transaksi Terbaru
-              </p>
-              <Link href="/transactions" className="dashboard-section-link">
-                Lihat semua
-              </Link>
-            </div>
-            <div className="dashboard-tx-list">
-              {recentTransactions.map((tx) => (
-                <TransactionItem key={tx.id} transaction={tx} />
-              ))}
+              {/* Recent Transactions */}
+              <section className="dashboard-list-panel">
+                <div className="dashboard-section-head">
+                  <p className="dashboard-section-title">
+                    Transaksi Terbaru
+                  </p>
+                  <Link href="/transactions" className="dashboard-section-link">
+                    Lihat semua
+                  </Link>
+                </div>
+                <div className="dashboard-tx-list">
+                  {recentTransactions.map((tx) => (
+                    <TransactionItem key={tx.id} transaction={tx} />
+                  ))}
+                </div>
+              </section>
             </div>
           </div>
         </div>

@@ -90,7 +90,7 @@ export default function BudgetsPage() {
   return (
     <>
       <div className="page-shell">
-        <div className="page-hero pb-6">
+        <div className="page-hero budget-page-container">
           <FinancePageHeader
             title="Budget"
             subtitle="Atur batas pengeluaran agar keuangan tetap terkontrol."
@@ -109,138 +109,146 @@ export default function BudgetsPage() {
             }
           />
 
-          {/* Overview */}
-          <div className="card">
-            <div className="ov-row">
-              <div>
-                <p className="ov-label">Total Terpakai</p>
-                <p className="ov-value">{formatCurrency(totalSpent)}</p>
+          <div className="budget-layout">
+            <aside className="budget-summary" aria-label="Ringkasan budget bulan ini">
+              <div className="card">
+                <div className="ov-row">
+                  <div>
+                    <p className="ov-label">Total Terpakai</p>
+                    <p className="ov-value">{formatCurrency(totalSpent)}</p>
+                  </div>
+                  <div className="ov-block--right">
+                    <p className="ov-label">Total Budget</p>
+                    <p className="ov-value ov-value--green">{formatCurrency(totalLimit)}</p>
+                  </div>
+                </div>
+                <div className="progress-track">
+                  <div
+                    className="progress-fill"
+                    style={{
+                      width: `${totalPct}%`,
+                      background: totalPct > 90 ? "var(--red)" : totalPct > 70 ? "var(--amber)" : "var(--green)",
+                    }}
+                  />
+                </div>
+                <p className="ov-note">
+                  {totalPct}% dari total budget bulan ini
+                </p>
               </div>
-              <div className="ov-block--right">
-                <p className="ov-label">Total Budget</p>
-                <p className="ov-value ov-value--green">{formatCurrency(totalLimit)}</p>
-              </div>
-            </div>
-            <div className="progress-track">
-              <div
-                className="progress-fill"
-                style={{
-                  width: `${totalPct}%`,
-                  background: totalPct > 90 ? "var(--red)" : totalPct > 70 ? "var(--amber)" : "var(--green)",
-                }}
-              />
-            </div>
-            <p className="ov-note">
-              {totalPct}% dari total budget bulan ini
-            </p>
+
+              {dangerCount > 0 && (
+                <div className="alert-danger">
+                  <AlertTriangle size={14} color="var(--red)" />
+                  <p className="alert-danger-text">
+                    {dangerCount} kategori melebihi 90% budget
+                  </p>
+                </div>
+              )}
+            </aside>
+
+            <section className="page-body budget-list" aria-labelledby="budget-list-title">
+              <h2 id="budget-list-title" className="section-label mb-3">
+                Budget per Kategori
+              </h2>
+
+              {budgetsWithSpent.length === 0 ? (
+                <div className="empty-state">
+                  <p className="empty-icon"><Target size={32} color="var(--text-muted)" /></p>
+                  <p className="empty-title">Belum ada budget</p>
+                  <p className="empty-desc">Tambahkan budget per kategori untuk memulai</p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2.5">
+                  {budgetsWithSpent.map((budget) => {
+                    const pct = calculatePercentage(budget.spent, budget.amount_limit);
+                    const status = getBudgetStatus(pct);
+                    const barColor = status === "danger" ? "var(--red)" : status === "warning" ? "var(--amber)" : "var(--green)";
+                    const remaining = budget.amount_limit - budget.spent;
+
+                    return (
+                      <SwipeableRow
+                        key={budget.id}
+                        isOpen={openRowId === budget.id}
+                        onOpenChange={(open) => setOpenRowId(open ? budget.id : null)}
+                        actions={
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => openEdit(budget)}
+                              aria-label="Edit budget"
+                              style={{ background: "var(--bg-hover)", color: "var(--text-primary)" }}
+                            >
+                              <Pencil size={15} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setOpenRowId(null);
+                                setConfirmDeleteId(budget.id);
+                              }}
+                              aria-label="Hapus budget"
+                              style={{ background: "var(--red)", color: "#fff" }}
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </>
+                        }
+                      >
+                        <div className="budget-row-content">
+                          <div className="budget-head">
+                            <div className="budget-cat">
+                              <div className={`budget-cat-icon-box ${status === "danger" ? "budget-cat-icon-box--danger" : status === "warning" ? "budget-cat-icon-box--warning" : "budget-cat-icon-box--safe"}`}>
+                                <CategoryIcon category={budget.category} color="currentColor" />
+                              </div>
+                              <div>
+                                <p className="budget-cat-name">{budget.category}</p>
+                                <p className="budget-cat-sum">
+                                  {formatCurrency(budget.spent)} / {formatCurrency(budget.amount_limit)}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="budget-actions">
+                              <span
+                                className={`status-badge ${status === "danger" ? "status-badge--danger" : status === "warning" ? "status-badge--warning" : "status-badge--safe"}`}
+                              >
+                                {Math.round(pct)}%
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="progress-track progress-track--thin">
+                            <div
+                              className="progress-fill"
+                              style={{ width: `${pct}%`, background: barColor }}
+                            />
+                          </div>
+
+                          {/* <p className={`budget-remaining ${remaining < 0 ? "budget-remaining--over" : ""}`}>
+                            {remaining >= 0 ? `Sisa ${formatCurrency(remaining)}` : `Melebihi ${formatCurrency(Math.abs(remaining))}`}
+                          </p> */}
+                        </div>
+                      </SwipeableRow>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
           </div>
-
-          {dangerCount > 0 && (
-            <div className="alert-danger">
-              <AlertTriangle size={14} color="var(--red)" />
-              <p className="alert-danger-text">
-                {dangerCount} kategori melebihi 90% budget
-              </p>
-            </div>
-          )}
-        </div>
-
-        <div className="page-body">
-          <p className="section-label mb-3">
-            Budget per Kategori
-          </p>
-
-          {budgetsWithSpent.length === 0 ? (
-            <div className="empty-state">
-              <p className="empty-icon"><Target size={32} color="var(--text-muted)" /></p>
-              <p className="empty-title">Belum ada budget</p>
-              <p className="empty-desc">Tambahkan budget per kategori untuk memulai</p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2.5">
-              {budgetsWithSpent.map((budget) => {
-                const pct = calculatePercentage(budget.spent, budget.amount_limit);
-                const status = getBudgetStatus(pct);
-                const barColor = status === "danger" ? "var(--red)" : status === "warning" ? "var(--amber)" : "var(--green)";
-                const remaining = budget.amount_limit - budget.spent;
-
-                return (
-                  <SwipeableRow
-                    key={budget.id}
-                    isOpen={openRowId === budget.id}
-                    onOpenChange={(open) => setOpenRowId(open ? budget.id : null)}
-                    actions={
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => openEdit(budget)}
-                          aria-label="Edit budget"
-                          style={{ background: "var(--bg-hover)", color: "var(--text-primary)" }}
-                        >
-                          <Pencil size={15} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setOpenRowId(null);
-                            setConfirmDeleteId(budget.id);
-                          }}
-                          aria-label="Hapus budget"
-                          style={{ background: "var(--red)", color: "#fff" }}
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </>
-                    }
-                  >
-                    <div className="budget-row-content">
-                      <div className="budget-head">
-                        <div className="budget-cat">
-                          <div className={`budget-cat-icon-box ${status === "danger" ? "budget-cat-icon-box--danger" : status === "warning" ? "budget-cat-icon-box--warning" : "budget-cat-icon-box--safe"}`}>
-                            <CategoryIcon category={budget.category} color="currentColor" />
-                          </div>
-                          <div>
-                            <p className="budget-cat-name">{budget.category}</p>
-                            <p className="budget-cat-sum">
-                              {formatCurrency(budget.spent)} / {formatCurrency(budget.amount_limit)}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="budget-actions">
-                          <span
-                            className={`status-badge ${status === "danger" ? "status-badge--danger" : status === "warning" ? "status-badge--warning" : "status-badge--safe"}`}
-                          >
-                            {Math.round(pct)}%
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="progress-track progress-track--thin">
-                        <div
-                          className="progress-fill"
-                          style={{ width: `${pct}%`, background: barColor }}
-                        />
-                      </div>
-
-                      <p className={`budget-remaining ${remaining < 0 ? "budget-remaining--over" : ""}`}>
-                        {remaining >= 0 ? `Sisa ${formatCurrency(remaining)}` : `Melebihi ${formatCurrency(Math.abs(remaining))}`}
-                      </p>
-                    </div>
-                  </SwipeableRow>
-                );
-              })}
-            </div>
-          )}
         </div>
       </div>
 
       {showAdd && (
         <div
-          className="sheet-overlay"
+          className="sheet-overlay budget-sheet-overlay"
           onClick={(e) => e.target === e.currentTarget && closeForm()}
         >
-          <div className="sheet-panel">
-            <h2 className="sheet-title mb-5">{editingBudget ? "Edit Budget" : "Tambah Budget"}</h2>
+          <div
+            className="sheet-panel budget-sheet-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="budget-form-title"
+          >
+            <h2 id="budget-form-title" className="sheet-title mb-5">{editingBudget ? "Edit Budget" : "Tambah Budget"}</h2>
 
             <div className="form-field">
               <label htmlFor="budget-category" className="form-label">Kategori</label>

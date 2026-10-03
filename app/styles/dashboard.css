@@ -8,9 +8,9 @@
     @apply pt-[20px] px-5 pb-7 max-[560px]:pb-[26px] bg-linear-to-b from-secondary from-0% to-primary to-[92%];
   }
 
-  .dashboard-container {
-    @apply w-full mx-auto max-w-[1180px] max-[900px]:max-w-[720px];
-  }
+.dashboard-container {
+  @apply w-full mx-auto max-w-[1180px] max-[900px]:max-w-[720px] min-[1024px]:max-w-[960px];
+}
 
   .dashboard-content {
     @apply grid grid-cols-1 gap-5 px-5;
@@ -57,7 +57,7 @@
   }
 
   .dashboard-balance-amount {
-    @apply text-white text-[32px] font-bold mb-2;
+    @apply min-w-0 text-white text-[32px] font-bold mb-2 break-words;
   }
 
   .dashboard-balance-trend {
@@ -187,7 +187,7 @@
   }
 
   .wallet-row-balance {
-    @apply shrink-0 text-sm font-semibold text-fg;
+    @apply min-w-0 max-w-[52%] shrink text-right text-sm font-semibold text-fg break-words;
   }
 }
 
@@ -344,6 +344,96 @@
   @apply text-soft mt-0.5;
 }
 
+.dashboard .transaction-amount {
+  min-width: 0;
+  max-width: 44%;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+.dashboard-balance-amount,
+.dashboard-balance-stat-value,
+.dashboard .expense-total,
+.dashboard .expense-category-val {
+  overflow-wrap: anywhere;
+}
+
+.dashboard-balance-stat {
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-content {
+    padding-inline: 24px;
+  }
+
+  .dashboard-advanced {
+      display: none;
+    }
+
+  .dashboard-main-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  .dashboard-quick-actions,
+  .dashboard-skeleton-actions,
+  .dashboard-feature-card,
+  .dashboard-wallet-list,
+  .chart-card {
+    margin-bottom: 0;
+  }
+
+  .dashboard-quick-actions,
+  .dashboard-skeleton-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(180px, 220px));
+    justify-content: start;
+  }
+
+  .dashboard-skeleton-actions > span:last-child {
+    width: auto;
+  }
+
+  .dashboard-action--primary {
+    min-width: 0;
+  }
+
+  .dashboard-chart-grid,
+  .dashboard-lists-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    align-items: start;
+  }
+
+  .dashboard-chart-grid > .chart-card {
+    width: 100%;
+  }
+
+  .dashboard-chart-grid .expense-week-chart {
+    min-height: 220px;
+  }
+
+  .dashboard-advanced .dashboard-feature-card {
+    padding-inline: 24px;
+  }
+
+  .dashboard-feature-item {
+    padding-block: 12px;
+  }
+
+  .dashboard-list-panel {
+    min-width: 0;
+  }
+
+  .dashboard .wallet-row-balance,
+  .dashboard .transaction-amount {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
 /* Dashboard loading state keeps the final layout dimensions stable. */
 .dashboard-skeleton-line,
 .dashboard-skeleton-circle,
@@ -383,6 +473,7 @@
 .dashboard-skeleton-actions > span:last-child { width: 104px; }
 .dashboard-chart-skeleton { min-height: 292px; }
 .dashboard-skeleton-line--chart-title { width: 96px; height: 14px; }
+.dashboard-skeleton-line--section-title { width: 112px; height: 13px; margin-bottom: 12px; }
 
 .dashboard-skeleton-chart {
   display: flex;
@@ -412,6 +503,17 @@
 .dashboard-skeleton-row-copy { flex: 1; }
 .dashboard-skeleton-line--row-main { width: 52%; height: 12px; margin-bottom: 8px; }
 .dashboard-skeleton-line--row-sub { width: 32%; height: 10px; }
+
+.dashboard-skeleton-feature {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-block: 10px;
+}
+
+.dashboard-skeleton-feature-icon { width: 44px; height: 44px; }
+.dashboard-skeleton-line--feature { width: 48px; height: 10px; }
 
 @media (prefers-reduced-motion: reduce) {
   .dashboard-skeleton-line,

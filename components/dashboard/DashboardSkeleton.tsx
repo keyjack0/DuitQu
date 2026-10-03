@@ -32,22 +32,44 @@ export function DashboardSkeleton() {
         </div>
       </div>
       <div className="dashboard-container dashboard-content">
-        <div className="dashboard-column">
+        <div className="dashboard-column dashboard-main-grid">
           <div className="dashboard-skeleton-actions">
             <span />
             <span />
           </div>
-          <ChartSkeleton />
-          <ChartSkeleton />
-          {[0, 1, 2].map((item) => (
-            <div key={item} className="dashboard-skeleton-row">
-              <div className="dashboard-skeleton-square" />
-              <div className="dashboard-skeleton-row-copy">
-                <div className="dashboard-skeleton-line dashboard-skeleton-line--row-main" />
-                <div className="dashboard-skeleton-line dashboard-skeleton-line--row-sub" />
+          <div className="dashboard-chart-grid">
+            <ChartSkeleton />
+            <ChartSkeleton />
+          </div>
+          <section className="dashboard-advanced">
+            <div className="dashboard-skeleton-line dashboard-skeleton-line--section-title" />
+            <div className="dashboard-feature-card">
+              <div className="dashboard-feature-nav">
+                {[0, 1, 2, 3].map((item) => (
+                  <div key={item} className="dashboard-skeleton-feature">
+                    <div className="dashboard-skeleton-circle dashboard-skeleton-feature-icon" />
+                    <div className="dashboard-skeleton-line dashboard-skeleton-line--feature" />
+                  </div>
+                ))}
               </div>
             </div>
-          ))}
+          </section>
+          <div className="dashboard-lists-grid">
+            {[0, 1].map((list) => (
+              <section key={list} className="dashboard-list-panel">
+                <div className="dashboard-skeleton-line dashboard-skeleton-line--section-title" />
+                {[0, 1, 2].map((item) => (
+                  <div key={item} className="dashboard-skeleton-row">
+                    <div className="dashboard-skeleton-square" />
+                    <div className="dashboard-skeleton-row-copy">
+                      <div className="dashboard-skeleton-line dashboard-skeleton-line--row-main" />
+                      <div className="dashboard-skeleton-line dashboard-skeleton-line--row-sub" />
+                    </div>
+                  </div>
+                ))}
+              </section>
+            ))}
+          </div>
         </div>
       </div>
     </div>

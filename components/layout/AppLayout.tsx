@@ -6,6 +6,7 @@
  */
 
 import { BottomNav } from "./BottomNav";
+import { DesktopSidebar } from "./DesktopSidebar";
 import { DataInitializer } from "../DataInitializer";
 import { WhatsNewDialog } from "../WhatsNewDialog";
 import { ToastContainer } from "react-toastify";
@@ -17,7 +18,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="app-shell">
       <DataInitializer />
-      <main>{children}</main>
+      <DesktopSidebar />
+      <main className="app-shell-main">{children}</main>
       <WhatsNewDialog />
       <BottomNav />
       <ToastContainer position="top-center" autoClose={2500} theme={theme} hideProgressBar />
