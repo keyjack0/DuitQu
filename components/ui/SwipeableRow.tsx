@@ -33,10 +33,16 @@ export function SwipeableRow({ actions, children, isOpen, onOpenChange }: Swipea
   const startRef = useRef<{ x: number; y: number; open: boolean } | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const onOpenChangeRef = useRef(onOpenChange);
+  const pendingDragXRef = useRef(0);
+  const pointerFrameRef = useRef<number | null>(null);
 
   useEffect(() => {
     onOpenChangeRef.current = onOpenChange;
   });
+
+  useEffect(() => () => {
+    if (pointerFrameRef.current !== null) cancelAnimationFrame(pointerFrameRef.current);
+  }, []);
 
   const base = isOpen ? -OPEN_OFFSET : 0;
   const offset = dragging ? Math.max(-OPEN_OFFSET, Math.min(0, base + dragX)) : base;
@@ -96,6 +102,8 @@ export function SwipeableRow({ actions, children, isOpen, onOpenChange }: Swipea
   }
 
   const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
+    if (pointerFrameRef.current !== null) cancelAnimationFrame(pointerFrameRef.current);
+    pointerFrameRef.current = null;
     startRef.current = { x: e.clientX, y: e.clientY, open: isOpen };
     e.currentTarget.setPointerCapture(e.pointerId);
   };
@@ -106,14 +114,21 @@ export function SwipeableRow({ actions, children, isOpen, onOpenChange }: Swipea
     const dx = e.clientX - start.x;
     const dy = e.clientY - start.y;
     if (Math.abs(dy) > Math.abs(dx)) return;
-    setDragging(true);
-    setDragX(dx);
+    pendingDragXRef.current = dx;
+    if (pointerFrameRef.current !== null) return;
+    pointerFrameRef.current = requestAnimationFrame(() => {
+      pointerFrameRef.current = null;
+      setDragging(true);
+      setDragX(pendingDragXRef.current);
+    });
   };
 
   const handlePointerUp = (e: PointerEvent<HTMLDivElement>) => {
     const start = startRef.current;
     startRef.current = null;
     if (!start) return;
+    if (pointerFrameRef.current !== null) cancelAnimationFrame(pointerFrameRef.current);
+    pointerFrameRef.current = null;
     const dx = e.clientX - start.x;
     const shouldOpen = start.open ? dx <= SNAP_THRESHOLD : dx < -SNAP_THRESHOLD;
     onOpenChangeRef.current(shouldOpen);
@@ -126,6 +141,8 @@ export function SwipeableRow({ actions, children, isOpen, onOpenChange }: Swipea
 
   const handlePointerCancel = () => {
     startRef.current = null;
+    if (pointerFrameRef.current !== null) cancelAnimationFrame(pointerFrameRef.current);
+    pointerFrameRef.current = null;
     setDragging(false);
     setDragX(0);
   };

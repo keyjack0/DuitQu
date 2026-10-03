@@ -1,6 +1,6 @@
 /* Cache only immutable/static assets; financial data always stays network-only. */
-const STATIC_CACHE = "duitqu-static-v5";
-const STATIC_PREFIXES = ["/_next/static/", "/icons/", "/images/"];
+const STATIC_CACHE = "duitqu-static-v6";
+const STATIC_PREFIXES = ["/icons/", "/images/"];
 const STATIC_PATHS = new Set(["/manifest.json"]);
 
 self.addEventListener("install", () => {
@@ -48,19 +48,15 @@ self.addEventListener("fetch", (event) => {
     STATIC_PREFIXES.some((prefix) => url.pathname.startsWith(prefix));
   if (!isStatic) return;
 
-  const cachePromise = caches.open(STATIC_CACHE);
-  const networkPromise = cachePromise.then(async (cache) => {
+  event.respondWith(caches.open(STATIC_CACHE).then(async (cache) => {
+    const cached = await cache.match(request);
+    if (cached) return cached;
+
     const response = await fetch(request);
     const cacheControl = response.headers.get("cache-control") || "";
     if (response.ok && response.type === "basic" && !/\b(?:no-store|private)\b/i.test(cacheControl)) {
       await cache.put(request, response.clone());
     }
     return response;
-  });
-
-  event.waitUntil(networkPromise.then(() => undefined, () => undefined));
-  event.respondWith(cachePromise.then(async (cache) => {
-    const cached = await cache.match(request);
-    return cached || networkPromise;
   }));
 });

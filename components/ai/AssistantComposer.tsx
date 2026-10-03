@@ -1,20 +1,28 @@
 "use client";
 
 /** Menyediakan input pesan adaptif beserta kontrol kirim dan hentikan. */
-import { useLayoutEffect, useRef } from "react";
+import { useImperativeHandle, useLayoutEffect, useRef, useState, type Ref } from "react";
 import { Send, Square } from "lucide-react";
 
+const MAX_MESSAGE_CHARS = 8000;
+
 interface Props {
-  value: string;
-  onChange: (value: string) => void;
-  onSend: () => void;
+  ref?: Ref<AssistantComposerHandle>;
+  onSend: (value: string) => boolean;
   onStop: () => void;
   disabled: boolean;
   isLoading: boolean;
 }
 
-export function AssistantComposer({ value, onChange, onSend, onStop, disabled, isLoading }: Props) {
+export interface AssistantComposerHandle {
+  clear: () => void;
+}
+
+export function AssistantComposer({ ref, onSend, onStop, disabled, isLoading }: Props) {
+  const [value, setValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useImperativeHandle(ref, () => ({ clear: () => setValue("") }), []);
 
   useLayoutEffect(() => {
     const textarea = textareaRef.current;
@@ -22,6 +30,11 @@ export function AssistantComposer({ value, onChange, onSend, onStop, disabled, i
     textarea.style.height = "0px";
     textarea.style.height = `${Math.min(textarea.scrollHeight, 104)}px`;
   }, [value]);
+
+  function submit() {
+    const message = value.trim();
+    if (message) onSend(message);
+  }
 
   return (
     <div className="ai-input-bar">
@@ -31,11 +44,12 @@ export function AssistantComposer({ value, onChange, onSend, onStop, disabled, i
         aria-label="Pesan untuk DuitQu AI"
         placeholder="Tulis transaksi atau tanyakan keuanganmu..."
         value={value}
-        onChange={(event) => onChange(event.target.value)}
+        maxLength={MAX_MESSAGE_CHARS}
+        onChange={(event) => setValue(event.target.value)}
         onKeyDown={(event) => {
           if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
             event.preventDefault();
-            if (!disabled && value.trim()) onSend();
+            if (!disabled && !isLoading) submit();
           }
         }}
         className="ai-input"
@@ -43,7 +57,7 @@ export function AssistantComposer({ value, onChange, onSend, onStop, disabled, i
       />
       <button
         type="button"
-        onClick={isLoading ? onStop : onSend}
+        onClick={isLoading ? onStop : submit}
         disabled={!isLoading && (disabled || !value.trim())}
         aria-label={isLoading ? "Hentikan jawaban" : "Kirim pesan"}
         className={`ai-send-btn ${(isLoading || (!disabled && value.trim())) ? "ai-send-btn--on" : ""}`}

@@ -9,8 +9,21 @@ import {
   Target,
   Wallet,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
-export const navigationGroups = [
+interface NavigationItem {
+  href: string;
+  icon: LucideIcon;
+  label: string;
+  mobile: boolean;
+}
+
+interface NavigationGroup {
+  label: string;
+  items: NavigationItem[];
+}
+
+export const navigationGroups: NavigationGroup[] = [
   {
     label: "Ringkasan",
     items: [
@@ -35,7 +48,7 @@ export const navigationGroups = [
       { href: "/settings", icon: CircleUserRound, label: "Pengaturan", mobile: true },
     ],
   },
-] as const;
+];
 
 export const mobileNavigationItems = navigationGroups
   .flatMap((group) => group.items)

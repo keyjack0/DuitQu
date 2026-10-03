@@ -57,6 +57,7 @@ export function useTransactionHistory({
   const [reloadKey, setReloadKey] = useState(0);
   const requestGenerationRef = useRef(0);
   const loadMoreInFlightRef = useRef(false);
+  const loadMoreRequestRef = useRef<{ controller: AbortController; generation: number } | null>(null);
   const offsetRef = useRef(0);
 
   const activeFilters = useMemo<TransactionHistoryFilters>(() => ({
@@ -72,7 +73,7 @@ export function useTransactionHistory({
 
     let query = getSupabaseClient()
       .from("transactions")
-      .select("*")
+      .select("id,user_id,wallet_id,type,amount,category,description,date,to_wallet_id,created_at")
       .eq("user_id", userId)
       .order("date", { ascending: false })
       .order("created_at", { ascending: false })
@@ -90,23 +91,26 @@ export function useTransactionHistory({
       }
     }
 
-    query = query.range(offset, offset + pageSize - 1);
+    query = query.range(offset, offset + pageSize);
     if (signal) query = query.abortSignal(signal);
 
     const { data, error: queryError } = await query;
     if (queryError) throw new Error(queryError.message);
 
-    const rows = (data || []) as Transaction[];
-    return { rows, hasMore: rows.length >= pageSize };
+    const fetchedRows = (data || []) as Transaction[];
+    return { rows: fetchedRows.slice(0, pageSize), hasMore: fetchedRows.length > pageSize };
   }, [activeFilters, pageSize, userId]);
 
   useEffect(() => {
     const generation = ++requestGenerationRef.current;
     const controller = new AbortController();
+    loadMoreRequestRef.current?.controller.abort();
+    loadMoreRequestRef.current = null;
 
     const loadInitialPage = async () => {
       offsetRef.current = 0;
       loadMoreInFlightRef.current = false;
+      setIsLoadingMore(false);
       setTransactionIds([]);
       setError(null);
       setLoadMoreError(null);
@@ -137,7 +141,15 @@ export function useTransactionHistory({
 
     void loadInitialPage();
 
-    return () => controller.abort();
+    return () => {
+      controller.abort();
+      const loadMoreRequest = loadMoreRequestRef.current;
+      if (loadMoreRequest?.generation === generation) {
+        loadMoreRequest.controller.abort();
+        loadMoreRequestRef.current = null;
+        loadMoreInFlightRef.current = false;
+      }
+    };
   }, [fetchPage, mergeTransactions, reloadKey, userId]);
 
   const loadMore = useCallback(async () => {
@@ -146,10 +158,14 @@ export function useTransactionHistory({
     setIsLoadingMore(true);
     setLoadMoreError(null);
     const generation = requestGenerationRef.current;
+    const request = { controller: new AbortController(), generation };
+    loadMoreRequestRef.current = request;
 
     try {
-      const { rows, hasMore: nextHasMore } = await fetchPage(offsetRef.current);
-      if (generation !== requestGenerationRef.current) return;
+      const { rows, hasMore: nextHasMore } = await fetchPage(offsetRef.current, request.controller.signal);
+      if (request.controller.signal.aborted
+        || generation !== requestGenerationRef.current
+        || loadMoreRequestRef.current !== request) return;
       mergeTransactions(rows);
       setTransactionIds((current) => {
         const knownIds = new Set(current);
@@ -158,12 +174,17 @@ export function useTransactionHistory({
       offsetRef.current += rows.length;
       setHasMore(nextHasMore);
     } catch (fetchError) {
-      if (generation === requestGenerationRef.current) {
+      if (!request.controller.signal.aborted
+        && generation === requestGenerationRef.current
+        && loadMoreRequestRef.current === request) {
         setLoadMoreError(fetchError instanceof Error ? fetchError.message : "Gagal memuat transaksi berikutnya");
       }
     } finally {
-      loadMoreInFlightRef.current = false;
-      if (generation === requestGenerationRef.current) setIsLoadingMore(false);
+      if (loadMoreRequestRef.current === request) {
+        loadMoreRequestRef.current = null;
+        loadMoreInFlightRef.current = false;
+        if (generation === requestGenerationRef.current) setIsLoadingMore(false);
+      }
     }
   }, [fetchPage, hasMore, isLoading, mergeTransactions, userId]);
 
@@ -187,10 +208,13 @@ export function useTransactionHistory({
     () => new Map(transactions.map((transaction) => [transaction.id, transaction])),
     [transactions]
   );
-  const items = transactionIds
-    .map((id) => transactionById.get(id))
-    .filter((transaction): transaction is Transaction => Boolean(transaction))
-    .filter((transaction) => matchesFilters(transaction, activeFilters));
+  const items = useMemo(
+    () => transactionIds
+      .map((id) => transactionById.get(id))
+      .filter((transaction): transaction is Transaction => Boolean(transaction))
+      .filter((transaction) => matchesFilters(transaction, activeFilters)),
+    [activeFilters, transactionById, transactionIds]
+  );
 
   return {
     items,

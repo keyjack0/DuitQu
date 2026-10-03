@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, ReactNode } from "react";
+import { Fragment, memo, ReactNode } from "react";
 
 type Block =
   | { type: "line"; text: string }
@@ -75,7 +75,7 @@ function parseBlocks(content: string): Block[] {
   return blocks;
 }
 
-export default function MarkdownText({ content }: { content: string }) {
+function MarkdownText({ content }: { content: string }) {
   const blocks = parseBlocks(content);
   return (
     <>
@@ -99,3 +99,5 @@ export default function MarkdownText({ content }: { content: string }) {
     </>
   );
 }
+
+export default memo(MarkdownText);

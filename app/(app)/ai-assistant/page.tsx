@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Bot, EllipsisVertical, RotateCcw } from "lucide-react";
 import { toast } from "react-toastify";
 import { useShallow } from "zustand/react/shallow";
-import { AssistantComposer } from "@/components/ai/AssistantComposer";
+import { AssistantComposer, type AssistantComposerHandle } from "@/components/ai/AssistantComposer";
 import { AssistantMessage } from "@/components/ai/AssistantMessage";
 import { AssistantSkeleton } from "@/components/ai/AssistantSkeleton";
 import { AssistantWelcome } from "@/components/ai/AssistantWelcome";
@@ -53,6 +53,7 @@ type ScrollAdjustment =
   | null;
 
 const PAGE_SIZE = 50;
+const CONTEXT_MESSAGE_COUNT = 12;
 
 const SYSTEM_PROMPT = `Kamu adalah DuitQu AI, asisten keuangan pribadi yang cerdas dan ramah. Kamu berbicara dalam Bahasa Indonesia yang santai dan mudah dipahami.
 
@@ -171,7 +172,6 @@ export default function AIAssistantPage() {
     }))
   );
   const [messages, setMessages] = useState<AIMessage[]>([]);
-  const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [pendingTransaction, setPendingTransaction] = useState<PendingTransaction | null>(null);
   const [sendError, setSendError] = useState<SendError | null>(null);
@@ -190,6 +190,7 @@ export default function AIAssistantPage() {
   const clearButtonRef = useRef<HTMLButtonElement>(null);
   const lastRequestRef = useRef(0);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const composerRef = useRef<AssistantComposerHandle>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const historyCursorRef = useRef<HistoryCursor | null>(null);
   const loadingOlderRef = useRef(false);
@@ -211,12 +212,18 @@ export default function AIAssistantPage() {
   );
 
   const financialContext = useMemo(() => {
+    const spentByCategory = new Map<string, number>();
+    for (const transaction of monthTransactions) {
+      if (transaction.type !== "OUT") continue;
+      spentByCategory.set(
+        transaction.category,
+        (spentByCategory.get(transaction.category) ?? 0) + transaction.amount
+      );
+    }
     const budgetDetails = budgets
       .filter((budget) => budget.period === "MONTH")
       .map((budget) => {
-        const spent = monthTransactions
-          .filter((transaction) => transaction.type === "OUT" && transaction.category === budget.category)
-          .reduce((total, transaction) => total + transaction.amount, 0);
+        const spent = spentByCategory.get(budget.category) ?? 0;
         return `${budget.category}: limit ${formatCurrency(budget.amount_limit)}, terpakai ${formatCurrency(spent)}, sisa ${formatCurrency(Math.max(0, budget.amount_limit - spent))}`;
       })
       .join(" | ");
@@ -386,15 +393,15 @@ DATA KEUANGAN USER (bulan ini):
     }
   }
 
-  async function sendMessage(text?: string, replaceMessageId?: string) {
-    const userText = text || input.trim();
-    if (!userText || !userId || isBusy || showClearConfirm || operationRef.current || cooldown) return;
+  function sendMessage(text: string, replaceMessageId?: string): boolean {
+    const userText = text.trim();
+    if (!userText || !userId || isBusy || showClearConfirm || operationRef.current || cooldown) return false;
     const now = Date.now();
     if (now - lastRequestRef.current < 3000) {
       setCooldown(true);
       setTimeout(() => setCooldown(false), 3000);
       setSendError({ message: "Tunggu beberapa detik sebelum mengirim pesan lagi.", userText, userMessageId: replaceMessageId ?? "" });
-      return;
+      return false;
     }
 
     const sentAt = new Date().toISOString();
@@ -405,7 +412,7 @@ DATA KEUANGAN USER (bulan ini):
       createdAt: sentAt,
     };
     operationRef.current = true;
-    setInput("");
+    composerRef.current?.clear();
     setSendError(null);
     scrollAdjustmentRef.current = { type: "append", smooth: true };
     setMessages((current) => [...current.filter((message) => message.id !== replaceMessageId), userMessage]);
@@ -414,68 +421,71 @@ DATA KEUANGAN USER (bulan ini):
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
-    try {
-      const historyMessages = messages.filter((message) => message.id !== replaceMessageId);
-      const response = await fetch("/api/ai", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        signal: controller.signal,
-        body: JSON.stringify({
-          messages: [
-            ...historyMessages.slice(-PAGE_SIZE).map((message) => ({ role: message.role, content: message.content })),
-            { role: "user", content: userText },
-          ],
-          systemPrompt: `${SYSTEM_PROMPT}\n\nTANGGAL HARI INI: ${toLocalDateString(new Date())}\n\n${financialContext}`,
-        }),
-      });
-      const data = await response.json() as { text?: string; error?: string };
-      if (!response.ok) {
-        const message = response.status === 429
-          ? "Permintaan terlalu cepat. Coba lagi dalam beberapa detik."
-          : data.error || "DuitQu AI sedang mengalami kendala.";
-        throw new Error(message);
-      }
-      if (!data.text?.trim()) throw new Error("AI tidak mengirim jawaban. Silakan coba lagi.");
+    void (async () => {
+      try {
+        const historyMessages = messages.filter((message) => message.id !== replaceMessageId);
+        const response = await fetch("/api/ai", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
+          body: JSON.stringify({
+            messages: [
+              ...historyMessages.slice(-CONTEXT_MESSAGE_COUNT).map((message) => ({ role: message.role, content: message.content })),
+              { role: "user", content: userText },
+            ],
+            systemPrompt: `${SYSTEM_PROMPT}\n\nTANGGAL HARI INI: ${toLocalDateString(new Date())}\n\n${financialContext}`,
+          }),
+        });
+        const data = await response.json() as { text?: string; error?: string };
+        if (!response.ok) {
+          const message = response.status === 429
+            ? "Permintaan terlalu cepat. Coba lagi dalam beberapa detik."
+            : data.error || "DuitQu AI sedang mengalami kendala.";
+          throw new Error(message);
+        }
+        if (!data.text?.trim()) throw new Error("AI tidak mengirim jawaban. Silakan coba lagi.");
 
-      const { text: displayText, parsed } = stripTransactionJson(data.text);
-      const assistantAt = new Date().toISOString();
-      const assistantMessage: AIMessage = {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content: displayText,
-        parsedTransaction: parsed ?? undefined,
-        createdAt: assistantAt,
-      };
-      if (isNearBottom()) scrollAdjustmentRef.current = { type: "append", smooth: true };
-      setMessages((current) => [...current, assistantMessage]);
-
-      const { error } = await getSupabaseClient().from("ai_chats").insert([
-        { id: userMessage.id, user_id: userId, role: "user", content: userText, created_at: sentAt },
-        {
-          id: assistantMessage.id,
-          user_id: userId,
+        const { text: displayText, parsed } = stripTransactionJson(data.text);
+        const assistantAt = new Date().toISOString();
+        const assistantMessage: AIMessage = {
+          id: crypto.randomUUID(),
           role: "assistant",
           content: displayText,
-          parsed_transaction: parsed ?? null,
-          created_at: assistantAt,
-        },
-      ]);
-      if (error) toast.error("Jawaban tampil, tetapi riwayat chat gagal disimpan.");
-      if (parsed) {
-        setPendingTransaction({ messageId: assistantMessage.id, transaction: parsed });
+          parsedTransaction: parsed ?? undefined,
+          createdAt: assistantAt,
+        };
+        if (isNearBottom()) scrollAdjustmentRef.current = { type: "append", smooth: true };
+        setMessages((current) => [...current, assistantMessage]);
+
+        const { error } = await getSupabaseClient().from("ai_chats").insert([
+          { id: userMessage.id, user_id: userId, role: "user", content: userText, created_at: sentAt },
+          {
+            id: assistantMessage.id,
+            user_id: userId,
+            role: "assistant",
+            content: displayText,
+            parsed_transaction: parsed ?? null,
+            created_at: assistantAt,
+          },
+        ]);
+        if (error) toast.error("Jawaban tampil, tetapi riwayat chat gagal disimpan.");
+        if (parsed) {
+          setPendingTransaction({ messageId: assistantMessage.id, transaction: parsed });
+        }
+      } catch (error) {
+        const aborted = error instanceof DOMException && error.name === "AbortError";
+        setSendError({
+          message: aborted ? "Jawaban dihentikan." : error instanceof Error ? error.message : "Gagal terhubung ke DuitQu AI.",
+          userText,
+          userMessageId: userMessage.id,
+        });
+      } finally {
+        if (abortControllerRef.current === controller) abortControllerRef.current = null;
+        operationRef.current = false;
+        setIsLoading(false);
       }
-    } catch (error) {
-      const aborted = error instanceof DOMException && error.name === "AbortError";
-      setSendError({
-        message: aborted ? "Jawaban dihentikan." : error instanceof Error ? error.message : "Gagal terhubung ke DuitQu AI.",
-        userText,
-        userMessageId: userMessage.id,
-      });
-    } finally {
-      if (abortControllerRef.current === controller) abortControllerRef.current = null;
-      operationRef.current = false;
-      setIsLoading(false);
-    }
+    })();
+    return true;
   }
 
   function handleReviewTransaction(message: AIMessage) {
@@ -509,7 +519,7 @@ DATA KEUANGAN USER (bulan ini):
     if (!sendError) return;
     const failed = sendError;
     setSendError(null);
-    void sendMessage(failed.userText, failed.userMessageId);
+    sendMessage(failed.userText, failed.userMessageId);
   }
 
   return (
@@ -569,7 +579,7 @@ DATA KEUANGAN USER (bulan ini):
                 name={user?.name}
                 snapshot={snapshot}
                 actions={actions}
-                onPrompt={(prompt) => void sendMessage(prompt)}
+                onPrompt={(prompt) => { sendMessage(prompt); }}
                 compact
               />
             )}
@@ -614,7 +624,7 @@ DATA KEUANGAN USER (bulan ini):
                       name={user?.name}
                       snapshot={snapshot}
                       actions={actions}
-                      onPrompt={(prompt) => void sendMessage(prompt)}
+                      onPrompt={(prompt) => { sendMessage(prompt); }}
                     />
                   </div>
                   <div className="ai-desktop-empty">
@@ -662,7 +672,7 @@ DATA KEUANGAN USER (bulan ini):
                   <button
                     key={action.label}
                     type="button"
-                    onClick={() => void sendMessage(action.prompt)}
+                    onClick={() => { sendMessage(action.prompt); }}
                     disabled={isBusy || cooldown}
                     className="ai-prompt-chip"
                   >
@@ -673,11 +683,10 @@ DATA KEUANGAN USER (bulan ini):
             )}
 
             <AssistantComposer
-              value={input}
-              onChange={setInput}
-              onSend={() => void sendMessage()}
+              ref={composerRef}
+              onSend={sendMessage}
               onStop={() => abortControllerRef.current?.abort()}
-              disabled={isHistoryLoading || isClearing || cooldown || showClearConfirm}
+              disabled={isHistoryLoading || isClearing || isLoadingOlder || cooldown || showClearConfirm}
               isLoading={isLoading}
             />
           </section>

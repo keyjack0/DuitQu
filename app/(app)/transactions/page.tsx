@@ -1,7 +1,7 @@
 "use client";
 
 /** Menampilkan, memfilter, menambah, mengubah, dan menghapus riwayat transaksi. */
-import { useState, useMemo, useEffect, useRef } from "react";
+import { startTransition, useState, useMemo, useEffect, useRef, type Dispatch, type SetStateAction } from "react";
 import { useAppStore } from "@/lib/store";
 import { formatCurrency, getMonthLabel, toLocalDateString } from "@/lib/utils";
 import { getSupabaseClient } from "@/lib/supabase";
@@ -16,6 +16,19 @@ import { useTransactionHistory } from "@/hooks/useTransactionHistory";
 import type { Transaction } from "@/types";
 import { CATEGORIES } from "@/types";
 
+const monthYearFormatter = new Intl.DateTimeFormat("id-ID", { month: "long", year: "numeric" });
+const groupDateFormatter = new Intl.DateTimeFormat("id-ID", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
+const transactionTimeFormatter = new Intl.DateTimeFormat("id-ID", {
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: "Asia/Jakarta",
+});
+
 function compareTransactions(a: Transaction, b: Transaction) {
   return b.date.localeCompare(a.date) ||
     (b.created_at ?? "").localeCompare(a.created_at ?? "") ||
@@ -28,7 +41,7 @@ function generateMonthOptions(): { value: string; label: string }[] {
   for (let i = 0; i < 12; i++) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    const label = new Intl.DateTimeFormat("id-ID", { month: "long", year: "numeric" }).format(d);
+    const label = monthYearFormatter.format(d);
     options.push({ value, label });
   }
   return options;
@@ -68,20 +81,44 @@ function formatGroupDate(date: string) {
   if (date === toLocalDateString(today)) return "Hari ini";
   if (date === toLocalDateString(yesterday)) return "Kemarin";
 
-  return new Date(`${date}T00:00:00`).toLocaleDateString("id-ID", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  return groupDateFormatter.format(new Date(`${date}T00:00:00`));
 }
 
 function formatTransactionTime(value: string) {
-  return new Intl.DateTimeFormat("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Asia/Jakarta",
-  }).format(new Date(value));
+  return transactionTimeFormatter.format(new Date(value));
+}
+
+function TransactionSearch({
+  setSearch,
+}: {
+  setSearch: Dispatch<SetStateAction<string>>;
+}) {
+  const [inputValue, setInputValue] = useState("");
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+  }, []);
+
+  return (
+    <label className="search-wrap">
+      <Search size={16} aria-hidden="true" />
+      <span className="sr-only">Cari transaksi</span>
+      <input
+        type="search"
+        placeholder="Cari deskripsi atau kategori..."
+        value={inputValue}
+        onChange={(event) => {
+          const nextSearch = event.target.value;
+          setInputValue(nextSearch);
+          if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+          searchTimerRef.current = setTimeout(() => {
+            startTransition(() => setSearch(nextSearch));
+          }, 250);
+        }}
+      />
+    </label>
+  );
 }
 
 export default function TransactionsPage() {
@@ -95,6 +132,7 @@ export default function TransactionsPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [openRowId, setOpenRowId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [searchInputKey, setSearchInputKey] = useState(0);
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterType, setFilterType] = useState("all");
   const [showTypeFilterSheet, setShowTypeFilterSheet] = useState(false);
@@ -259,6 +297,7 @@ export default function TransactionsPage() {
 
   const resetFilters = () => {
     setSearch("");
+    setSearchInputKey((key) => key + 1);
     setFilterType("all");
     setFilterCategory("all");
     setDateFrom("");
@@ -358,16 +397,7 @@ export default function TransactionsPage() {
 
           <section className="transactions-main" aria-labelledby="transaction-list-title">
             <div className="transactions-toolbar">
-              <label className="search-wrap">
-                <Search size={16} aria-hidden="true" />
-                <span className="sr-only">Cari transaksi</span>
-                <input
-                  type="search"
-                  placeholder="Cari deskripsi atau kategori..."
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                />
-              </label>
+              <TransactionSearch key={searchInputKey} setSearch={setSearch} />
               <button
                 type="button"
                 className={`filter-dropdown-btn ${activeFilterCount > 0 ? "filter-dropdown-btn--active" : ""}`}
@@ -401,7 +431,10 @@ export default function TransactionsPage() {
                   </button>
                 )}
                 {search && (
-                  <button type="button" onClick={() => setSearch("")}>“{search}”<X size={12} /></button>
+                  <button type="button" onClick={() => {
+                    setSearch("");
+                    setSearchInputKey((key) => key + 1);
+                  }}>“{search}”<X size={12} /></button>
                 )}
                 <button type="button" className="transaction-filter-clear" onClick={resetFilters}>Hapus semua</button>
               </div>

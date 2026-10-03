@@ -1,7 +1,7 @@
 "use client";
 
 /** Memvisualisasikan pengeluaran harian untuk rentang waktu yang dipilih. */
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { Check, ChevronDown } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
@@ -26,6 +26,9 @@ export default function ExpenseChart({ data }: { data: { date: string; day: stri
   const [isPressing, setIsPressing] = useState(false);
   const [chartWidth, setChartWidth] = useState(0);
   const [hasAnimated, setHasAnimated] = useState(false);
+  const pointerBoundsRef = useRef<{ left: number; width: number } | null>(null);
+  const pendingIndexRef = useRef<number | null>(null);
+  const pointerFrameRef = useRef<number | null>(null);
   const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
   const visibleData = data.slice(-period).map((item) => ({ ...item, barAmount: Math.min(MAX_AMOUNT, item.amount) }));
   const activeIndex = Math.min(selectedIndex, visibleData.length - 1);
@@ -45,6 +48,24 @@ export default function ExpenseChart({ data }: { data: { date: string; day: stri
     labelIndices[nearest] = activeIndex;
   }
   const formatRangeDate = (date: string) => new Date(`${date}T00:00:00`).toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+
+  useEffect(() => () => {
+    if (pointerFrameRef.current !== null) cancelAnimationFrame(pointerFrameRef.current);
+  }, []);
+
+  const cancelPointerFrame = () => {
+    if (pointerFrameRef.current !== null) cancelAnimationFrame(pointerFrameRef.current);
+    pointerFrameRef.current = null;
+    pendingIndexRef.current = null;
+  };
+
+  const finishPointerSelection = (commitPending: boolean) => {
+    const pendingIndex = pendingIndexRef.current;
+    cancelPointerFrame();
+    if (commitPending && pendingIndex !== null) setSelectedIndex(pendingIndex);
+    pointerBoundsRef.current = null;
+    setIsPressing(false);
+  };
 
   return (
     <section className="chart-card expense-week-card" aria-labelledby={titleId}>
@@ -90,20 +111,31 @@ export default function ExpenseChart({ data }: { data: { date: string; day: stri
               onClick={(event) => { if (event.detail === 0) setSelectedIndex(index); }}
               onPointerDown={(event) => {
                 if (event.button !== 0) return;
+                cancelPointerFrame();
+                const bounds = event.currentTarget.parentElement?.getBoundingClientRect();
+                pointerBoundsRef.current = bounds ? { left: bounds.left, width: bounds.width } : null;
                 event.currentTarget.setPointerCapture(event.pointerId);
                 setSelectedIndex(index);
                 setIsPressing(true);
               }}
-              onPointerUp={() => setIsPressing(false)}
+              onPointerUp={() => finishPointerSelection(true)}
               onPointerMove={(event) => {
                 if (!isPressing || !event.buttons) return;
-                const bounds = event.currentTarget.parentElement!.getBoundingClientRect();
-                setSelectedIndex(Math.max(0, Math.min(visibleData.length - 1, Math.floor((event.clientX - bounds.left) / bounds.width * visibleData.length))));
+                const bounds = pointerBoundsRef.current;
+                if (!bounds || bounds.width === 0) return;
+                pendingIndexRef.current = Math.max(0, Math.min(visibleData.length - 1, Math.floor((event.clientX - bounds.left) / bounds.width * visibleData.length)));
+                if (pointerFrameRef.current !== null) return;
+                pointerFrameRef.current = requestAnimationFrame(() => {
+                  pointerFrameRef.current = null;
+                  const pendingIndex = pendingIndexRef.current;
+                  pendingIndexRef.current = null;
+                  if (pendingIndex !== null) setSelectedIndex(pendingIndex);
+                });
               }}
-              onPointerCancel={() => setIsPressing(false)}
-              onLostPointerCapture={() => setIsPressing(false)}
+              onPointerCancel={() => finishPointerSelection(false)}
+              onLostPointerCapture={() => finishPointerSelection(false)}
               onBlur={(event) => {
-                if (!event.currentTarget.parentElement?.contains(event.relatedTarget)) setIsPressing(false);
+                if (!event.currentTarget.parentElement?.contains(event.relatedTarget)) finishPointerSelection(false);
               }}
               onKeyDown={(event) => {
                 if (event.key !== "Enter" && event.key !== " ") return;

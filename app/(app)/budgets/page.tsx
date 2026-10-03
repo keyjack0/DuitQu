@@ -32,11 +32,17 @@ export default function BudgetsPage() {
   const [limit, setLimit] = useState("");
 
   const budgetsWithSpent = useMemo(() => {
-    const thisMonthTx = monthTransactions.filter((t) => isThisMonth(t.date) && t.type === "OUT");
+    const spentByCategory = new Map<string, number>();
+    for (const transaction of monthTransactions) {
+      if (!isThisMonth(transaction.date) || transaction.type !== "OUT") continue;
+      spentByCategory.set(
+        transaction.category,
+        (spentByCategory.get(transaction.category) ?? 0) + transaction.amount
+      );
+    }
+
     return budgets.map((b) => {
-      const spent = thisMonthTx
-        .filter((t) => t.category === b.category)
-        .reduce((s, t) => s + t.amount, 0);
+      const spent = spentByCategory.get(b.category) ?? 0;
       return { ...b, spent };
     });
   }, [budgets, monthTransactions]);
@@ -163,7 +169,6 @@ export default function BudgetsPage() {
                     const pct = calculatePercentage(budget.spent, budget.amount_limit);
                     const status = getBudgetStatus(pct);
                     const barColor = status === "danger" ? "var(--red)" : status === "warning" ? "var(--amber)" : "var(--green)";
-                    const remaining = budget.amount_limit - budget.spent;
 
                     return (
                       <SwipeableRow

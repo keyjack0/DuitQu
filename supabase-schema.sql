@@ -76,6 +76,8 @@ CREATE INDEX IF NOT EXISTS idx_transactions_wallet_id ON public.transactions(wal
 CREATE INDEX IF NOT EXISTS idx_wallets_user_id ON public.wallets(user_id);
 CREATE INDEX IF NOT EXISTS idx_budgets_user_id ON public.budgets(user_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_to_wallet_id ON public.transactions(to_wallet_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_user_date_created_id
+  ON public.transactions(user_id, date DESC, created_at DESC, id DESC);
 
 -- Function: Create profile on signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -170,6 +172,11 @@ BEGIN
       ids := ids || NEW.to_wallet_id;
     END IF;
   END IF;
+
+  SELECT COALESCE(array_agg(DISTINCT affected_id), '{}'::UUID[])
+    INTO ids
+  FROM unnest(ids) AS affected(affected_id)
+  WHERE affected_id IS NOT NULL;
 
   FOREACH wid IN ARRAY ids LOOP
     PERFORM public.recalc_wallet_balance(wid);
